@@ -1,0 +1,18 @@
+<svg width="832" height="248" viewBox="0 0 832 248" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wordGrad" x1="40" y1="40" x2="620" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5E9BE0"/>
+      <stop offset="1" stop-color="#9EC4F0"/>
+    </linearGradient>
+  </defs>
+
+  <text x="40" y="186" fill="url(#wordGrad)" font-family="Poppins, Arial, sans-serif" font-size="136" font-weight="700" letter-spacing="-1.5">MediHub</text>
+
+  <g transform="translate(672,28)">
+    <circle cx="64" cy="64" r="56" stroke="#0D78C3" stroke-width="16"/>
+    <path d="M111 110L140 142" stroke="#5E9BE0" stroke-width="18" stroke-linecap="round"/>
+    <path d="M43 57L68 41L84 63C88 69 89 79 85 87L81 96C77 104 66 108 58 103L42 93C34 88 31 77 35 69L43 57Z" fill="#68A1E5"/>
+    <path d="M73 87L93 72" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <path d="M52 63L66 84" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>

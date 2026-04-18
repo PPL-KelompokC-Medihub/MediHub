@@ -1,11 +1,2291 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+:root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --line: #e8ebf2;
+    --text: #1f2024;
+    --muted: #8f939d;
+    --primary: #6aa4ef;
+    --primary-strong: #4b8fe8;
+    --danger: #e65b54;
+    --success: #66be74;
+    --radius: 14px;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+[hidden] {
+    display: none !important;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.mediq-logo {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mediq-logo img {
+    display: block;
+    width: 140px;
+    height: auto;
+}
+
+.mediq-auth-shell {
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+.mediq-auth-grid {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 58% 42%;
+}
+
+.mediq-auth-visual {
+    position: relative;
+    overflow: hidden;
+    background: #f7f8fa;
+    border-right: 1px solid #e5e8ee;
+}
+
+.mediq-auth-lines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        63deg,
+        rgba(117, 171, 238, 0.18) 0,
+        rgba(117, 171, 238, 0.18) 2px,
+        transparent 2px,
+        transparent 165px
+    );
+}
+
+.mediq-auth-image {
+    position: absolute;
+    width: min(84%, 740px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+}
+
+.mediq-auth-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 56px 32px;
+    background: #fff;
+    overflow-y: auto;
+}
+
+.mediq-auth-card {
+    width: min(460px, 100%);
+    margin: 0 auto;
+}
+
+.mediq-auth-body {
+    margin-top: 32px;
+}
+
+.mediq-auth-heading {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.mediq-auth-subtitle {
+    color: #6b6f78;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 6px;
+}
+
+.mediq-muted {
+    color: #6b6f78;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mediq-auth-switch {
+    margin: 14px 0 18px;
+    font-size: 14px;
+}
+
+.mediq-auth-switch a,
+.mediq-right-head a {
+    color: var(--primary-strong);
+}
+
+.mediq-auth-form {
+    display: grid;
+    gap: 6px;
+}
+
+.mediq-field {
+    margin-top: 8px;
+}
+
+.mediq-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.mediq-input {
+    width: 100%;
+    border: 1px solid #e8eaef;
+    border-radius: 12px;
+    background: #fff;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mediq-input::placeholder {
+    color: #b0b4bb;
+}
+
+.mediq-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.1);
+}
+
+textarea.mediq-input {
+    resize: vertical;
+}
+
+.mediq-primary-btn,
+.mediq-danger-btn,
+.mediq-pill-btn,
+.mediq-social-btn,
+.mediq-logout {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.mediq-primary-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.mediq-primary-btn:focus-visible,
+.mediq-social-btn:focus-visible,
+.mediq-input:focus-visible {
+    outline: 2px solid var(--primary-strong);
+    outline-offset: 2px;
+}
+
+.mediq-primary-btn,
+.mediq-pill-btn {
+    color: #fff;
+    background: var(--primary);
+}
+
+.mediq-danger-btn {
+    color: #fff;
+    background: var(--danger);
+}
+
+.mediq-social-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.mediq-social-btn {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: #444;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.mediq-divider {
+    margin: 10px 0 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.mediq-error {
+    color: #bb3831;
+    font-size: 13px;
+}
+
+.mediq-form-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.mediq-remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #4d5560;
+}
+
+.mediq-remember input {
+    margin: 0;
+}
+
+.mediq-forgot-link {
+    color: var(--primary-strong);
+    font-weight: 500;
+}
+
+.mediq-forgot-link:hover {
+    text-decoration: underline;
+}
+
+.btn-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Container-style input wrapping for icons */
+.mediq-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.mediq-input-wrap .mediq-input {
+    padding-right: 48px;
+}
+
+.mediq-eye-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca0a8;
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mediq-line-input:focus {
+    border-bottom-color: var(--primary);
+}
+
+.mediq-line-input::placeholder {
+    color: #b0b4bb;
+}
+
+.mediq-line-input-wrap {
+    position: relative;
+}
+
+.mediq-line-input-wrap .mediq-line-input {
+    padding-right: 40px;
+}
+
+.mediq-eye-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca0a8;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+.mediq-eye-btn:hover {
+    color: #555;
+}
+
+/* Gray submit button (matching design) */
+.mediq-submit-btn {
+    margin-top: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 24px;
+    padding: 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    background: #e8eaef;
+    color: #6b6f78;
+    transition: background 0.2s, color 0.2s;
+}
+
+.mediq-submit-btn:hover {
+    background: #dcdfe5;
+    color: #444;
+}
+
+.mediq-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.mediq-field-block {
+    margin-top: 4px;
+}
+
+.mediq-account-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 4px;
+}
+
+.mediq-account-type {
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: #fff;
+    color: #333;
+    padding: 8px 4px 10px;
+    cursor: pointer;
+    font: inherit;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+}
+
+.mediq-account-type svg {
+    width: 30px;
+    height: 30px;
+    color: #296cae;
+}
+
+.mediq-account-type span {
+    font-size: 13px;
+}
+
+.mediq-input-wrap {
+    position: relative;
+}
+
+.mediq-input-wrap .mediq-input {
+    padding-right: 54px;
+}
+
+.mediq-input-eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #737a86;
+    font-size: 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+    line-height: 1;
+}
+
+.mediq-password-rules {
+    display: grid;
+    gap: 6px;
+    color: #4d5560;
+    font-size: 13px;
+}
+
+.mediq-password-rules label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mediq-password-rules input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.mediq-signup-submit {
+    margin-top: 14px;
+    background: #efefef;
+    color: #8f8f8f;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.mediq-notice {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid #cfe3c2;
+    border-radius: 12px;
+    background: #f2faed;
+    color: #4b7d3b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.mediq-success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(53, 53, 53, 0.78);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    padding: 24px;
+}
+
+.mediq-success-card {
+    width: min(650px, 100%);
+    border-radius: 34px;
+    background: #fff;
+    padding: 48px 44px 56px;
+    text-align: center;
+}
+
+.mediq-success-badge {
+    margin: 0 auto 30px;
+    width: 188px;
+    height: 188px;
+    border-radius: 40% 60% 63% 37% / 37% 34% 66% 63%;
+    background: #76a7e9;
+    display: grid;
+    place-items: center;
+}
+
+.mediq-success-check {
+    width: 70px;
+    height: 38px;
+    border-left: 14px solid #fff;
+    border-bottom: 14px solid #fff;
+    transform: rotate(-45deg) translateY(-5px);
+    border-radius: 4px;
+}
+
+.mediq-success-title {
+    margin: 0 0 28px;
+    font-size: 28px;
+    line-height: 1.12;
+}
+
+.mediq-success-login-btn {
+    width: min(420px, 100%);
+    border: 2px solid #3b7ead;
+    border-radius: 12px;
+    padding: 12px 20px;
+    background: #fff;
+    color: #3b7ead;
+    font: inherit;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.mediq-app-shell {
+    min-height: 100vh;
+}
+
+.mediq-shell-grid {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 230px 1fr 350px;
+}
+
+.mediq-sidebar,
+.mediq-main,
+.mediq-rightbar {
+    background: #fff;
+}
+
+.mediq-sidebar {
+    border-right: 1px solid var(--line);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.mediq-sidebar .mediq-logo img {
+    width: 154px;
+}
+
+.mediq-nav {
+    margin-top: 36px;
+    display: grid;
+    gap: 6px;
+}
+
+.mediq-nav-title {
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.mediq-nav-item {
+    color: #828793;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.mediq-nav-item.is-active {
+    color: var(--primary-strong);
+    background: #edf4ff;
+    font-weight: 600;
+}
+
+.mediq-logout-wrap {
+    margin-top: auto;
+}
+
+.mediq-logout {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: #7d828c;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.mediq-logout:hover {
+    background: #f7f8fa;
+}
+
+.mediq-main {
+    padding: 24px;
+    border-right: 1px solid var(--line);
+}
+
+.mediq-main > * + * {
+    margin-top: 18px;
+}
+
+.mediq-rightbar {
+    padding: 24px 18px;
+    position: relative;
+}
+
+.mediq-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+}
+
+.mediq-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mediq-user-name,
+.mediq-section-title,
+h1,
+h2,
+h3 {
+    margin: 0;
+    color: #20242d;
+}
+
+.mediq-user-name {
+    font-weight: 600;
+}
+
+.mediq-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mediq-search-wrap {
+    position: relative;
+    width: 280px;
+}
+
+.mediq-search-input {
+    width: 100%;
+    border: 1px solid #e8eaef;
+    border-radius: 20px;
+    padding: 10px 40px 10px 16px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.mediq-search-input:focus {
+    border-color: var(--primary);
+}
+
+.mediq-search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aab0bc;
+}
+
+.mediq-icon-btn {
+    border: 1px solid #e8eaef;
+    background: #fff;
+    border-radius: 14px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4a4e58;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mediq-icon-btn:hover {
+    background: #f7f8fa;
+}
+
+.mediq-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mediq-avatar-lg {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mediq-promo {
+    padding: 24px 32px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, #6ba7f1 0%, #90bcf9 100%);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 14px;
+    color: #fff;
+    min-height: 180px;
+    position: relative;
+}
+
+.mediq-promo-left {
+    z-index: 2;
+}
+
+.mediq-promo-right {
+    z-index: 2;
+    text-align: right;
+}
+
+.mediq-promo img {
+    height: 100%;
+    width: 250px;
+    object-fit: cover;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.9;
+    mix-blend-mode: multiply; /* Fakes transparency if not transparent */
+}
+
+.mediq-promo-label {
+    margin: 0 0 12px;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.mediq-promo-big {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.mediq-promo-sub {
+    margin: 8px 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.mediq-pill-btn {
+    display: inline-block;
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    font-size: 14px;
+    color: #fff;
+    transition: background 0.2s;
+}
+.mediq-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.mediq-section-title {
+    font-size: 22px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.mediq-poli-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.mediq-poli-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #4a4e58;
+    min-width: 80px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.mediq-poli-item span {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.mediq-poli-icon {
+    width: 64px;
+    height: 64px;
+    background: #6ba7f1;
+    background: linear-gradient(135deg, #74aefb 0%, #4f96f1 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mediq-poli-item:hover .mediq-poli-icon {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(107, 167, 241, 0.3);
+}
+
+.mediq-poli-item:hover span {
+    color: var(--primary);
+}
+
+.mediq-card-row,
+.mediq-slot-row,
+.mediq-gallery {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+}
+
+
+.mediq-doctor-card {
+    width: 200px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    flex: 0 0 auto;
+    text-decoration: none;
+    color: inherit;
+}
+
+.mediq-doctor-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    background: #d7e9fe;
+}
+
+.mediq-doctor-body {
+    padding: 12px;
+}
+
+.mediq-doctor-name {
+    margin: 0 0 2px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.mediq-doctor-spec {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #7d828c;
+    line-height: 1.3;
+}
+
+.mediq-doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.mediq-right-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.mediq-right-head a {
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.mediq-right-head a.is-back {
+    color: var(--primary-strong);
+}
+
+.mediq-right-group,
+.mediq-review-list {
+    display: grid;
+    gap: 10px;
+}
+
+.mediq-review-item,
+.mediq-history-card,
+.mediq-form-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.mediq-appointment-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--primary-strong);
+    border-radius: 16px;
+    padding: 16px 16px 16px 20px;
+}
+.mediq-appointment-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.mediq-cancel-checkbox {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.mediq-cancel-checkbox input {
+    display: none;
+}
+.mediq-cancel-checkbox label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid #e8eaef;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mediq-cancel-checkbox input:checked + label {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+.mediq-cancel-checkbox input:checked + label::after {
+    content: "✓";
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+.mediq-app-icon {
+    width: 38px;
+    height: 38px;
+    background: #eef5ff;
+    color: var(--primary-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+.mediq-appointment-doctor {
+    margin: 0 0 4px;
+    font-weight: 600;
+    color: var(--primary-strong);
+    font-size: 15px;
+}
+.mediq-appointment-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.mediq-app-queue .mediq-muted {
+    margin: 0;
+    font-size: 13px;
+}
+.mediq-queue-number {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 4px 0 0;
+    line-height: 1;
+}
+.mediq-app-datetime {
+    display: grid;
+    gap: 10px;
+    text-align: right;
+}
+.mediq-app-datetime .mediq-muted {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.mediq-history-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.mediq-stick-bottom {
+    width: calc(100% - 36px);
+    position: absolute;
+    left: 18px;
+    bottom: 20px;
+}
+
+.mediq-facility-head,
+.mediq-profile-head,
+.mediq-doctor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+}
+
+.mediq-facility-head h1,
+.mediq-doctor-header h1,
+.mediq-profile-head h1 {
+    font-size: 42px;
+    line-height: 1.1;
+}
+
+.mediq-facility-type {
+    margin: 0;
+    color: var(--primary-strong);
+    font-weight: 600;
+}
+
+.mediq-facility-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.mediq-location {
+    font-weight: 500;
+}
+
+
+
+.mediq-doctor-hero {
+    background: #d7e9fe;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+}
+
+.mediq-doctor-hero img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.mediq-doctor-hero-name {
+    margin: 0;
+    color: #8aaee0;
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 0.95;
+}
+
+.mediq-slot,
+.mediq-time {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px 12px;
+    min-width: 88px;
+    font: inherit;
+    color: #4f5662;
+}
+
+.mediq-slot.is-off {
+    opacity: 0.4;
+}
+
+.mediq-slot small {
+    display: block;
+    color: #8f95a0;
+}
+
+.mediq-form-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.mediq-history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.mediq-status {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mediq-status.is-success {
+    color: var(--success);
+}
+
+.mediq-status.is-danger,
+.mediq-settings-list .is-danger {
+    color: #ea6560;
+}
+
+.mediq-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.mediq-settings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.mediq-bullet-list {
+    margin: 0;
+    color: #737885;
+}
+
+.mediq-gallery img {
+    width: 180px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Category row (services page) */
+.mediq-category-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mediq-category {
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    font-size: 14px;
+    background: #fff;
+    color: #4a4e58;
+}
+
+/* Utility classes — extracted from inline styles */
+.mediq-mb-16 {
+    margin-bottom: 16px;
+}
+
+.mediq-mb-12 {
+    margin-bottom: 12px;
+}
+
+.mediq-mt-8 {
+    margin-top: 8px;
+}
+
+.mediq-flex-1 {
+    flex: 1;
+}
+
+.mediq-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.mediq-poli-label-narrow {
+    max-width: 40px;
+}
+
+.mediq-rating-value {
+    color: #f5a623;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.mediq-appointment-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.mediq-pos-relative {
+    position: relative;
+}
+
+.mediq-action-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Landing Page Replication V2 Styles */
+.landing-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(135, 172, 230, 0.1);
+    padding: 18px 0;
+}
+
+.landing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.mediq-nav-logo {
+    height: 38px;
+}
+
+.landing-hero-v2 {
+    text-align: center;
+    padding: 80px 0 0;
+    background: radial-gradient(circle at 50% 30%, rgba(106, 164, 239, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+}
+
+.landing-hero-v2 h2 {
+    font-size: 40px;
+    font-weight: 700;
+    color: #1a1e26;
+    margin-bottom: 8px;
+}
+
+.landing-hero-v2 h1 {
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #6aa4ef 0%, #4b8fe8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+
+.landing-hero-v2 .subtitle {
+    font-size: 16px;
+    color: #6b7280;
+    margin-bottom: 32px;
+}
+
+.hero-btn-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 64px;
+}
+
+.btn-primary-v2 {
+    background: #6aa4ef;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.btn-primary-v2:hover {
+    background: #4b8fe8;
+    transform: translateY(-2px);
+}
+
+.btn-outline-v2 {
+    border: 1.5px solid #6aa4ef;
+    color: #6aa4ef;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.btn-outline-v2:hover {
+    background: rgba(106, 164, 239, 0.05);
+}
+
+.dashboard-mockup-frame {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px 24px 0 0;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+    box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.08);
+}
+
+.dashboard-mockup-frame img {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    border: 1px solid #f3f4f6;
+}
+
+.section-tentang {
+    padding: 100px 0;
+    text-align: center;
+}
+
+.tentang-logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 40px;
+}
+
+.tentang-desc {
+    max-width: 800px;
+    margin: 0 auto 80px;
+    color: #6b7280;
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.stats-ribbon {
+    display: flex;
+    justify-content: space-around;
+    padding: 40px 0;
+}
+
+.stat-v2 {
+    text-align: center;
+}
+
+.stat-v2 h3 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #4b8fe8;
+    margin-bottom: 8px;
+}
+
+.stat-v2 p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.section-layanan {
+    padding: 120px 0;
+}
+
+.services-split {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+}
+
+.services-intro {
+    position: sticky;
+    top: 140px;
+    height: fit-content;
+}
+
+.services-intro h2 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 32px;
+    color: #1a1e26;
+}
+
+.services-intro h2 span {
+    display: block;
+    color: #6aa4ef;
+}
+
+.service-grid-v2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.service-card-v2 {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid #f3f4f6;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-card-v2:hover {
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+    border-color: #6aa4ef;
+    transform: translateY(-5px);
+}
+
+.service-icon-v2 {
+    width: 60px;
+    height: 60px;
+    background: #6aa4ef;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    font-size: 24px;
+}
+
+.service-card-v2 h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.service-card-v2 p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.section-dokter {
+    padding: 120px 0;
+    text-align: center;
+    background: #fdfdfc;
+}
+
+.section-dokter h2 {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.section-dokter .subtitle {
+    font-size: 32px;
+    color: #6aa4ef;
+    font-weight: 700;
+    margin-bottom: 64px;
+}
+
+.doctor-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.doctor-card-v2 {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: left;
+    border: 1px solid #f3f4f6;
+    transition: transform 0.2s;
+}
+
+.doctor-card-v2:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
+}
+
+.doctor-img-v2 {
+    background: #eef4fb;
+    height: 240px;
+    overflow: hidden;
+}
+
+.doctor-img-v2 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.05);
+}
+
+.doctor-info-v2 {
+    padding: 20px;
+}
+
+.doctor-info-v2 h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1a1e26;
+}
+
+.doctor-info-v2 p {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+.doctor-meta-v2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #4b8fe8;
+    font-weight: 600;
+}
+
+.doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #f59e0b;
+}
+
+.landing-footer-v2 {
+    padding: 80px 0 40px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.footer-grid-v2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr 1fr;
+    gap: 60px;
+    margin-bottom: 80px;
+}
+
+.footer-brand p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 24px;
+    line-height: 1.6;
+}
+
+.footer-col h4 {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 24px;
+    color: #1a1e26;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col li {
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.footer-col a:hover {
+    color: #6aa4ef;
+}
+
+.footer-bottom-v2 {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    padding-top: 40px;
+}
+
+.social-icon-v2 {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1e26;
+    transition: all 0.2s;
+}
+
+.social-icon-v2:hover {
+    background: #6aa4ef;
+    color: white;
+    border-color: #6aa4ef;
+}
+
+@media (max-width: 920px) {
+    .landing-hero-v2 h1 { font-size: 36px; }
+    .services-split { grid-template-columns: 1fr; }
+    .service-grid-v2 { grid-template-columns: 1fr; }
+    .doctor-grid-v2 { grid-template-columns: 1fr 1fr; }
+    .footer-grid-v2 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+    .doctor-grid-v2 { grid-template-columns: 1fr; }
+    .footer-grid-v2 { grid-template-columns: 1fr; }
+    .hero-btn-row { flex-direction: column; }
+}
+
+
+/* Anima Snippet Specific Styles */
+.gradient-dark-text {
+    background: linear-gradient(180deg, #1a1e26 0%, #374151 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gradient-blue-text {
+    background: linear-gradient(90deg, #6aa4ef 0%, #4b8fe8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.doctors-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 20px 112px 100px;
+    margin-top: 40px;
+}
+
+@media (max-width: 1024px) {
+    .doctors-section {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 20px 5%;
+    }
+}
+
+@media (max-width: 640px) {
+    .doctors-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.doctor-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #f0f2f5;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.doctor-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: top;
+    background: #d4eefe;
+}
+
+.doctor-info {
+    padding: 24px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.doctor-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.doctor-specialty {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 24px;
+}
+
+.doctor-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #f59e0b;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.doctor-rating img {
+    width: 18px;
+    height: 18px;
+}
+
+.meta-divider {
+    width: 1px;
+    height: 16px;
+    background: #e5e7eb;
+}
+
+.doctor-patients {
+    font-size: 13px;
+    color: #4b8fe8;
+    font-weight: 600;
+}
+
+/* Footer Anima */
+.px-outer {
+    padding: 0 5%;
+}
+
+.footer-top {
+    display: grid;
+    grid-template-columns: 1.5fr 3fr;
+    gap: 60px;
+    padding: 80px 0 60px;
+}
+
+/* ── HERO CONTENT ── */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  max-width: 731px;
+  margin: 0 auto;
+}
+
+.hero-content h1 {
+  width: 100%;
+  font-size: 44px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.hero-content p {
+  font-size: 16px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.hero-btns {
+  display: flex;
+  gap: 16px;
+}
+
+.cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 177px;
+  padding: 8px 8px 8px 12px;
+  border: none;
+  border-radius: 20px;
+  font-family: 'Poppins', Helvetica, sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cta-btn-blue {
+  background: linear-gradient(90deg, #d8edf9 0%, #e5f5ff 51%, #c2e8ff 100%);
+  color: #1a1e26;
+  font-weight: 500;
+}
+
+.cta-btn-white {
+  background: #fff;
+  border: 1px solid #f1f1f1;
+  color: #1a1e26;
+  font-weight: 500;
+}
+
+.cta-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cta-icon-blue {
+  background: linear-gradient(90deg, #e9f6ff 0%, #e5f5ff 78%);
+}
+
+.cta-icon-gray {
+  background: #f9fafb;
+}
+
+.cta-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── DOCTOR IMAGE ── */
+.doctor-image {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 16px;
+  margin-top: 24px;
+}
+
+.doctor-image img {
+  width: 100%;
+  max-width: 1106px;
+  display: block;
+  object-fit: cover;
+  border-radius: 50px;
+}
+
+/* ── TENTANG MEDIQ ── */
+.tentang-heading {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 146px;
+  padding: 30px 32px;
+  margin-top: 40px;
+  background: linear-gradient(180deg, #f9fcff 0%, #f6fbff 55%, #fff 78%);
+}
+
+.tentang-heading .tentang {
+  font-size: 32px;
+  font-weight: 500;
+}
+
+/* Logo inline */
+.mediq-logo-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.28px;
+  padding: 15.4px 0;
+}
+
+.mediq-logo-inline span {
+  font-size: 33.4px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mediq-logo-inline img {
+  width: 33.7px;
+  height: 41px;
+}
+
+/* ── ABOUT DESCRIPTION ── */
+.about-desc {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 16px 0 24px;
+}
+
+.about-desc p {
+  max-width: 1000px;
+  padding: 0 16px;
+  font-size: 16px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── STATS ── */
+.stats-section {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  margin-bottom: 80px;
+}
+
+.stats-inner {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 161px;
+}
+
+.stat-item.w153 { width: 153px; }
+.stat-item.w169 { width: 169px; }
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+.stat-label {
+  font-size: 16px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.stat-divider {
+  width: 2px;
+  background: #e5e7eb;
+  align-self: stretch;
+}
+
+/* ── SERVICE ── */
+.service-highlights {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  padding: 32px 112px;
+  width: 100%;
+  margin-bottom: 80px;
+}
+
+.service-left {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.service-title-img {
+  width: 100%;
+  height: 60.8px;
+  object-fit: contain;
+}
+
+.btn-primary-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 173px;
+  padding: 10px 12px;
+  background: #0077c2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', Helvetica, sans-serif;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.footer-logo img {
+    height: 40px;
+}
+
+.footer-tagline {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.footer-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.footer-col-title {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a1e26;
+    margin-bottom: 24px;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.footer-link {
+    font-size: 14px;
+    color: #6b7280;
+    transition: color 0.2s;
+}
+
+.footer-link:hover {
+    color: #6aa4ef;
+}
+
+.footer-divider {
+    height: 1px;
+    background: #f3f4f6;
+    width: 100%;
+}
+
+.footer-social {
+    padding: 32px 0 60px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.footer-social img {
+    height: 32px;
+}
+
+@media (max-width: 920px) {
+    .footer-top {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .footer-nav {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 1200px) {
+    .mediq-shell-grid {
+        grid-template-columns: 82px 1fr;
+    }
+
+    .mediq-rightbar {
+        display: none;
+    }
+
+    .mediq-sidebar .mediq-logo img {
+        width: 46px;
+    }
+
+    .mediq-nav-title,
+    .mediq-nav-item,
+    .mediq-logout {
+        font-size: 0;
+    }
+}
+
+@media (max-width: 920px) {
+    .mediq-auth-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mediq-auth-visual {
+        display: none;
+    }
+
+    .mediq-shell-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mediq-sidebar {
+        display: none;
+    }
+
+    .mediq-main {
+        border-right: 0;
+    }
+
+    .mediq-promo {
+        grid-template-columns: 1fr;
+    }
+
+    .mediq-promo-sub,
+    .mediq-promo-big {
+        text-align: left;
+    }
+
+    .mediq-facility-head h1,
+    .mediq-doctor-header h1,
+    .mediq-profile-head h1,
+    .mediq-auth-heading,
+    .mediq-section-title {
+        font-size: 28px;
+    }
+
+
+    .mediq-history-grid,
+    .mediq-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .mediq-success-card {
+        border-radius: 22px;
+        padding: 30px 22px 34px;
+    }
+
+    .mediq-success-badge {
+        width: 128px;
+        height: 128px;
+        margin-bottom: 20px;
+    }
+
+    .mediq-success-check {
+        width: 48px;
+        height: 24px;
+        border-left-width: 10px;
+        border-bottom-width: 10px;
+    }
+
+    .mediq-success-title {
+        font-size: 34px;
+        margin-bottom: 18px;
+    }
+
+    .mediq-success-login-btn {
+        font-size: 34px;
+        border-width: 2px;
+        border-radius: 16px;
+    }
+}
+
+/* ── NAVBAR ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 112px 16px;
+  background: #fff;
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 12px 0;
+}
+
+.logo-text {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.logo img {
+  width: 26px;
+  height: 32px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── BUTTONS ── */
+.btn-signin {
+  background: none;
+  border: none;
+  font-family: 'Poppins', Helvetica, sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #000;
+}
+
+.btn-register {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 173px;
+  padding: 10px 12px;
+  background: #0077c2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', Helvetica, sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-register span {
+  color: white;
+}
+
+.btn-register img {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── PAGE ── */
+.page {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── HERO BACKGROUND ── */
+.hero-bg {
+  position: absolute;
+  top: 88px;
+  left: 0;
+  width: 100%;
+  height: 1088px;
+  background: url('https://c.animaapp.com/mo3i2i8wgsBU2q/img/frame-1171275792.svg') center / cover no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── UTILITIES ── */
+.gradient-blue-text {
+  background: linear-gradient(90deg, #59a5f5 0%, #b8daff 54%, #59a5f5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-dark-text {
+  background: linear-gradient(90deg, #0077c2 0%, #003556 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── FOOTER CONTAINER ── */
+footer {
+    padding: 0 112px;
+}
+@media (max-width: 1024px) {
+    footer {
+        padding: 0 5%;
+    }
+}
+
+
+/* ── SERVICES SECTION OVERRIDES ── */
+.service-grid-v3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    background: #fafafa;
+    padding: 24px;
+    border-radius: 24px;
+}
+
+.service-card-v3 {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.015);
+    border: none;
+}
+
+.service-header-v3 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.icon-v3 {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.service-header-v3 h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1e26;
+}
+
+.service-card-v3 p {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+@media (max-width: 920px) {
+    .service-grid-v3 {
+        grid-template-columns: 1fr;
+    }
 }

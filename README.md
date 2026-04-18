@@ -1,59 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MediHub
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Jembatan Menuju Layanan Kesehatan Terbaik**
 
-## About Laravel
+MediHub adalah platform aplikasi layanan kesehatan modern (HealthTech) yang dirancang untuk menghubungkan pasien dengan dokter, rumah sakit, dan fasilitas kesehatan terpercaya. Didesain dengan antarmuka yang sangat premium, estetis, dan responsif.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Premium Landing Page:** Halaman depan yang dirancang interaktif dengan *smooth scrolling*, efek *glassmorphism*, dan animasi transisi modern.
+- **Katalog Layanan Spesialis:** Akses cepat ke layanan kesehatan terpopuler seperti Kandungan, Gigi & Mulut, Pemeriksaan Umum, dan Spesialis Anak.
+- **Direktori Dokter Unggulan:** Menampilkan profil dokter dengan penilaian (rating), ulasan, spesialisasi, serta riwayat pasien.
+- **Sistem Autentikasi (UI):** Tampilan halaman Login dan Register yang aman, minimalis, dengan validasi yang *user-friendly*.
+- **Dashboard Pasien (UI):** Tata letak *sidebar* dan navigasi yang bersih untuk memudahkan pengguna mengelola janji temu.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠 Teknologi yang Digunakan
 
-## Learning Laravel
+Proyek ini dibangun di atas fondasi teknologi terbaru untuk performa dan skalabilitas maksimal:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Framework Backend:** [Laravel 12](https://laravel.com/) (PHP 8.2+)
+- **Frontend & Styling:** [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS (Vite terintegrasi)
+- **Aset & Ikon:** Format SVG teroptimasi, ilustrasi kustom.
+- **Arsitektur Tampilan:** Blade Templating dengan struktur layout modular.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ⚙️ Cara Instalasi & Menjalankan Secara Lokal
 
-## Laravel Sponsors
+Ikuti langkah-langkah berikut untuk menjalankan proyek ini di mesin lokal Anda:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. **Clone repositori ini:**
+   ```bash
+   git clone <repository-url>
+   cd MediHub
+   ```
 
-### Premium Partners
+2. **Install dependensi PHP (Composer):**
+   ```bash
+   composer install
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. **Install dependensi Node.js (NPM):**
+   ```bash
+   npm install
+   ```
 
-## Contributing
+4. **Siapkan konfigurasi Environment:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5. **Jalankan Aplikasi:**
+   Anda dapat menggunakan *Vite* dan *PHP Artisan* secara bersamaan:
+   ```bash
+   composer run dev
+   ```
+   Atau jalankan secara terpisah:
+   ```bash
+   # Terminal 1
+   php artisan serve
 
-## Code of Conduct
+   # Terminal 2
+   npm run dev
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+6. **Akses Aplikasi:**
+   Buka browser Anda dan kunjungi `http://localhost:8000`
 
-## Security Vulnerabilities
+## 🎨 Konvensi Desain (Design System)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Proyek ini menggunakan variabel CSS kustom untuk manajemen warna dan UI:
+- `--bg`: `#f5f6f8`
+- `--panel`: `#ffffff`
+- `--text`: `#1f2024`
+- `--primary`: `#6aa4ef`
+- `--danger`: `#e65b54`
+- `--success`: `#66be74`
 
-## License
+Banyak komponen dibangun dengan kaidah *BEM/semantic* seperti `.doctor-card`, `.mediq-app-shell`, dll di file `resources/css/app.css` guna memastikan sistem dapat dikelola dengan mudah walaupun menggunakan utility-class dari Tailwind CSS.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📂 Struktur Direktori UI Utama
+
+- `resources/views/welcome.blade.php`: Halaman depan / Landing Page.
+- `resources/views/layouts/landing.blade.php`: Layout induk untuk halam depan.
+- `resources/css/app.css`: *Entry-point* CSS, berisi impor Tailwind dan kumpulan gaya UI komponen MediHub.
+- `public/images/`: Direktori logo dan ilustrasi raster (PNG/SVG).
+
+---
+
+© 2026 MediHub. Hak Cipta Dilindungi Undang-Undang.
