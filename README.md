@@ -4,6 +4,18 @@
 
 MediHub adalah platform aplikasi layanan kesehatan modern (HealthTech) yang dirancang untuk menghubungkan pasien dengan dokter, rumah sakit, dan fasilitas kesehatan terpercaya. Didesain dengan antarmuka yang sangat premium, estetis, dan responsif.
 
+## 👥 Tim Pengembang
+
+| Nama Lengkap | Peran | Tanggung Jawab |
+| :--- | :--- | :--- |
+| Mellafesa Rofida | PM & Developer | **PBI-04**: CRUD Data Diri Dokter + Upload Dokumen (Dokter), **PBI-06**: Dashboard Dokter, **PBI-07**: CRUD Jadwal Praktik Dokter (Dokter), PBI-25: Dokumentasi teknis & user manual |
+| Naufal Rafi | Developer | **PBI-05**: CRUD Data Diri Pasien (Pasien), **PBI-08**: Homepage Pasien (Banner Promo, Kategori Poli, Jadwal Mendatang), **PBI-12**: Profil Pasien (Pasien) |
+| Naswa Gyna | Developer | **PBI-13**: Profil Dokter (Dokter), **PBI-17**: Update Status Pasien oleh Dokter (Dokter), **PBI-23**: CR Ulasan & Rating Layanan Dokter (Pasien) |
+| Wildan Zaaqi | Developer | **PBI-14**: Pembatalan Booking (Pasien), **PBI-15**: Notifikasi Status Janji Temu (Pasien), **PBI-16**: Jadwal Mendatang & Tracking Real-time Status Temu (Pasien) |
+| Daniel Indra Kusuma | Developer | PBI-01: Register + Login (Dokter), **PBI-09**: Daftar Layanan (Poli) & Fasilitas Rumah Sakit (Pasien), **PBI-10**: Daftar Dokter dan Jadwal untuk Pasien (Pasien), **PBI-11**: Pilih Jadwal & Booking Temu Dokter (+ Autofill Data Pasien) |
+| Ghifari Derriel Aryasatya | Developer | PBI-03: Register + Login (Pasien), **PBI-12**: Catatan Medis & Resep Obat (Dokter), **PBI-19**: Hasil Diagnosa & Catatan Medis (Pasien), **PBI-20**: Riwayat Jadwal Temu (Dokter) |
+| Fedayeen Fairzyzia | QA & Developer | **PBI-21**: Fitur search pasien oleh dokter (Dokter), **PBI-22**: Riwayat Jadwal Temu Pasien (Pasien), **PBI-24**: UD Ulasan & Rating Layanan Dokter (Pasien), **PBI-25**: Unit Testing Seluruh Fitur |
+
 ## 🚀 Fitur Utama
 
 - **Premium Landing Page:** Halaman depan yang dirancang interaktif dengan *smooth scrolling*, efek *glassmorphism*, dan animasi transisi modern.
