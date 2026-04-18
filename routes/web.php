@@ -13,6 +13,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+Route::get('/doctor/profile-form-demo', function () {
+    return view('doctor.profile-form');
+})->name('doctor.profile-form.demo');
+
 Route::middleware('guest')->group(function () {
     Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
     Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
