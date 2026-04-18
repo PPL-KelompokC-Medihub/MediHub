@@ -40,7 +40,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => env('AUTH_PROVIDER', 'users'),
         ],
     ],
 
@@ -62,6 +62,10 @@ return [
     */
 
     'providers' => [
+        'firestore' => [
+            'driver' => 'firestore',
+        ],
+
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
