@@ -18,7 +18,7 @@
                         </svg>
                     </div>
                     <div class="login-dropdown-content">
-                        <a href="/sign-in?role=doctor">
+                        <a href="{{ route('login-dokter') }}">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             Dokter
                         </a>
@@ -28,7 +28,7 @@
                         </a>
                     </div>
                 </div>
-                <a href="/sign-up" class="btn-signup" style="display: flex; align-items: center; gap: 8px; background: var(--primary, #6aa4ef); color: white; padding: 10px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(106, 164, 239, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(106, 164, 239, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(106, 164, 239, 0.25)';">
+                <a href="{{ route('register-dokter') }}" class="btn-signup" style="display: flex; align-items: center; gap: 8px; background: var(--primary, #6aa4ef); color: white; padding: 10px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(106, 164, 239, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(106, 164, 239, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(106, 164, 239, 0.25)';">
                     <span>Daftar Gratis</span>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>

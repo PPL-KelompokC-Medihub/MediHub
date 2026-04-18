@@ -16,9 +16,21 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
     Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
+
+    Route::get('/login-dokter', function () {
+        return view('auth.login-dokter');
+    })->name('login-dokter');
+
+    Route::get('/register-dokter', function () {
+        return view('auth.register-dokter');
+    })->name('register-dokter');
+
     Route::post('/auth/firebase/session', [FirebaseSessionController::class, 'login'])
         ->middleware('throttle:10,1')
         ->name('firebase.session.login');
+    Route::post('/auth/firebase/register', [FirebaseSessionController::class, 'register'])
+        ->middleware('throttle:10,1')
+        ->name('firebase.register');
 });
 
 Route::middleware('auth')->group(function () {

@@ -365,6 +365,18 @@ textarea.mediq-input {
     margin-top: 4px;
 }
 
+.mediq-role-fixed {
+    margin-top: 4px;
+    width: 100%;
+    border: 1px solid #d4e3f8;
+    border-radius: 12px;
+    background: #f4f8ff;
+    color: #215ea1;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 12px;
+}
+
 .mediq-account-types {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -422,6 +434,7 @@ textarea.mediq-input {
     gap: 6px;
     color: #4d5560;
     font-size: 13px;
+    margin-top: 8px;
 }
 
 .mediq-password-rules label {
@@ -434,6 +447,39 @@ textarea.mediq-input {
     width: 18px;
     height: 18px;
     margin: 0;
+}
+
+.mediq-password-strength {
+    margin-top: 8px;
+}
+
+.mediq-password-strength-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: #edf0f5;
+    overflow: hidden;
+}
+
+#password-strength-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: #e65b54;
+    transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+#password-strength-text {
+    margin: 6px 0 0;
+    color: #6b6f78;
+    font-size: 12px;
+}
+
+.mediq-password-match-hint {
+    margin: 6px 0 0;
+    color: #bb3831;
+    font-size: 12px;
 }
 
 .mediq-signup-submit {
