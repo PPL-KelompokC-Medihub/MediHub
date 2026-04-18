@@ -2154,7 +2154,107 @@ header {
 nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
+}
+
+/* ── LOGIN DROPDOWN ── */
+.login-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.login-dropbtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1e26;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.login-dropbtn:hover {
+  background: rgba(106, 164, 239, 0.08);
+  color: var(--primary);
+  border-color: rgba(106, 164, 239, 0.2);
+}
+
+.dropdown-icon {
+  width: 16px;
+  height: 16px;
+  color: #8f939d;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s;
+}
+
+.login-dropdown:hover .dropdown-icon {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.login-dropdown-content {
+  display: block;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 220px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(15px) scale(0.95);
+  transform-origin: top right;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 12px;
+  padding: 8px;
+}
+
+.login-dropdown:hover .login-dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.login-dropdown-content a {
+  color: #1a1e26;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.login-dropdown-content a:hover {
+  background-color: var(--primary);
+  color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(106, 164, 239, 0.3);
+}
+
+.login-dropdown-content a svg {
+  transition: transform 0.3s ease;
+}
+
+.login-dropdown-content a:hover svg {
+  transform: scale(1.1);
+  color: #ffffff;
+}
+
+.login-dropdown-content a span {
+  flex: 1;
 }
 
 /* ── BUTTONS ── */
