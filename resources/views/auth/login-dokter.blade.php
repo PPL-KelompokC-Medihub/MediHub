@@ -10,7 +10,10 @@
 
         <p class="mediq-auth-switch">Belum memiliki akun? <a href="{{ route('register-dokter') }}">Daftar sekarang</a></p>
 
-        <form id="firebase-sign-in-form" class="mediq-auth-form" method="POST" action="#">
+        <form id="firebase-sign-in-form" class="mediq-auth-form" method="POST" action="{{ route('firebase.session.login') }}"
+            data-session-url="{{ route('firebase.session.login') }}"
+            data-firebase-api-key="{{ config('services.firebase.api_key') }}"
+            data-google-client-id="{{ config('services.firebase.google_client_id') }}">
             @csrf
 
             <div class="mediq-field">
@@ -36,9 +39,9 @@
 
             <div class="mediq-form-row-between">
                 <label class="mediq-remember">
-                    <input type="checkbox" name="remember"> Ingat saya
+                    <input type="checkbox" name="remember" disabled> Ingat saya
                 </label>
-                <a href="#" class="mediq-forgot-link">Lupa kata sandi?</a>
+                <span class="mediq-forgot-link" style="opacity: 0.65;">Segera tersedia</span>
             </div>
 
             @if ($errors->any())
@@ -82,15 +85,5 @@
 @endsection
 
 @section('page-scripts')
-    <script>
-        // Toggle password visibility
-        document.getElementById('toggle-password')?.addEventListener('click', function() {
-            const input = document.getElementById('password');
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-            this.querySelector('svg').innerHTML = isPassword
-                ? '<path d="M2.5 13c1.5 3 4.5 5 8.5 5s7-2 8.5-5M5 14l-1.5 2M9 16l-.5 2.5M13 16l.5 2.5M17 14l1.5 2" />'
-                : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-        });
-    </script>
+    @vite('resources/js/auth/sign-in.js')
 @endsection

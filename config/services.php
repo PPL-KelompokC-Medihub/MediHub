@@ -37,6 +37,7 @@ return [
 
     'firebase' => [
         'api_key' => env('FIREBASE_API_KEY'),
+        'google_client_id' => env('GOOGLE_CLIENT_ID'),
         'project_id' => env('FIREBASE_PROJECT_ID'),
         'credentials' => env('FIREBASE_CREDENTIALS'),
     ],

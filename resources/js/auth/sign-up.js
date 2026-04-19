@@ -29,23 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let redirectScheduled = false;
+    let serverRedirectUrl = signInUrl; // fallback
 
-    const redirectToSignIn = () => {
+    const redirectAfterSignup = () => {
         if (redirectScheduled) {
             return;
         }
 
         redirectScheduled = true;
         window.setTimeout(() => {
-            window.location.assign(signInUrl);
+            window.location.assign(serverRedirectUrl);
         }, 1200);
     };
 
-    successButton?.addEventListener('click', redirectToSignIn);
+    successButton?.addEventListener('click', redirectAfterSignup);
 
     const triggerRedirectWhenVisible = () => {
         if (!successModal.hidden) {
-            redirectToSignIn();
+            redirectAfterSignup();
         }
     };
 
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attributeFilter: ['hidden', 'class', 'style'],
     });
 
-    window.addEventListener('mediq:signup-success', redirectToSignIn);
+    window.addEventListener('mediq:signup-success', redirectAfterSignup);
     triggerRedirectWhenVisible();
 
     document.getElementById('toggle-password')?.addEventListener('click', () => {
@@ -74,6 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         showError('');
+        
+        // Hide server-side blade error if present
+        const bladeError = form.querySelector('.mediq-error:not(#firebase-auth-error)');
+        if (bladeError) {
+            bladeError.hidden = true;
+        }
 
         const formData = new FormData(form);
         const name = String(formData.get('name') ?? '').trim();
@@ -93,11 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const signUpResult = await registerWithFirebase(email, password, firebaseApiKey);
             await sendVerificationEmail(signUpResult.idToken, firebaseApiKey);
-            await syncUserToBackend(registerUrl, {
+            const syncResult = await syncUserToBackend(registerUrl, {
                 id_token: signUpResult.idToken,
                 name,
                 role,
             });
+
+            // Gunakan redirect URL dari server (ke profile-form)
+            if (syncResult.redirect) {
+                serverRedirectUrl = syncResult.redirect;
+            }
 
             successModal.hidden = false;
             window.dispatchEvent(new CustomEvent('mediq:signup-success'));
