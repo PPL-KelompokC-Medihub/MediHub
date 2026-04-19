@@ -13,9 +13,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::get('/doctor/profile-form-demo', function () {
-    return view('doctor.profile-form');
-})->name('doctor.profile-form.demo');
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
@@ -24,6 +22,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/login-dokter', function () {
         return view('auth.login-dokter');
     })->name('login-dokter');
+    Route::post('/login-dokter', [FirebaseSessionController::class, 'login'])
+        ->middleware('throttle:10,1');
 
     Route::get('/register-dokter', function () {
         return view('auth.register-dokter');
@@ -38,6 +38,15 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/doctor/profile-form', [ProfileController::class, 'showDoctorForm'])->name('doctor.profile-form');
+    Route::post('/doctor/profile-form', [ProfileController::class, 'updateDoctorForm'])->name('doctor.profile.update');
+    Route::get('/doctor/profile-expertise', [ProfileController::class, 'showDoctorExpertiseForm'])->name('doctor.profile.expertise');
+    Route::post('/doctor/profile-expertise', [ProfileController::class, 'updateDoctorExpertiseForm'])->name('doctor.profile.expertise.update');
+    Route::get('/doctor/profile-certification', [ProfileController::class, 'showDoctorCertificationForm'])->name('doctor.profile.certification');
+    Route::post('/doctor/profile-certification', [ProfileController::class, 'updateDoctorCertificationForm'])->name('doctor.profile.certification.update');
+});
+
+Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/layanan', [DoctorController::class, 'services'])->name('services');
     Route::get('/doctor/{id}', [DoctorController::class, 'show'])->name('doctor.show');

@@ -7,8 +7,11 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                'resources/js/auth/sign-in.js',
+                'resources/js/auth/sign-up.js',
                 'resources/css/doctor/profile-form.css',
                 'resources/js/doctor/profile-form.js',
+                'resources/js/doctor/profile-expertise.js',
             ],
             refresh: true,
         }),

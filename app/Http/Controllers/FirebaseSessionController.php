@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\FirestoreUser;
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
+use App\Support\DoctorProfile;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -19,23 +23,34 @@ class FirebaseSessionController extends Controller
 
     public function __construct(
         private FirestoreService $firestore,
+        private MedihubFirestoreRepository $doctorRepository,
     ) {}
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'id_token' => ['required', 'string'],
+            'id_token' => ['nullable', 'string', 'required_without_all:email,password'],
+            'email' => ['nullable', 'email', 'required_without:id_token'],
+            'password' => ['nullable', 'string', 'required_without:id_token'],
             'role' => ['nullable', 'string', 'in:dokter,pasien'],
+        ], [
+            'id_token.required_without_all' => 'Email dan kata sandi harus diisi.',
+            'email.required_without' => 'Email harus diisi.',
+            'password.required_without' => 'Kata sandi harus diisi.',
         ]);
 
         try {
-            $verifiedIdToken = $this->firestore->auth()->verifyIdToken($validated['id_token']);
+            $idToken = $this->resolveIdTokenForLogin($validated);
+            $verifiedIdToken = $this->firestore->auth()->verifyIdToken($idToken);
         } catch (RuntimeException $e) {
             Log::warning('Firebase credentials/config error', ['message' => $e->getMessage()]);
-            return response()->json(['message' => $e->getMessage()], 422);
+            return $this->loginErrorResponse($request, $e->getMessage(), 422);
         } catch (FailedToVerifyToken $e) {
             Log::warning('Firebase token verification failed', ['message' => $e->getMessage()]);
-            return response()->json(['message' => 'Token Firebase tidak valid.', 'error' => $e->getMessage()], 422);
+            return $this->loginErrorResponse($request, 'Token Firebase tidak valid.', 422, $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('Firebase sign-in failed', ['message' => $e->getMessage()]);
+            return $this->loginErrorResponse($request, $e->getMessage(), 422);
         }
 
         $uid = (string) $verifiedIdToken->claims()->get('sub');
@@ -44,11 +59,15 @@ class FirebaseSessionController extends Controller
         $emailVerified = (bool) $verifiedIdToken->claims()->get('email_verified');
 
         if (! $uid || ! $email) {
-            return response()->json(['message' => 'Data akun Firebase tidak lengkap.'], 422);
+            return $this->loginErrorResponse($request, 'Data akun Firebase tidak lengkap.', 422);
         }
 
         if (! $emailVerified) {
-            return response()->json(['message' => 'Akun belum diverifikasi. Silakan verifikasi email terlebih dahulu sebelum login.'], 403);
+            return $this->loginErrorResponse(
+                $request,
+                'Akun belum diverifikasi. Silakan verifikasi email terlebih dahulu sebelum login.',
+                403,
+            );
         }
 
         $userData = $this->upsertUser(
@@ -58,15 +77,26 @@ class FirebaseSessionController extends Controller
             emailVerified: $emailVerified,
             role: $validated['role'] ?? null,
         );
+        $this->doctorRepository->ensureDoctorRecord($userData);
+        $userData = $this->doctorRepository->hydrateDoctorData($userData);
 
         $user = new FirestoreUser($userData);
 
-        Auth::login($user, true);
+        // Firestore-backed auth does not store a local password hash,
+        // so Laravel's "remember me" cookie flow cannot be used safely here.
+        Auth::login($user, false);
         $request->session()->regenerate();
+
+        // Dokter yang belum mengisi profil dikirim ke form profil
+        $redirectUrl = $this->resolvePostLoginRedirect($userData);
+
+        if (! $request->expectsJson() && ! $request->wantsJson()) {
+            return redirect()->intended($redirectUrl);
+        }
 
         return response()->json([
             'message' => 'Login berhasil.',
-            'redirect' => route('dashboard'),
+            'redirect' => $redirectUrl,
         ]);
     }
 
@@ -76,6 +106,9 @@ class FirebaseSessionController extends Controller
             'id_token' => ['required', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:dokter,pasien'],
+        ], [
+            'id_token.required' => 'Gagal memverifikasi dengan Firebase. Pastikan koneksi dan API Key valid.',
+            'role.required' => 'Peran (role) harus dipilih.',
         ]);
 
         try {
@@ -98,18 +131,29 @@ class FirebaseSessionController extends Controller
             return response()->json(['message' => 'Data akun Firebase tidak lengkap.'], 422);
         }
 
-        $user = $this->upsertUser(
+        $userData = $this->upsertUser(
             uid: $uid,
             email: $email,
             name: $name,
             emailVerified: $emailVerified,
             role: $validated['role'],
         );
+        $this->doctorRepository->ensureDoctorRecord($userData);
+        $userData = $this->doctorRepository->hydrateDoctorData($userData);
+
+        // Auto-login setelah registrasi
+        $user = new FirestoreUser($userData);
+        Auth::login($user, false);
+        $request->session()->regenerate();
+
+        // Tentukan redirect berdasarkan kelengkapan profil
+        $redirectUrl = $this->resolvePostLoginRedirect($userData);
 
         return response()->json([
-            'message' => 'Registrasi berhasil. Silakan login.',
-            'user_id' => $user['id'] ?? null,
-            'role' => $user['role'] ?? $validated['role'],
+            'message' => 'Registrasi berhasil.',
+            'user_id' => $userData['id'] ?? null,
+            'role' => $userData['role'] ?? $validated['role'],
+            'redirect' => $redirectUrl,
         ]);
     }
 
@@ -144,9 +188,12 @@ class FirebaseSessionController extends Controller
         if (! $existing) {
             $payload = [
                 'name' => $name,
+                'fullname' => $name,
                 'email' => $email,
                 'firebase_uid' => $uid,
                 'email_verified' => $emailVerified,
+                'created_at' => now()->toIso8601String(),
+                'updated_at' => now()->toIso8601String(),
             ];
 
             if ($normalizedRole !== null) {
@@ -158,9 +205,11 @@ class FirebaseSessionController extends Controller
 
         $payload = [
             'name' => $name ?: ($existing['name'] ?? Str::before($email, '@')),
+            'fullname' => $name ?: ($existing['fullname'] ?? $existing['name'] ?? Str::before($email, '@')),
             'email' => $email,
             'firebase_uid' => $uid,
             'email_verified' => $emailVerified,
+            'updated_at' => now()->toIso8601String(),
         ];
 
         if ($normalizedRole !== null) {
@@ -181,5 +230,102 @@ class FirebaseSessionController extends Controller
         $normalized = strtolower(trim($role));
 
         return in_array($normalized, self::VALID_ROLES, true) ? $normalized : null;
+    }
+
+    /**
+     * @param array<string, mixed> $validated
+     */
+    private function resolveIdTokenForLogin(array $validated): string
+    {
+        $existingIdToken = $validated['id_token'] ?? null;
+        if (is_string($existingIdToken) && $existingIdToken !== '') {
+            return $existingIdToken;
+        }
+
+        $apiKey = (string) config('services.firebase.api_key');
+        if ($apiKey === '') {
+            throw new RuntimeException('Konfigurasi Firebase API key belum tersedia.');
+        }
+
+        $response = Http::asJson()->post(
+            sprintf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=%s', $apiKey),
+            [
+                'email' => (string) ($validated['email'] ?? ''),
+                'password' => (string) ($validated['password'] ?? ''),
+                'returnSecureToken' => true,
+            ],
+        );
+
+        $payload = $response->json();
+        if (! $response->ok()) {
+            $errorCode = strtoupper((string) data_get($payload, 'error.message', 'LOGIN_FAILED'));
+            throw new RuntimeException($this->mapFirebaseLoginError($errorCode));
+        }
+
+        $idToken = data_get($payload, 'idToken');
+        if (! is_string($idToken) || $idToken === '') {
+            throw new RuntimeException('Login gagal. Token Firebase tidak ditemukan.');
+        }
+
+        return $idToken;
+    }
+
+    private function mapFirebaseLoginError(string $errorCode): string
+    {
+        return match (true) {
+            str_contains($errorCode, 'EMAIL_NOT_FOUND'),
+            str_contains($errorCode, 'INVALID_LOGIN_CREDENTIALS') => 'Email atau kata sandi salah.',
+            str_contains($errorCode, 'INVALID_PASSWORD') => 'Kata sandi tidak sesuai.',
+            str_contains($errorCode, 'INVALID_EMAIL') => 'Format email tidak valid.',
+            str_contains($errorCode, 'TOO_MANY_ATTEMPTS_TRY_LATER') => 'Terlalu banyak percobaan. Coba beberapa saat lagi.',
+            default => 'Login gagal. Silakan coba lagi.',
+        };
+    }
+
+    private function loginErrorResponse(
+        Request $request,
+        string $message,
+        int $status,
+        ?string $error = null,
+    ): JsonResponse|RedirectResponse {
+        if (! $request->expectsJson() && ! $request->wantsJson()) {
+            return back()
+                ->withErrors(['email' => $message])
+                ->withInput($request->except('password', 'id_token'));
+        }
+
+        $payload = ['message' => $message];
+        if ($error !== null) {
+            $payload['error'] = $error;
+        }
+
+        return response()->json($payload, $status);
+    }
+
+    /**
+     * Tentukan URL redirect setelah login berdasarkan kelengkapan profil.
+     * Dokter yang belum mengisi profil (belum ada data phone/age) diarahkan ke form profil.
+     *
+     * @param array<string, mixed> $userData
+     */
+    private function resolvePostLoginRedirect(array $userData): string
+    {
+        if (($userData['role'] ?? null) !== 'dokter') {
+            return route('dashboard');
+        }
+
+        if (! DoctorProfile::hasPersonalData($userData)) {
+            return route('doctor.profile-form');
+        }
+
+        if (! DoctorProfile::hasExpertiseData($userData)) {
+            return route('doctor.profile.expertise');
+        }
+
+        if (! DoctorProfile::hasCertificationData($userData)) {
+            return route('doctor.profile.certification');
+        }
+
+        return route('dashboard');
     }
 }

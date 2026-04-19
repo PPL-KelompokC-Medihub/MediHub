@@ -40,7 +40,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => env('AUTH_PROVIDER', 'users'),
+            'provider' => env('AUTH_PROVIDER', 'firestore'),
         ],
     ],
 
