@@ -19,7 +19,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         $facilities = $this->toObjects($this->firestore->all('facilities', self::DASHBOARD_LIMIT));
-        $doctors = $this->toObjects($this->firestore->all('doctors', self::DASHBOARD_LIMIT));
+        $doctors = $this->toObjects($this->firestore->all('Dokter', self::DASHBOARD_LIMIT));
 
         return view('dashboard.index', compact('facilities', 'doctors'));
     }

@@ -37,7 +37,7 @@ class FacilityController extends Controller
             abort(404);
         }
 
-        $doctors = $this->toObjects($this->firestore->all('doctors', self::RELATED_DOCTORS_LIMIT));
+        $doctors = $this->toObjects($this->firestore->all('Dokter', self::RELATED_DOCTORS_LIMIT));
         $facilities = self::AVAILABLE_FEATURES;
         $galleryImages = self::GALLERY_IMAGES;
         $facility = $this->toObject($facility);

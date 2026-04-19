@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Auth as FirebaseAuth;
 use Kreait\Firebase\Factory as FirebaseFactory;
 use RuntimeException;
+use Throwable;
 
 class FirestoreService
 {
@@ -279,7 +280,19 @@ class FirestoreService
         }
 
         $credentials = new ServiceAccountCredentials([self::FIRESTORE_SCOPE], $this->credentialsData);
-        $token = $credentials->fetchAuthToken();
+
+        try {
+            $token = $credentials->fetchAuthToken();
+        } catch (Throwable $e) {
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'invalid_grant') || str_contains($message, 'Invalid JWT Signature')) {
+                throw new RuntimeException('Kredensial Firebase Admin tidak valid. Buat ulang service account key dari Firebase Console lalu update FIREBASE_CREDENTIALS.');
+            }
+
+            throw new RuntimeException('Gagal mengambil access token Firestore: ' . $message);
+        }
+
         $accessToken = $token['access_token'] ?? null;
 
         if (! is_string($accessToken) || $accessToken === '') {

@@ -14,8 +14,8 @@ class AppointmentController extends Controller
 {
     use MapsFirestoreData;
 
-    private const APPOINTMENT_COLLECTION = 'appointments';
-    private const DOCTOR_COLLECTION = 'doctors';
+    private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
+    private const DOCTOR_COLLECTION = 'Dokter';
     private const DEFAULT_BOOKING_DATE = '26 Agustus 2026';
     private const DEFAULT_BOOKING_TIME = '09:00';
 
@@ -59,7 +59,7 @@ class AppointmentController extends Controller
         }
 
         $data = [
-            'doctor_id' => $validated['doctor_id'],
+            'dokterid' => $validated['doctor_id'],
             'patient_name' => $validated['patient_name'],
             'appointment_date' => $validated['appointment_date'],
             'user_uid' => $this->resolveCurrentUserUid(),
@@ -90,7 +90,7 @@ class AppointmentController extends Controller
 
     private function resolveCurrentUserUid(): string|int|null
     {
-        return Auth::user()->firebase_uid ?? Auth::id();
+        return Auth::id();
     }
 
     /**
@@ -100,11 +100,12 @@ class AppointmentController extends Controller
     private function attachDoctorRecords(array $appointments, bool $castDoctorToObject = false): array
     {
         return array_map(function (array $appointment) use ($castDoctorToObject): array {
-            if (! isset($appointment['doctor_id'])) {
+            $doctorId = $appointment['dokterid'] ?? $appointment['doctor_id'] ?? null;
+            if (! $doctorId) {
                 return $appointment;
             }
 
-            $doctorData = $this->firestore->find(self::DOCTOR_COLLECTION, (string) $appointment['doctor_id']);
+            $doctorData = $this->firestore->find(self::DOCTOR_COLLECTION, (string) $doctorId);
             if (! $doctorData) {
                 $appointment['doctor'] = null;
 

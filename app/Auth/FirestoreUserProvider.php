@@ -4,15 +4,17 @@ namespace App\Auth;
 
 use App\Models\FirestoreUser;
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 
 class FirestoreUserProvider implements UserProvider
 {
-    private const COLLECTION = 'users';
+    private const COLLECTION = 'Users';
 
     public function __construct(
         private FirestoreService $firestore,
+        private MedihubFirestoreRepository $medihubRepository,
     ) {
     }
 
@@ -27,7 +29,7 @@ class FirestoreUserProvider implements UserProvider
             return null;
         }
 
-        return new FirestoreUser($data);
+        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($data));
     }
 
     /**
@@ -41,7 +43,7 @@ class FirestoreUserProvider implements UserProvider
             return null;
         }
 
-        return new FirestoreUser($data);
+        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($data));
     }
 
     /**
@@ -49,9 +51,7 @@ class FirestoreUserProvider implements UserProvider
      */
     public function updateRememberToken(Authenticatable $user, $token): void
     {
-        $this->firestore->update(self::COLLECTION, (string) $user->getAuthIdentifier(), [
-            'remember_token' => $token,
-        ]);
+        // Firebase handles persistent auth; Users schema intentionally has no remember_token field.
     }
 
     /**
@@ -69,7 +69,7 @@ class FirestoreUserProvider implements UserProvider
             return null;
         }
 
-        return new FirestoreUser($results[0]);
+        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($results[0]));
     }
 
     /**
