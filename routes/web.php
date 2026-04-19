@@ -16,6 +16,8 @@ Route::get('/', function () {
 
 
 Route::middleware('guest')->group(function () {
+    Route::get('/login', fn () => redirect()->route('login-dokter'))->name('login');
+
     Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
     Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
 
@@ -38,6 +40,8 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
     Route::get('/doctor/profile-form', [ProfileController::class, 'showDoctorForm'])->name('doctor.profile-form');
     Route::post('/doctor/profile-form', [ProfileController::class, 'updateDoctorForm'])->name('doctor.profile.update');
     Route::get('/doctor/profile-expertise', [ProfileController::class, 'showDoctorExpertiseForm'])->name('doctor.profile.expertise');
@@ -55,5 +59,4 @@ Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
     Route::post('/booking', [AppointmentController::class, 'store'])->name('booking.store');
     Route::get('/appointments', [AppointmentController::class, 'history'])->name('appointments.history');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

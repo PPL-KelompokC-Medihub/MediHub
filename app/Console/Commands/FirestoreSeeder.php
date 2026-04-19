@@ -14,42 +14,72 @@ class FirestoreSeeder extends Command
     {
         if ($this->option('fresh')) {
             $this->warn('Menghapus data lama...');
-            $this->deleteCollection($firestore, 'doctors');
+            $this->deleteCollection($firestore, 'Users');
+            $this->deleteCollection($firestore, 'Dokter');
+            $this->deleteCollection($firestore, 'Dokter_spesialisasi');
+            $this->deleteCollection($firestore, 'Dokter_sertifikasi');
+            $this->deleteCollection($firestore, 'Dokter_dokumen');
             $this->deleteCollection($firestore, 'facilities');
-            $this->deleteCollection($firestore, 'appointments');
+            $this->deleteCollection($firestore, 'BuatJadwalTemu');
             $this->info('Data lama dihapus.');
         }
 
         $this->info('Seeding dokter...');
         $doctors = [
             [
-                'name' => 'dr. Arief Nugroho, S.Psi., M.Psi., Psikolog',
-                'specialty' => 'Psikolog',
-                'rating' => 5.0,
-                'patients' => 450,
-                'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+                'fullname' => 'dr. Arief Nugroho, S.Psi., M.Psi., Psikolog',
+                'email' => 'arief@medihub.test',
+                'specialization' => 'Psikolog',
             ],
             [
-                'name' => 'dr. Ratna Dewi dr., Sp.KJ',
-                'specialty' => 'Psikiater',
-                'rating' => 4.9,
-                'patients' => 450,
-                'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
+                'fullname' => 'dr. Ratna Dewi dr., Sp.KJ',
+                'email' => 'ratna@medihub.test',
+                'specialization' => 'Psikiater',
             ],
             [
-                'name' => 'dr. Andini Pratama, S.Psi., M.Psi., Psikolog',
-                'specialty' => 'Psikolog',
-                'rating' => 5.0,
-                'patients' => 450,
-                'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+                'fullname' => 'dr. Andini Pratama, S.Psi., M.Psi., Psikolog',
+                'email' => 'andini@medihub.test',
+                'specialization' => 'Psikolog',
             ],
         ];
 
         $doctorIds = [];
         foreach ($doctors as $doctor) {
-            $result = $firestore->add('doctors', $doctor);
+            $user = $firestore->add('Users', [
+                'fullname' => $doctor['fullname'],
+                'role' => 'dokter',
+                'email' => $doctor['email'],
+                'password' => null,
+                'update_at' => now()->toIso8601String(),
+            ]);
+
+            $result = $firestore->add('Dokter', [
+                'usersId' => $user['id'],
+                'umur' => null,
+                'email' => $doctor['email'],
+                'weight' => null,
+                'numPhone' => null,
+                'height' => null,
+                'gender' => null,
+                'city' => null,
+                'country' => null,
+                'codePos' => null,
+                'update_at' => now()->toIso8601String(),
+            ]);
+
+            $firestore->add('Dokter_spesialisasi', [
+                'dokterid' => $result['id'],
+                'main_specialization' => $doctor['specialization'],
+                'sub_specialization' => null,
+                'practice_year' => null,
+                'academy' => null,
+                'service' => $doctor['specialization'],
+                'short_biography' => null,
+                'update_at' => now()->toIso8601String(),
+            ]);
+
             $doctorIds[] = $result['id'];
-            $this->line("  ✓ {$doctor['name']}");
+            $this->line("  ✓ {$doctor['fullname']}");
         }
 
         $this->info('Seeding fasilitas...');
@@ -94,8 +124,8 @@ class FirestoreSeeder extends Command
             ];
 
             foreach ($sampleAppointments as $apt) {
-                $firestore->add('appointments', array_merge($apt, [
-                    'doctor_id' => $doctorIds[0],
+                $firestore->add('BuatJadwalTemu', array_merge($apt, [
+                    'dokterid' => $doctorIds[0],
                     'user_uid' => 'seed-demo',
                 ]));
                 $this->line("  ✓ Appointment {$apt['appointment_date']}");

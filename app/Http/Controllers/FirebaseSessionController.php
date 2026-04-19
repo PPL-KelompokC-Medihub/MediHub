@@ -18,7 +18,7 @@ use RuntimeException;
 
 class FirebaseSessionController extends Controller
 {
-    private const USERS_COLLECTION = 'users';
+    private const USERS_COLLECTION = 'Users';
     private const VALID_ROLES = ['dokter', 'pasien'];
 
     public function __construct(
@@ -70,15 +70,23 @@ class FirebaseSessionController extends Controller
             );
         }
 
-        $userData = $this->upsertUser(
-            uid: $uid,
-            email: $email,
-            name: $name,
-            emailVerified: $emailVerified,
-            role: $validated['role'] ?? null,
-        );
-        $this->doctorRepository->ensureDoctorRecord($userData);
-        $userData = $this->doctorRepository->hydrateDoctorData($userData);
+        try {
+            $userData = $this->upsertUser(
+                uid: $uid,
+                email: $email,
+                name: $name,
+                emailVerified: $emailVerified,
+                role: $validated['role'] ?? null,
+            );
+            $this->doctorRepository->ensureDoctorRecord($userData);
+            $userData = $this->doctorRepository->hydrateDoctorData($userData);
+        } catch (RuntimeException $e) {
+            Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
+            return $this->loginErrorResponse($request, $e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            Log::error('Unexpected Firestore user sync failure', ['message' => $e->getMessage()]);
+            return $this->loginErrorResponse($request, 'Login gagal saat menyimpan sesi pengguna.', 500);
+        }
 
         $user = new FirestoreUser($userData);
 
@@ -131,15 +139,23 @@ class FirebaseSessionController extends Controller
             return response()->json(['message' => 'Data akun Firebase tidak lengkap.'], 422);
         }
 
-        $userData = $this->upsertUser(
-            uid: $uid,
-            email: $email,
-            name: $name,
-            emailVerified: $emailVerified,
-            role: $validated['role'],
-        );
-        $this->doctorRepository->ensureDoctorRecord($userData);
-        $userData = $this->doctorRepository->hydrateDoctorData($userData);
+        try {
+            $userData = $this->upsertUser(
+                uid: $uid,
+                email: $email,
+                name: $name,
+                emailVerified: $emailVerified,
+                role: $validated['role'],
+            );
+            $this->doctorRepository->ensureDoctorRecord($userData);
+            $userData = $this->doctorRepository->hydrateDoctorData($userData);
+        } catch (RuntimeException $e) {
+            Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            Log::error('Unexpected Firestore user sync failure', ['message' => $e->getMessage()]);
+            return response()->json(['message' => 'Registrasi gagal saat menyimpan data pengguna.'], 500);
+        }
 
         // Auto-login setelah registrasi
         $user = new FirestoreUser($userData);
@@ -162,9 +178,9 @@ class FirebaseSessionController extends Controller
      */
     private function findExistingUser(string $uid, string $email): ?array
     {
-        $byUid = $this->firestore->where(self::USERS_COLLECTION, 'firebase_uid', '=', $uid, 1);
-        if (! empty($byUid[0])) {
-            return $byUid[0];
+        $byUid = $this->firestore->find(self::USERS_COLLECTION, $uid);
+        if ($byUid) {
+            return $byUid;
         }
 
         $byEmail = $this->firestore->where(self::USERS_COLLECTION, 'email', '=', $email, 1);
@@ -187,29 +203,29 @@ class FirebaseSessionController extends Controller
 
         if (! $existing) {
             $payload = [
-                'name' => $name,
                 'fullname' => $name,
+                'role' => $normalizedRole,
                 'email' => $email,
-                'firebase_uid' => $uid,
-                'email_verified' => $emailVerified,
+                'password' => null,
                 'created_at' => now()->toIso8601String(),
-                'updated_at' => now()->toIso8601String(),
+                'update_at' => now()->toIso8601String(),
             ];
 
-            if ($normalizedRole !== null) {
-                $payload['role'] = $normalizedRole;
-            }
+            $this->firestore->set(self::USERS_COLLECTION, $uid, $payload);
 
-            return $this->firestore->add(self::USERS_COLLECTION, $payload);
+            return array_merge(['id' => $uid], $payload);
+        }
+
+        $existingRole = $this->normalizeRole($existing['role'] ?? null);
+        if ($normalizedRole !== null && $existingRole !== null && $existingRole !== $normalizedRole) {
+            throw new RuntimeException('Jenis akun tidak sesuai. Silakan login melalui halaman yang benar.');
         }
 
         $payload = [
-            'name' => $name ?: ($existing['name'] ?? Str::before($email, '@')),
             'fullname' => $name ?: ($existing['fullname'] ?? $existing['name'] ?? Str::before($email, '@')),
             'email' => $email,
-            'firebase_uid' => $uid,
-            'email_verified' => $emailVerified,
-            'updated_at' => now()->toIso8601String(),
+            'password' => $existing['password'] ?? null,
+            'update_at' => now()->toIso8601String(),
         ];
 
         if ($normalizedRole !== null) {

@@ -153,6 +153,9 @@ function mapErrorMessage(error) {
     if (code.includes('FIREBASE_API_KEY_MISSING')) {
         return 'Firebase API key belum diatur.';
     }
+    if (code.includes('KREDENSIAL FIREBASE ADMIN TIDAK VALID')) {
+        return 'Kredensial Firebase Admin tidak valid. Buat ulang service account key lalu update FIREBASE_CREDENTIALS.';
+    }
     if (code.includes('GOOGLE_SCRIPT_LOAD_FAILED') || code.includes('GOOGLE_API_NOT_AVAILABLE')) {
         return 'Gagal memuat layanan Google. Coba refresh halaman.';
     }
@@ -177,6 +180,9 @@ function mapErrorMessage(error) {
     }
     if (code.includes('AKUN BELUM DIVERIFIKASI')) {
         return 'Akun belum diverifikasi. Cek email verifikasi Anda.';
+    }
+    if (code.includes('JENIS AKUN TIDAK SESUAI')) {
+        return 'Jenis akun tidak sesuai. Silakan login melalui halaman yang benar.';
     }
 
     return 'Login gagal. Silakan coba lagi.';

@@ -32,10 +32,6 @@ class DoctorProfile
      */
     public static function hasPersonalData(array $userData): bool
     {
-        if (! empty($userData['personal_data_completed'])) {
-            return true;
-        }
-
         foreach (self::PERSONAL_FIELDS as $field) {
             if (blank($userData[$field] ?? null)) {
                 return false;
@@ -50,10 +46,6 @@ class DoctorProfile
      */
     public static function hasExpertiseData(array $userData): bool
     {
-        if (! empty($userData['expertise_completed'])) {
-            return true;
-        }
-
         foreach (self::EXPERTISE_FIELDS as $field) {
             if (blank($userData[$field] ?? null)) {
                 return false;
@@ -70,10 +62,6 @@ class DoctorProfile
      */
     public static function hasCertificationData(array $userData): bool
     {
-        if (! empty($userData['certification_completed'])) {
-            return true;
-        }
-
         foreach (self::CERTIFICATION_FIELDS as $field) {
             if (blank($userData[$field] ?? null)) {
                 return false;
@@ -89,10 +77,6 @@ class DoctorProfile
     public static function isComplete(array $userData): bool
     {
         if (($userData['role'] ?? null) !== 'dokter') {
-            return true;
-        }
-
-        if (! empty($userData['profile_completed'])) {
             return true;
         }
 
