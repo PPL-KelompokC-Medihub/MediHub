@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    if (googleButton && !googleClientId) {
+        googleButton.disabled = true;
+        googleButton.title = 'Google Client ID belum diatur di server.';
+    }
+
     document.getElementById('toggle-password')?.addEventListener('click', () => {
         const isPassword = passwordInput.type === 'password';
         passwordInput.type = isPassword ? 'text' : 'password';
