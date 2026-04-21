@@ -11,12 +11,12 @@ class AuthController extends Controller
 {
     public function showSignIn(): View
     {
-        return view('auth-pasien.sign-in');
+        return view('auth-pasien.login-pasien');
     }
 
     public function showSignUp(): View
     {
-        return view('auth-pasien.sign-up');
+        return view('auth-pasien.register-pasien');
     }
 
     public function logout(Request $request): RedirectResponse
