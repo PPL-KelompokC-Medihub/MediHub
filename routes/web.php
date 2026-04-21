@@ -31,6 +31,14 @@ Route::middleware('guest')->group(function () {
         return view('auth.register-dokter');
     })->name('register-dokter');
 
+    Route::get('/login-pasien', function () {
+        return view('auth-pasien.login-pasien');
+    })->name('login-pasien');
+
+    Route::get('/register-pasien', function () {
+        return view('auth-pasien.register-pasien');
+    })->name('register-pasien');
+
     Route::post('/auth/firebase/session', [FirebaseSessionController::class, 'login'])
         ->middleware('throttle:10,1')
         ->name('firebase.session.login');
