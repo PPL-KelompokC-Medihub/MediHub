@@ -8,6 +8,7 @@ use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\FirebaseSessionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JadwalDokterController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -67,4 +68,8 @@ Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
     Route::post('/booking', [AppointmentController::class, 'store'])->name('booking.store');
     Route::get('/appointments', [AppointmentController::class, 'history'])->name('appointments.history');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('/jadwal-dokter', [JadwalDokterController::class, 'index'])->name('jadwal.index');
+    Route::post('/jadwal-dokter', [JadwalDokterController::class, 'store'])->name('jadwal.store');
+    Route::put('/jadwal-dokter/{id}', [JadwalDokterController::class, 'update'])->name('jadwal.update');
+    Route::delete('/jadwal-dokter/{id}', [JadwalDokterController::class, 'destroy'])->name('jadwal.destroy');
 });
