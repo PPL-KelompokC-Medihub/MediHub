@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 firebaseApiKey,
             );
 
-            const sessionResult = await createBackendSession(sessionUrl, signInResult.idToken);
-            window.location.assign(sessionResult.redirect || '/dashboard');
+            await createBackendSession(sessionUrl, signInResult.idToken);
+            window.location.assign('/pasien/beranda');
         } catch (error) {
             showError(mapErrorMessage(error));
         } finally {
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const sessionResult = await createBackendSession(sessionUrl, googleSignInResult.idToken);
-            window.location.assign(sessionResult.redirect || '/dashboard');
+            window.location.assign(sessionResult.redirect || '/pasien/beranda');
         } catch (error) {
             showError(mapErrorMessage(error));
         } finally {

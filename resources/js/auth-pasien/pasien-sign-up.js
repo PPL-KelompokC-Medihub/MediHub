@@ -99,21 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const signUpResult = await registerWithFirebase(email, password, firebaseApiKey);
+            console.log('SIGN UP RESULT:', signUpResult);
+            console.log('ID TOKEN:', signUpResult.idToken);
             await sendVerificationEmail(signUpResult.idToken, firebaseApiKey);
-            const syncResult = await syncUserToBackend(registerUrl, {
+            await syncUserToBackend(registerUrl, {
                 id_token: signUpResult.idToken,
                 name,
                 role,
             });
 
-            // Gunakan redirect URL dari server (ke profile-form)
-            if (syncResult.redirect) {
-                serverRedirectUrl = syncResult.redirect;
-            }
+            // Setelah berhasil daftar pasien, arahkan ke login pasien
+            serverRedirectUrl = signInUrl;
 
             successModal.hidden = false;
             window.dispatchEvent(new CustomEvent('mediq:signup-success'));
         } catch (error) {
+            console.error('REGISTER ERROR:', error);
             showError(mapErrorMessage(error));
         } finally {
             setSubmitting(false);

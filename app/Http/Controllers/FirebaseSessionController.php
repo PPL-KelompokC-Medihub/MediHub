@@ -19,6 +19,7 @@ use RuntimeException;
 class FirebaseSessionController extends Controller
 {
     private const USERS_COLLECTION = 'Users';
+    private const PASIEN_COLLECTION = 'Pasien';
     private const VALID_ROLES = ['dokter', 'pasien'];
 
     public function __construct(
@@ -55,7 +56,7 @@ class FirebaseSessionController extends Controller
 
         $uid = (string) $verifiedIdToken->claims()->get('sub');
         $email = (string) $verifiedIdToken->claims()->get('email');
-        $name = (string) ($verifiedIdToken->claims()->get('name') ?: Str::before($email, '@'));
+        $name = '';
         $emailVerified = (bool) $verifiedIdToken->claims()->get('email_verified');
 
         if (! $uid || ! $email) {
@@ -78,8 +79,10 @@ class FirebaseSessionController extends Controller
                 emailVerified: $emailVerified,
                 role: $validated['role'] ?? null,
             );
-            $this->doctorRepository->ensureDoctorRecord($userData);
-            $userData = $this->doctorRepository->hydrateDoctorData($userData);
+            if (($userData['role'] ?? null) === 'dokter') {
+                $this->doctorRepository->ensureDoctorRecord($userData);
+                $userData = $this->doctorRepository->hydrateDoctorData($userData);
+            }
         } catch (RuntimeException $e) {
             Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
             return $this->loginErrorResponse($request, $e->getMessage(), 422);
@@ -99,7 +102,7 @@ class FirebaseSessionController extends Controller
         $redirectUrl = $this->resolvePostLoginRedirect($userData);
 
         if (! $request->expectsJson() && ! $request->wantsJson()) {
-            return redirect()->intended($redirectUrl);
+            return redirect($redirectUrl);
         }
 
         return response()->json([
@@ -147,8 +150,15 @@ class FirebaseSessionController extends Controller
                 emailVerified: $emailVerified,
                 role: $validated['role'],
             );
-            $this->doctorRepository->ensureDoctorRecord($userData);
-            $userData = $this->doctorRepository->hydrateDoctorData($userData);
+
+            if (($userData['role'] ?? null) === 'pasien') {
+                $this->ensurePasienRecord($userData);
+            }
+
+            if (($userData['role'] ?? null) === 'dokter') {
+                $this->doctorRepository->ensureDoctorRecord($userData);
+                $userData = $this->doctorRepository->hydrateDoctorData($userData);
+            }
         } catch (RuntimeException $e) {
             Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
             return response()->json(['message' => $e->getMessage()], 422);
@@ -157,19 +167,11 @@ class FirebaseSessionController extends Controller
             return response()->json(['message' => 'Registrasi gagal saat menyimpan data pengguna.'], 500);
         }
 
-        // Auto-login setelah registrasi
-        $user = new FirestoreUser($userData);
-        Auth::login($user, false);
-        $request->session()->regenerate();
-
-        // Tentukan redirect berdasarkan kelengkapan profil
-        $redirectUrl = $this->resolvePostLoginRedirect($userData);
-
         return response()->json([
             'message' => 'Registrasi berhasil.',
             'user_id' => $userData['id'] ?? null,
             'role' => $userData['role'] ?? $validated['role'],
-            'redirect' => $redirectUrl,
+            'redirect' => route('login-pasien'),
         ]);
     }
 
@@ -222,11 +224,14 @@ class FirebaseSessionController extends Controller
         }
 
         $payload = [
-            'fullname' => $name ?: ($existing['fullname'] ?? $existing['name'] ?? Str::before($email, '@')),
             'email' => $email,
             'password' => $existing['password'] ?? null,
             'update_at' => now()->toIso8601String(),
         ];
+
+        if ($name !== '') {
+            $payload['fullname'] = $name;
+        }
 
         if ($normalizedRole !== null) {
             $payload['role'] = $normalizedRole;
@@ -235,6 +240,37 @@ class FirebaseSessionController extends Controller
         $this->firestore->update(self::USERS_COLLECTION, (string) $existing['id'], $payload);
 
         return array_merge($existing, $payload);
+    }
+
+    private function ensurePasienRecord(array $userData): void
+    {
+        $uid = (string) ($userData['id'] ?? '');
+
+        if ($uid === '') {
+            return;
+        }
+
+        $existingPasien = $this->firestore->find(self::PASIEN_COLLECTION, $uid);
+
+        $payload = [
+            'user_id' => $uid,
+            'fullname' => $userData['fullname'] ?? $userData['name'] ?? '',
+            'email' => $userData['email'] ?? '',
+            'role' => 'pasien',
+            'umur' => $existingPasien['umur'] ?? null,
+            'weight' => $existingPasien['weight'] ?? null,
+            'height' => $existingPasien['height'] ?? null,
+            'blood_type' => $existingPasien['blood_type'] ?? '',
+            'allergy_history' => $existingPasien['allergy_history'] ?? '',
+            'address' => $existingPasien['address'] ?? '',
+            'city' => $existingPasien['city'] ?? 'Bandung',
+            'code_pos' => $existingPasien['code_pos'] ?? '',
+            'country' => $existingPasien['country'] ?? 'Indonesia',
+            'created_at' => $existingPasien['created_at'] ?? now()->toIso8601String(),
+            'update_at' => now()->toIso8601String(),
+        ];
+
+        $this->firestore->set(self::PASIEN_COLLECTION, $uid, $payload);
     }
 
     private function normalizeRole(?string $role): ?string
@@ -326,22 +362,26 @@ class FirebaseSessionController extends Controller
      */
     private function resolvePostLoginRedirect(array $userData): string
     {
-        if (($userData['role'] ?? null) !== 'dokter') {
+        if (($userData['role'] ?? null) === 'pasien') {
+            return route('pasien.beranda');
+        }
+
+        if (($userData['role'] ?? null) === 'dokter') {
+            if (! DoctorProfile::hasPersonalData($userData)) {
+                return route('doctor.profile-form');
+            }
+
+            if (! DoctorProfile::hasExpertiseData($userData)) {
+                return route('doctor.profile.expertise');
+            }
+
+            if (! DoctorProfile::hasCertificationData($userData)) {
+                return route('doctor.profile.certification');
+            }
+
             return route('dashboard');
         }
 
-        if (! DoctorProfile::hasPersonalData($userData)) {
-            return route('doctor.profile-form');
-        }
-
-        if (! DoctorProfile::hasExpertiseData($userData)) {
-            return route('doctor.profile.expertise');
-        }
-
-        if (! DoctorProfile::hasCertificationData($userData)) {
-            return route('doctor.profile.certification');
-        }
-
-        return route('dashboard');
+        return route('login-pasien');
     }
 }
