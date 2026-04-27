@@ -64,8 +64,9 @@ class DashboardPasienController extends Controller
             $specialist = $specializations[$doctorId] ?? null;
 
             $doctors[] = [
-                'nama' => 'dr. ' . ($user['fullname'] ?? $user['name'] ?? 'Dokter'),
+                'nama' => 'dr. ' . ($user['fullname'] ?? $user['name'] ?? 'Tidak Diketahui'),
                 'spesialis' => $specialist['service'] ?? 'Tidak Diketahui',
+                'spesialis_key' => strtolower($specialist['service'] ?? 'Tidak Diketahui'),
                 'rating' => '5.0',
                 'pasien' => '450+ Total Pasien',
                 'foto' => null,
