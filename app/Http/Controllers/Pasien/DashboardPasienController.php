@@ -16,57 +16,63 @@ class DashboardPasienController extends Controller
     public function index()
     {
         $categories = [
-            ['nama' => 'Umum', 'icon' => 'fa-heart-pulse'],
-            ['nama' => 'Anak', 'icon' => 'fa-heart'],
-            ['nama' => 'Penyakit Dalam', 'icon' => 'fa-heart-circle-bolt'],
-            ['nama' => 'Bedah', 'icon' => 'fa-syringe'],
-            ['nama' => 'Gigi & Mulut', 'icon' => 'fa-tooth'],
-            ['nama' => 'Kandungan', 'icon' => 'fa-person-pregnant'],
-            ['nama' => 'Jantung', 'icon' => 'fa-heart-circle-plus'],
+            ['nama' => 'Umum', 'icon' => 'Umum.png'],
+            ['nama' => 'Anak', 'icon' => 'Anak.png'],
+            ['nama' => 'Penyakit Dalam', 'icon' => 'Penyakit-dalam.png'],
+            ['nama' => 'Bedah', 'icon' => 'Bedah.png'],
+            ['nama' => 'Gigi & Mulut', 'icon' => 'Gigi & Mulut.png'],
+            ['nama' => 'Kandungan', 'icon' => 'Kandungan.png'],
+            ['nama' => 'Jantung', 'icon' => 'Jantung.png'],
         ];
 
-        $doctors = [
-            [
-                'nama' => 'dr. Arief Nugroho, Sp.JP',
-                'spesialis' => 'Spesialis Jantung dan Pembuluh Darah',
-                'rating' => '5.0',
-                'pasien' => '450+ Total Pasien',
-                'foto' => 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=500&auto=format&fit=crop',
-            ],
-            [
-                'nama' => 'dr. Ratna Dewi Sp.A',
-                'spesialis' => 'Spesialis Anak',
-                'rating' => '4.9',
-                'pasien' => '450+ Total Pasien',
-                'foto' => 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=500&auto=format&fit=crop',
-            ],
-            [
-                'nama' => 'dr. Andini Pratama, Sp.PD',
-                'spesialis' => 'Spesialis Penyakit Dalam',
-                'rating' => '5.0',
-                'pasien' => '450+ Total Pasien',
-                'foto' => 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=500&auto=format&fit=crop',
-            ],
-        ];
+        $userDocuments = $this->firestore->all('Users');
+        $doctorDocuments = $this->firestore->all('Dokter');
+        $specializationDocuments = $this->firestore->all('Dokter_spesialisasi');
 
-        $appointments = [
-            [
-                'jenis' => 'Dokter Umum',
-                'rs' => 'RS Medic Center - Bandung',
-                'antrian' => '02',
-                'tanggal' => '02 September 2025',
-                'jam' => '13:00 WIB - 13:15 WIB',
-                'hari' => 'Hari ini',
-            ],
-            [
-                'jenis' => 'Psikolog',
-                'rs' => 'RS Medic Center - Bandung',
-                'antrian' => '05',
-                'tanggal' => '05 September 2025',
-                'jam' => '13:00 WIB - 14:30 WIB',
-                'hari' => 'Minggu, 05 September 2025',
-            ],
-        ];
+        $users = [];
+
+        foreach ($userDocuments as $user) {
+            if (($user['role'] ?? null) === 'dokter') {
+                $users[$user['id']] = $user;
+            }
+        }
+
+        $specializations = [];
+
+        foreach ($specializationDocuments as $specialization) {
+            if (isset($specialization['dokterid'])) {
+                $specializations[$specialization['dokterid']] = $specialization;
+            }
+        }
+
+        $doctors = [];
+
+        foreach ($doctorDocuments as $doctor) {
+            $doctorId = $doctor['id'] ?? null;
+            $userId = $doctor['usersId'] ?? null;
+
+            if (! $doctorId || ! $userId) {
+                continue;
+            }
+
+            $user = $users[$userId] ?? null;
+
+            if (! $user) {
+                continue;
+            }
+
+            $specialist = $specializations[$doctorId] ?? null;
+
+            $doctors[] = [
+                'nama' => 'dr. ' . ($user['fullname'] ?? $user['name'] ?? 'Dokter'),
+                'spesialis' => $specialist['service'] ?? 'Tidak Diketahui',
+                'rating' => '5.0',
+                'pasien' => '450+ Total Pasien',
+                'foto' => null,
+            ];
+        }
+
+        $appointments = [];
 
         return view('pasien.beranda', compact('categories', 'doctors', 'appointments'));
     }
@@ -89,10 +95,7 @@ class DashboardPasienController extends Controller
         $uid = $user->id ?? null;
 
         if ($uid) {
-            // Hapus dari Firestore Users
             $this->firestore->delete('Users', $uid);
-
-            // Hapus dari Firebase Authentication
             $this->firestore->auth()->deleteUser($uid);
         }
 
