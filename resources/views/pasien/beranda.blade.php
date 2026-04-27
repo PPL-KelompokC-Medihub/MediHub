@@ -452,7 +452,7 @@
                 });
 
                 dokterJagaList.innerHTML += `
-                    <button id="lihatDetailButton" class="mt-6 flex w-full items-center justify-between rounded-lg bg-gray-200 px-4 py-3 text-sm font-medium text-gray-500 shadow-md transition">
+                    <button id="lihatDetailButton" class="mt-90 flex w-full items-center justify-between rounded-lg bg-gray-200 px-4 py-3 text-sm font-medium text-gray-500 shadow-md transition">
                         Lihat detail
                         <i class="fa-solid fa-plus"></i>
                     </button>
