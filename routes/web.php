@@ -8,7 +8,8 @@ use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\FirebaseSessionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\JadwalDokterController;
+use App\Http\Controllers\Pasien\DashboardPasienController;
+use App\Http\Controllers\Pasien\ProfilePasienController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -72,4 +73,11 @@ Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
     Route::post('/jadwal-dokter', [JadwalDokterController::class, 'store'])->name('jadwal.store');
     Route::put('/jadwal-dokter/{id}', [JadwalDokterController::class, 'update'])->name('jadwal.update');
     Route::delete('/jadwal-dokter/{id}', [JadwalDokterController::class, 'destroy'])->name('jadwal.destroy');
+});
+
+Route::middleware('auth')->prefix('pasien')->name('pasien.')->group(function () {
+    Route::get('/beranda', [DashboardPasienController::class, 'index'])->name('beranda');
+    Route::get('/profile', [ProfilePasienController::class, 'index'])->name('profile');
+    Route::put('/profile', [ProfilePasienController::class, 'update'])->name('profile.update');
+    Route::delete('/hapus-akun', [ProfilePasienController::class, 'destroyAccount'])->name('destroy-account');
 });
