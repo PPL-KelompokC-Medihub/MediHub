@@ -69,6 +69,10 @@ Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
     Route::post('/booking', [AppointmentController::class, 'store'])->name('booking.store');
     Route::get('/appointments', [AppointmentController::class, 'history'])->name('appointments.history');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('/jadwal-dokter', [JadwalDokterController::class, 'index'])->name('jadwal.index');
+    Route::post('/jadwal-dokter', [JadwalDokterController::class, 'store'])->name('jadwal.store');
+    Route::put('/jadwal-dokter/{id}', [JadwalDokterController::class, 'update'])->name('jadwal.update');
+    Route::delete('/jadwal-dokter/{id}', [JadwalDokterController::class, 'destroy'])->name('jadwal.destroy');
 });
 
 Route::middleware('auth')->prefix('pasien')->name('pasien.')->group(function () {
