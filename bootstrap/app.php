@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Middleware\EnsureDoctorProfileCompleted;
+use App\Http\Middleware\EnsureDokterProfileCompleted;
+use App\Http\Middleware\EnsureUserRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'doctor.profile.completed' => EnsureDoctorProfileCompleted::class,
+            'dokter.profile.completed' => EnsureDokterProfileCompleted::class,
+            'role' => EnsureUserRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

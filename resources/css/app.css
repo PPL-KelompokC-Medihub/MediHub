@@ -359,6 +359,119 @@ textarea.mediq-input {
     cursor: not-allowed;
 }
 
+.mediq-patient-login-page .mediq-auth-grid {
+    grid-template-columns: 58% 42%;
+}
+
+.mediq-patient-login-page .mediq-auth-visual {
+    background: #fff;
+}
+
+.mediq-patient-login-page .mediq-auth-lines {
+    background-image: repeating-linear-gradient(
+        63deg,
+        rgba(95, 165, 245, 0.18) 0,
+        rgba(95, 165, 245, 0.18) 2px,
+        transparent 2px,
+        transparent 176px
+    );
+}
+
+.mediq-patient-login-page .mediq-auth-image {
+    width: min(72%, 620px);
+}
+
+.mediq-patient-login-page .mediq-auth-panel {
+    align-items: flex-start;
+    padding: 58px 64px 32px;
+}
+
+.mediq-patient-login-page .mediq-auth-card {
+    width: min(476px, 100%);
+}
+
+.mediq-patient-login-page .mediq-logo img {
+    width: 148px;
+}
+
+.mediq-patient-login-page .mediq-auth-body {
+    margin-top: 132px;
+}
+
+.mediq-patient-login-page .mediq-auth-heading {
+    font-size: 26px;
+    line-height: 1.2;
+}
+
+.mediq-patient-login-page .mediq-auth-subtitle {
+    max-width: 440px;
+    margin-top: 14px;
+    color: #6f6f6f;
+    font-size: 14px;
+}
+
+.mediq-patient-login-page .mediq-auth-switch {
+    margin: 18px 0 18px;
+}
+
+.mediq-patient-login-page .mediq-auth-form {
+    gap: 12px;
+}
+
+.mediq-patient-login-page .mediq-label {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.mediq-patient-login-page .mediq-input {
+    min-height: 48px;
+    border-color: #ececec;
+    border-radius: 12px;
+    padding: 13px 16px;
+}
+
+.mediq-patient-login-page .mediq-input-wrap .mediq-input {
+    padding-right: 52px;
+}
+
+.mediq-patient-login-page .mediq-eye-btn {
+    right: 16px;
+}
+
+.mediq-patient-login-page .mediq-submit-btn {
+    margin-top: 18px;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
+}
+
+.mediq-patient-login-page .mediq-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 18px 0 8px;
+    color: #777;
+}
+
+.mediq-patient-login-page .mediq-divider::before,
+.mediq-patient-login-page .mediq-divider::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: #ededed;
+}
+
+.mediq-patient-login-page .mediq-social-row {
+    gap: 16px;
+}
+
+.mediq-patient-login-page .mediq-social-btn {
+    min-height: 48px;
+    border-color: #ececec;
+    border-radius: 10px;
+    color: #777;
+}
+
 .mediq-field-block {
     margin-top: 4px;
 }

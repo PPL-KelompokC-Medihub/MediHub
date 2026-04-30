@@ -31,7 +31,7 @@
                         Beranda
                     </a>
 
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
+                    <a href="{{ route('pasien.layanan') }}" class="flex items-center gap-3 text-gray-500">
                         <i class="fa-solid fa-bed-pulse"></i>
                         Layanan
                     </a>
@@ -57,7 +57,7 @@
             </form>
         </aside>
 
-        <main class="overflow-hidden bg-[#fbfbfb] px-6 py-8">
+        <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <div class="flex items-center gap-4">
                     <img 
@@ -195,7 +195,7 @@
                 </div>
             </section>
 
-            <section class="mb-7">
+            <section id="layanan" class="mb-7 scroll-mt-8">
                 <h2 class="mb-4 text-lg font-semibold">Kategori Poli</h2>
 
                 <div class="flex gap-6 overflow-x-auto px-2 pt-2 pb-4">
@@ -219,12 +219,12 @@
                 </div>
             </section>
 
-            <section>
+            <section class="mb-7">
                 <h2 class="mb-4 text-lg font-semibold">Dokter Pilihan Pasien</h2>
 
                 <div class="flex gap-4 overflow-x-auto pb-4">
                     @foreach ($doctors as $doctor)
-                        <div class="min-w-[215px] overflow-hidden rounded-xl bg-white shadow-md">
+                        <a href="{{ $doctor['id'] ? route('pasien.booking.create', ['doctor_id' => $doctor['id']]) : route('pasien.booking.create') }}" class="min-w-[215px] overflow-hidden rounded-xl bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
                             @if ($doctor['foto'])
                                 <img 
                                     src="{{ $doctor['foto'] }}" 
@@ -254,10 +254,11 @@
                                     <span>{{ $doctor['pasien'] }}</span>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             </section>
+
         </main>
 
         <aside class="flex flex-col border-l border-gray-200 bg-white px-7 py-8">
@@ -320,10 +321,10 @@
                 @endforelse
             </div>
 
-            <button class="mt-auto flex items-center justify-between rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
+            <a href="{{ route('pasien.booking.create') }}" class="mt-auto flex items-center justify-between rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
                 Buat Jadwal Temu
                 <i class="fa-solid fa-plus"></i>
-            </button>
+            </a>
         </aside>
     </div>
 

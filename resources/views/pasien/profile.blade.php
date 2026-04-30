@@ -15,8 +15,12 @@
     <div class="grid min-h-screen grid-cols-[220px_1fr_300px]">
         <aside class="flex flex-col justify-between border-r border-gray-200 px-7 py-8">
             <div>
-                <div class="mb-10 text-2xl font-bold text-blue-400">
-                    MediHub<i class="fa-solid fa-magnifying-glass-plus ml-1 text-blue-500"></i>
+                <div>
+                    <img 
+                        src="{{ asset('images/Medihub.png') }}"
+                        alt="Logo MediHub"
+                        class="h-14 w-auto object-contain"
+                    >
                 </div>
 
                 <p class="mb-6 text-lg font-semibold">Menu</p>
