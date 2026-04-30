@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layanan - MediHub</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @vite('resources/css/app.css')
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -13,45 +13,7 @@
 
 <body class="bg-white font-[Poppins] text-[#111827]">
     <div class="grid min-h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
-        <aside class="flex flex-col justify-between border-r border-gray-200 px-7 py-8">
-            <div>
-                <div class="mb-10">
-                    <img src="{{ asset('images/Medihub.png') }}" alt="Logo MediHub" class="h-14 w-auto object-contain">
-                </div>
-
-                <p class="mb-6 text-lg font-semibold">Menu</p>
-
-                <nav class="flex flex-col gap-7 text-[15px]">
-                    <a href="{{ route('pasien.beranda') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-house"></i>
-                        Beranda
-                    </a>
-
-                    <a href="{{ route('pasien.layanan') }}" class="flex items-center gap-3 font-medium text-blue-500">
-                        <i class="fa-solid fa-bed-pulse"></i>
-                        Layanan
-                    </a>
-
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-clock"></i>
-                        Riwayat
-                    </a>
-
-                    <a href="{{ route('pasien.profile') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-user"></i>
-                        Profil
-                    </a>
-                </nav>
-            </div>
-
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button class="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm text-gray-500">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>
-                    Keluar
-                </button>
-            </form>
-        </aside>
+        <x-pasien.sidebar active="layanan" />
 
         <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-10">
             <div class="mb-5 flex items-start justify-between gap-6">

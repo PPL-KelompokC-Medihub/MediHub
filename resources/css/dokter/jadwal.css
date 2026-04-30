@@ -1,0 +1,164 @@
+.doctor-schedule-root {
+    display: grid;
+    gap: 18px;
+}
+
+.doctor-schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.doctor-schedule-page-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.doctor-create-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+}
+
+.doctor-schedule-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--muted);
+}
+
+.doctor-schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.doctor-schedule-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+}
+
+.doctor-schedule-eyebrow {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.doctor-schedule-date {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.doctor-schedule-time {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.doctor-schedule-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.doctor-delete-button {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--danger);
+}
+
+.doctor-edit-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.doctor-schedule-empty {
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.doctor-schedule-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+}
+
+.doctor-schedule-modal.is-open {
+    display: flex;
+}
+
+.doctor-schedule-dialog {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    width: min(400px, 90%);
+    position: relative;
+}
+
+.doctor-schedule-modal-title {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.doctor-schedule-form-fields {
+    display: grid;
+    gap: 14px;
+}
+
+.doctor-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.doctor-modal-cancel {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+}
+
+.doctor-modal-submit {
+    flex: 1;
+    padding: 12px;
+}
+
+.doctor-rightbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+
+.doctor-rightbar-empty {
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}

@@ -1,0 +1,11 @@
+.patient-promo-light {
+    background: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0.42) 0%,
+        rgba(255, 255, 255, 0.26) 24%,
+        rgba(255, 255, 255, 0.10) 55%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    clip-path: polygon(0% 12%, 100% 34%, 100% 100%, 12% 100%);
+    filter: blur(3px);
+}

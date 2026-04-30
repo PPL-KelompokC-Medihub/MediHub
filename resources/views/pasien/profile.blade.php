@@ -5,50 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Pasien - MediHub</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @vite(['resources/css/app.css', 'resources/js/pasien/profile.js'])
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body class="font-[Poppins] bg-white text-gray-900">
+    <div data-patient-profile></div>
     <div class="grid min-h-screen grid-cols-[220px_1fr_300px]">
-        <aside class="flex flex-col justify-between border-r border-gray-200 px-7 py-8">
-            <div>
-                <div>
-                    <img 
-                        src="{{ asset('images/Medihub.png') }}"
-                        alt="Logo MediHub"
-                        class="h-14 w-auto object-contain"
-                    >
-                </div>
-
-                <p class="mb-6 text-lg font-semibold">Menu</p>
-
-                <nav class="flex flex-col gap-7 text-[15px]">
-                    <a href="{{ route('pasien.beranda') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-house"></i> Beranda
-                    </a>
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-bed-pulse"></i> Layanan
-                    </a>
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-clock"></i> Riwayat
-                    </a>
-                    <a href="{{ route('pasien.profile') }}" class="flex items-center gap-3 font-medium text-blue-500">
-                        <i class="fa-regular fa-user"></i> Profil
-                    </a>
-                </nav>
-            </div>
-
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button class="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm text-gray-500">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>
-                    Keluar
-                </button>
-            </form>
-        </aside>
+        <x-pasien.sidebar active="profil" />
 
         <main class="px-8 py-10">
             <header class="mb-8 flex items-center gap-6">
@@ -345,7 +311,7 @@
 
                 <button 
                     type="button"
-                    onclick="document.getElementById('deleteAccountModal').classList.remove('hidden')"
+                    data-modal-open="deleteAccountModal"
                     class="flex items-center gap-3 text-red-500"
                 >
                     <i class="fa-regular fa-trash-can"></i> Hapus Akun
@@ -372,7 +338,7 @@
             <div class="flex justify-end gap-3">
                 <button 
                     type="button"
-                    onclick="document.getElementById('deleteAccountModal').classList.add('hidden')"
+                    data-modal-close="deleteAccountModal"
                     class="rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-600"
                 >
                     Batal
@@ -393,42 +359,5 @@
         </div>
     </div>
 
-    <script>
-        const editBtn = document.getElementById('editProfileBtn');
-        const saveWrapper = document.getElementById('saveProfileWrapper');
-        const inputs = document.querySelectorAll('.profile-input');
-
-        editBtn?.addEventListener('click', () => {
-            inputs.forEach(input => {
-                input.removeAttribute('readonly');
-                input.removeAttribute('disabled');
-                input.classList.add('bg-white');
-                input.classList.add('border-blue-300');
-            });
-
-            saveWrapper?.classList.remove('hidden');
-            saveWrapper?.classList.add('flex');
-
-            editBtn.classList.add('hidden');
-        });
-    </script>
-    <script>
-        const editAddressBtn = document.getElementById('editAddressBtn');
-        const saveAddressWrapper = document.getElementById('saveAddressWrapper');
-        const addressInputs = document.querySelectorAll('.address-input');
-
-        editAddressBtn?.addEventListener('click', () => {
-            addressInputs.forEach(input => {
-                input.removeAttribute('readonly');
-                input.classList.add('bg-white');
-                input.classList.add('border-blue-300');
-            });
-
-            saveAddressWrapper?.classList.remove('hidden');
-            saveAddressWrapper?.classList.add('flex');
-
-            editAddressBtn.classList.add('hidden');
-        });
-    </script>
 </body>
 </html>

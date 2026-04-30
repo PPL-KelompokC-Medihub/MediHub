@@ -19,15 +19,14 @@
     </div>
 
     <main class="main-content">
-        <div class="logo" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="logo profile-logo-row">
             <div>
                 <span class="logo-text">MediHub</span>
                 <i class="fa-solid fa-magnifying-glass logo-icon"></i>
             </div>
-            <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+            <form method="POST" action="{{ route('logout') }}" class="profile-logout-form">
                 @csrf
-                <button type="submit"
-                    style="background: none; border: none; color: #ef4444; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <button type="submit" class="profile-logout-button">
                     <i class="fa-solid fa-right-from-bracket"></i> Keluar
                 </button>
             </form>

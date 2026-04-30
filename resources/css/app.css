@@ -263,6 +263,10 @@ textarea.mediq-input {
     font-weight: 500;
 }
 
+.mediq-forgot-link.is-disabled {
+    opacity: 0.65;
+}
+
 .mediq-forgot-link:hover {
     text-decoration: underline;
 }
@@ -352,6 +356,10 @@ textarea.mediq-input {
 .mediq-submit-btn:hover {
     background: #dcdfe5;
     color: #444;
+}
+
+.mediq-submit-offset {
+    margin-top: 14px;
 }
 
 .mediq-submit-btn:disabled {
@@ -1345,6 +1353,80 @@ h3 {
     align-items: center;
     border-radius: 12px;
     font-weight: 500;
+}
+
+.mediq-sidebar-icon-spaced {
+    margin-right: 10px;
+}
+
+.landing-logo-link {
+    text-decoration: none;
+}
+
+.landing-logo-image-sm {
+    height: 32px;
+    width: auto;
+}
+
+.landing-logo-image-md {
+    height: 36px;
+    width: auto;
+}
+
+.landing-signup-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary, #6aa4ef);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(106, 164, 239, 0.25);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-signup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(106, 164, 239, 0.35);
+}
+
+.landing-service-title {
+    font-size: 32px;
+    font-weight: 500;
+    color: #1a1e26;
+    margin: 0 0 32px;
+    line-height: 1.2;
+}
+
+.landing-service-title span {
+    color: #6aa4ef;
+    font-weight: 400;
+}
+
+.landing-doctor-heading {
+    text-align: center;
+    margin-top: -20px;
+    margin-bottom: 24px;
+}
+
+.landing-doctor-heading h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1e26;
+    margin-bottom: 8px;
+}
+
+.landing-doctor-heading h3 {
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.doctors-section.is-compact {
+    margin-top: 0;
+    padding-top: 20px;
 }
 
 /* Landing Page Replication V2 Styles */

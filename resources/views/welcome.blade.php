@@ -6,8 +6,8 @@
 
     <!-- ══ NAVBAR ══ -->
     <header>
-        <a href="/" class="logo" style="text-decoration: none;">
-            <img src="{{ asset('images/medihub-logo.png') }}" alt="MediHub" style="height: 32px; width: auto;" />
+        <a href="/" class="logo landing-logo-link">
+            <img src="{{ asset('images/medihub-logo.png') }}" alt="MediHub" class="landing-logo-image-sm" />
         </a>
         <nav>
             <div class="login-dropdown">
@@ -39,10 +39,7 @@
                     </a>
                 </div>
             </div>
-            <a href="{{ route('register-dokter') }}" class="btn-signup"
-                style="display: flex; align-items: center; gap: 8px; background: var(--primary, #6aa4ef); color: white; padding: 10px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(106, 164, 239, 0.25); transition: all 0.3s ease;"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(106, 164, 239, 0.35)';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(106, 164, 239, 0.25)';">
+            <a href="{{ route('register-dokter') }}" class="btn-signup landing-signup-button">
                 <span>Daftar Gratis</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
@@ -83,7 +80,7 @@
     <div class="tentang-heading">
         <span class="tentang gradient-dark-text">Tentang</span>
         <div class="mediq-logo-inline">
-            <img src="{{ asset('images/medihub-logo.svg') }}" alt="MediHub" style="height: 36px; width: auto;" />
+            <img src="{{ asset('images/medihub-logo.svg') }}" alt="MediHub" class="landing-logo-image-md" />
         </div>
     </div>
 
@@ -122,9 +119,9 @@
     <!-- ══ SERVICE HIGHLIGHTS ══ -->
     <section class="service-highlights">
         <div class="service-left">
-            <h2 style="font-size: 32px; font-weight: 500; color: #1a1e26; margin: 0 0 32px; line-height: 1.2;">
+            <h2 class="landing-service-title">
                 Layanan<br>
-                <span style="color: #6aa4ef; font-weight: 400;">Terpopular Kami</span>
+                <span>Terpopular Kami</span>
             </h2>
             <a href="#" class="btn-primary-sm">
                 <span>Telusuri</span>
@@ -175,11 +172,11 @@
     </section>
 
     <!-- ══ DOCTORS SECTION ══ -->
-    <div style="text-align: center; margin-top: -20px; margin-bottom: 24px;">
-        <h2 style="font-size: 28px; font-weight: 600; color: #1a1e26; margin-bottom: 8px;">Dokter Unggulan</h2>
-        <h3 class="gradient-blue-text" style="font-size: 28px; font-weight: 500;">Siap Membantu Anda</h3>
+    <div class="landing-doctor-heading">
+        <h2>Dokter Unggulan</h2>
+        <h3 class="gradient-blue-text">Siap Membantu Anda</h3>
     </div>
-    <section class="doctors-section" style="margin-top: 0; padding-top: 20px;">
+    <section class="doctors-section is-compact">
 
         <!-- Doctor 1 -->
         <div class="doctor-card">
@@ -294,7 +291,7 @@
 
             <div class="footer-brand">
                 <div class="footer-logo">
-                    <img src="{{ asset('images/medihub-logo.svg') }}" alt="MediHub" style="height: 32px; width: auto;" />
+                    <img src="{{ asset('images/medihub-logo.svg') }}" alt="MediHub" class="landing-logo-image-sm" />
                 </div>
 
                 <p class="footer-tagline">

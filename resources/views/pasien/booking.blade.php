@@ -5,40 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buat Jadwal Temu - MediHub</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @vite(['resources/css/app.css', 'resources/js/pasien/booking.js'])
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="bg-white font-[Poppins] text-[#111827]">
+    <div
+        data-patient-booking
+        data-schedules="{{ e(json_encode($schedules)) }}"
+        data-doctors="{{ e(json_encode($doctors)) }}"
+        data-selected-schedule-id="{{ old('doctor_schedule_id') }}"
+        data-selected-appointment-time="{{ old('appointment_time') }}"
+    ></div>
     <div class="grid min-h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
-        <aside class="flex flex-col justify-between border-r border-gray-200 px-7 py-8">
-            <div>
-                <img src="{{ asset('images/Medihub.png') }}" alt="Logo MediHub" class="mb-10 h-14 w-auto object-contain">
-                <p class="mb-6 text-lg font-semibold">Menu</p>
-
-                <nav class="flex flex-col gap-7 text-[15px]">
-                    <a href="{{ route('pasien.beranda') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-house"></i> Beranda
-                    </a>
-                    <a href="{{ route('pasien.layanan') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-bed-pulse"></i> Layanan
-                    </a>
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-clock"></i> Riwayat
-                    </a>
-                    <a href="{{ route('pasien.profile') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-user"></i> Profil
-                    </a>
-                </nav>
-            </div>
-
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button class="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm text-gray-500">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Keluar
-                </button>
-            </form>
-        </aside>
+        <x-pasien.sidebar active="beranda" />
 
         <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">
             @if ($errors->any())
@@ -210,159 +190,5 @@
         </aside>
     </div>
 
-    <script>
-        const schedules = @json($schedules);
-        const doctors = @json($doctors);
-        const selectedScheduleId = @json(old('doctor_schedule_id'));
-        const selectedAppointmentTime = @json(old('appointment_time'));
-        const doctorSelect = document.getElementById('doctor_id');
-        const selectedDoctorSpecialization = document.getElementById('selectedDoctorSpecialization');
-        const dateOptions = document.getElementById('dateOptions');
-        const timeOptions = document.getElementById('timeOptions');
-        const scheduleInput = document.getElementById('doctor_schedule_id');
-        const appointmentTimeInput = document.getElementById('appointment_time');
-        const emptyText = document.getElementById('schedule-empty-text');
-        const rangeText = document.getElementById('scheduleRangeText');
-        function formatDay(dateString) {
-            const date = new Date(`${dateString}T00:00:00`);
-            if (Number.isNaN(date.getTime())) return '-';
-
-            return new Intl.DateTimeFormat('id-ID', { weekday: 'short' }).format(date);
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(`${dateString}T00:00:00`);
-            if (Number.isNaN(date.getTime())) return { day: '--', weekday: '-' };
-
-            return {
-                day: new Intl.DateTimeFormat('id-ID', { day: '2-digit' }).format(date),
-                weekday: formatDay(dateString),
-            };
-        }
-
-        function parseMinutes(time) {
-            const [hour, minute] = String(time || '').split(':').map((part) => Number.parseInt(part, 10));
-
-            if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
-
-            return hour * 60 + minute;
-        }
-
-        function formatMinutes(totalMinutes) {
-            const hour = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
-            const minute = String(totalMinutes % 60).padStart(2, '0');
-
-            return `${hour}:${minute}`;
-        }
-
-        function buildTimeSlots(schedule) {
-            const start = parseMinutes(schedule.start);
-            const end = parseMinutes(schedule.end);
-
-            if (start === null || end === null || start >= end) {
-                return [schedule.start].filter(Boolean);
-            }
-
-            const slots = [];
-            for (let current = start; current < end; current += 30) {
-                slots.push(formatMinutes(current));
-            }
-
-            return slots;
-        }
-
-        function updateDoctorSummary() {
-            const selectedDoctor = doctors.find((doctor) => doctor.id === doctorSelect.value);
-            selectedDoctorSpecialization.textContent = selectedDoctor
-                ? `${selectedDoctor.specialization} | RS Medic Center - Bandung`
-                : 'RS Medic Center - Bandung';
-        }
-
-        function selectSlot(scheduleId, appointmentTime = null) {
-            scheduleInput.value = scheduleId;
-            document.querySelectorAll('[data-schedule-id]').forEach((button) => {
-                const active = button.dataset.scheduleId === scheduleId;
-                button.classList.toggle('bg-blue-400', active);
-                button.classList.toggle('text-white', active);
-                button.classList.toggle('bg-white', !active);
-                button.classList.toggle('text-gray-500', !active);
-            });
-
-            if (appointmentTime) {
-                appointmentTimeInput.value = appointmentTime;
-            }
-
-            document.querySelectorAll('[data-appointment-time]').forEach((button) => {
-                const active = button.dataset.scheduleId === scheduleId &&
-                    button.dataset.appointmentTime === appointmentTimeInput.value;
-
-                button.classList.toggle('bg-blue-400', active);
-                button.classList.toggle('text-white', active);
-                button.classList.toggle('border-blue-400', active);
-                button.classList.toggle('bg-white', !active);
-                button.classList.toggle('text-gray-900', !active);
-                button.classList.toggle('border-gray-200', !active);
-            });
-        }
-
-        function renderSchedules() {
-            updateDoctorSummary();
-
-            const doctorId = doctorSelect.value;
-            const filtered = schedules.filter((schedule) => schedule.doctor_id === doctorId);
-
-            dateOptions.innerHTML = '';
-            timeOptions.innerHTML = '';
-            scheduleInput.value = '';
-            appointmentTimeInput.value = '';
-
-            if (!doctorId) {
-                emptyText.classList.add('hidden');
-                rangeText.textContent = 'Pilih dokter terlebih dahulu';
-                return;
-            }
-
-            if (filtered.length === 0) {
-                emptyText.classList.remove('hidden');
-                rangeText.textContent = 'Jadwal tidak tersedia';
-                return;
-            }
-
-            emptyText.classList.add('hidden');
-            rangeText.textContent = `${filtered[0].date || '-'} - ${filtered[filtered.length - 1].date || '-'}`;
-
-            filtered.forEach((schedule) => {
-                const date = formatDate(schedule.date);
-                const dateButton = document.createElement('button');
-                dateButton.type = 'button';
-                dateButton.dataset.scheduleId = schedule.id;
-                dateButton.className = 'min-w-[86px] rounded-xl bg-white px-5 py-4 text-center text-gray-500 shadow-sm transition';
-                dateButton.innerHTML = `<p class="text-2xl font-semibold">${date.day}</p><p class="text-sm">${date.weekday}</p>`;
-                dateButton.addEventListener('click', () => {
-                    const firstSlot = buildTimeSlots(schedule)[0] || '';
-                    selectSlot(schedule.id, firstSlot);
-                });
-                dateOptions.appendChild(dateButton);
-
-                buildTimeSlots(schedule).forEach((time) => {
-                    const timeButton = document.createElement('button');
-                    timeButton.type = 'button';
-                    timeButton.dataset.scheduleId = schedule.id;
-                    timeButton.dataset.appointmentTime = time;
-                    timeButton.className = 'rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm transition';
-                    timeButton.textContent = time;
-                    timeButton.addEventListener('click', () => selectSlot(schedule.id, time));
-                    timeOptions.appendChild(timeButton);
-                });
-            });
-
-            const initialSchedule = filtered.find((schedule) => schedule.id === selectedScheduleId) || filtered[0];
-            const initialTime = selectedAppointmentTime || buildTimeSlots(initialSchedule)[0] || '';
-            selectSlot(initialSchedule.id, initialTime);
-        }
-
-        doctorSelect.addEventListener('change', renderSchedules);
-        renderSchedules();
-    </script>
 </body>
 </html>

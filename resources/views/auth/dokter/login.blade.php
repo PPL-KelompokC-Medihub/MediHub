@@ -41,7 +41,7 @@
                 <label class="mediq-remember">
                     <input type="checkbox" name="remember" disabled> Ingat saya
                 </label>
-                <span class="mediq-forgot-link" style="opacity: 0.65;">Segera tersedia</span>
+                <span class="mediq-forgot-link is-disabled">Segera tersedia</span>
             </div>
 
             @if ($errors->any())
@@ -50,7 +50,7 @@
 
             <p id="firebase-auth-error" class="mediq-error" hidden></p>
 
-            <button type="submit" id="sign-in-submit" class="mediq-primary-btn" style="margin-top: 14px;">
+            <button type="submit" id="sign-in-submit" class="mediq-primary-btn mediq-submit-offset">
                 <span class="btn-text">Masuk</span>
                 <span class="btn-loading" hidden>Memproses...</span>
             </button>

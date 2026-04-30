@@ -5,57 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beranda Pasien - MediHub</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @vite(['resources/css/app.css', 'resources/css/pasien/beranda.css', 'resources/js/pasien/beranda.js'])
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
+    <div data-patient-home data-doctors="{{ e(json_encode($doctors)) }}"></div>
     <div class="grid min-h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
-        <aside class="flex flex-col justify-between border-r border-gray-200 px-7 py-8">
-            <div>
-                <div class="mb-10">
-                    <img 
-                        src="{{ asset('images/Medihub.png') }}"
-                        alt="Logo MediHub"
-                        class="h-14 w-auto object-contain"
-                    >
-                </div>
-
-                <p class="mb-6 text-lg font-semibold">Menu</p>
-
-                <nav class="flex flex-col gap-7 text-[15px]">
-                    <a href="#" class="flex items-center gap-3 font-medium text-blue-500">
-                        <i class="fa-solid fa-house"></i>
-                        Beranda
-                    </a>
-
-                    <a href="{{ route('pasien.layanan') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-solid fa-bed-pulse"></i>
-                        Layanan
-                    </a>
-
-                    <a href="#" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-clock"></i>
-                        Riwayat
-                    </a>
-
-                    <a href="{{ route('pasien.profile') }}" class="flex items-center gap-3 text-gray-500">
-                        <i class="fa-regular fa-user"></i>
-                        Profil
-                    </a>
-                </nav>
-            </div>
-
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button class="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm text-gray-500">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>
-                    Keluar
-                </button>
-            </form>
-        </aside>
+        <x-pasien.sidebar active="beranda" />
 
         <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
@@ -98,25 +57,7 @@
                     class="absolute left-1 -top-1 z-50 h-[70px] w-auto rotate-[-8deg] object-contain"
                 >
                 <div
-                    class="pointer-events-none absolute left-[50px] top-[10px] z-[1] h-[240px] w-[560px] rotate-[1deg] opacity-60"
-                    style="
-                        background: linear-gradient(
-                            100deg,
-                            rgba(255,255,255,0.42) 0%,
-                            rgba(255,255,255,0.26) 24%,
-                            rgba(255,255,255,0.10) 55%,
-                            rgba(255,255,255,0.00) 100%
-                        );
-
-                        clip-path: polygon(
-                            0% 12%,
-                            100% 34%,
-                            100% 100%,
-                            12% 100%
-                        );
-
-                        filter: blur(3px);
-                    ">
+                    class="patient-promo-light pointer-events-none absolute left-[50px] top-[10px] z-[1] h-[240px] w-[560px] rotate-[1deg] opacity-60">
                 </div>
 
                 <div class="relative z-10 grid h-full grid-cols-[1fr_240px_1fr] items-center">
@@ -202,7 +143,7 @@
                     @foreach ($categories as $category)
                         <button 
                             type="button"
-                            onclick="openPoliPanel('{{ $category['nama'] }}')"
+                            data-poli-name="{{ $category['nama'] }}"
                             class="group min-w-[82px] text-center">
                             
                             <div class="mx-auto mb-2 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-blue-400 text-3xl text-white transition-transform duration-200 group-hover:scale-105">
@@ -329,7 +270,7 @@
     </div>
 
     <div id="poliOverlay"
-        onclick="closePoliPanel()"
+        data-close-poli
         class="fixed inset-0 z-[9998] hidden bg-transparent">
     </div>
 
@@ -338,7 +279,7 @@
 
         <button 
             type="button"
-            onclick="closePoliPanel()"
+            data-close-poli
             class="mb-14">
             
             <img 
@@ -375,179 +316,5 @@
         </div>
     </div>
 
-    <script>
-        const doctorsBySpecialist = @json($doctors);
-    </script>
-
-    <script>
-        let selectedDoctorIndex = null;
-    </script>
-
-    <script>
-        function normalizeText(text) {
-            return text.toLowerCase().replace('&', 'dan').trim();
-        }
-
-        function openPoliPanel(poliName) {
-            document.getElementById('poliTitle').innerText = poliName;
-
-            const dokterJagaList = document.getElementById('dokterJagaList');
-            dokterJagaList.innerHTML = '';
-
-            const selectedPoli = normalizeText(poliName);
-
-            const filteredDoctors = doctorsBySpecialist.filter((doctor) => {
-                return normalizeText(doctor.spesialis).includes(selectedPoli);
-            });
-
-            if (filteredDoctors.length === 0) {
-                dokterJagaList.innerHTML = `
-                    <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center">
-                        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-500">
-                            <i class="fa-solid fa-user-doctor text-2xl"></i>
-                        </div>
-
-                        <p class="text-sm font-semibold text-gray-700">
-                            Belum ada dokter jaga
-                        </p>
-
-                        <p class="mt-1 text-xs leading-relaxed text-gray-400">
-                            Data dokter jaga untuk poli ini belum tersedia.
-                        </p>
-                    </div>
-                `;
-            } else {
-                filteredDoctors.forEach((doctor, index) => {
-                    dokterJagaList.innerHTML += `
-                        <button
-                            type="button"
-                            onclick="selectDoctor(${index})"
-                            id="doctorCard-${index}"
-                            class="doctor-card relative h-[230px] w-full overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#D8EDFA_0%,#E5F5FF_45%,#C2EBFF_100%)] text-left shadow-md">
-
-                            <div id="doctorCheck-${index}" class="doctor-check absolute right-4 top-4 z-30 hidden flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0077C2] bg-blue-100 text-[#0077C2]">
-                                <i class="fa-solid fa-check text-sm"></i>
-                            </div>
-
-                            <div class="absolute left-5 top-8 z-10 max-w-[150px]">
-                                <h2 class="min-h-[92px] text-[34px] font-semibold uppercase leading-tight tracking-wide text-blue-300/70">
-                                    ${doctor.nama.replace('dr. ', '')}
-                                </h2>
-
-                                <p class="mt-15 bg-[linear-gradient(90deg,#0077C2_0%,#003556_100%)] bg-clip-text text-sm font-semibold text-transparent">
-                                    ${doctor.pasien}
-                                </p>
-
-                                <p class="bg-[linear-gradient(90deg,#0077C2_0%,#003556_100%)] bg-clip-text text-xs text-transparent">
-                                    Terlayani
-                                </p>
-                            </div>
-
-                            <div class="absolute bottom-0 right-0 z-20 flex h-full w-[55%] items-end justify-center">
-                                <div class="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/50 text-blue-400">
-                                    <i class="fa-solid fa-user-doctor text-5xl"></i>
-                                </div>
-                            </div>
-                        </button>
-                    `;
-                });
-
-                dokterJagaList.innerHTML += `
-                    <button id="lihatDetailButton" class="mt-90 flex w-full items-center justify-between rounded-lg bg-gray-200 px-4 py-3 text-sm font-medium text-gray-500 shadow-md transition">
-                        Lihat detail
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                `;
-            }
-
-            document.getElementById('poliOverlay').classList.remove('hidden');
-            document.getElementById('poliPanel').classList.remove('translate-x-full');
-        }
-
-        function closePoliPanel() {
-            document.getElementById('poliPanel').classList.add('translate-x-full');
-
-            setTimeout(() => {
-                document.getElementById('poliOverlay').classList.add('hidden');
-            }, 300);
-        }
-
-        function selectDoctor(index) {
-
-            const detailButton = document.getElementById('lihatDetailButton');
-
-            if (selectedDoctorIndex === index) {
-
-                selectedDoctorIndex = null;
-
-                document.getElementById(`doctorCheck-${index}`).classList.add('hidden');
-
-                detailButton.classList.remove('bg-blue-400', 'text-white');
-                detailButton.classList.add('bg-gray-200', 'text-gray-500');
-
-                return;
-            }
-
-            selectedDoctorIndex = index;
-
-            document.querySelectorAll('.doctor-check').forEach((check) => {
-                check.classList.add('hidden');
-            });
-
-            document.getElementById(`doctorCheck-${index}`).classList.remove('hidden');
-
-            detailButton.classList.remove('bg-gray-200', 'text-gray-500');
-            detailButton.classList.add('bg-blue-400', 'text-white');
-        }
-    </script>
-    <script>
-        const placeholders = [
-            "Dokter Umum",
-            "Cari dokter kandungan",
-            "Konsultasi dokter",
-            "Cari jadwal konsultasi"
-        ];
-
-        const input = document.getElementById('animatedSearch');
-
-        let textIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-
-        function typePlaceholder() {
-            const currentText = placeholders[textIndex];
-
-            if (!isDeleting) {
-                input.setAttribute(
-                    'placeholder',
-                    currentText.substring(0, charIndex + 1)
-                );
-
-                charIndex++;
-
-                if (charIndex === currentText.length) {
-                    isDeleting = true;
-                    setTimeout(typePlaceholder, 1800);
-                    return;
-                }
-            } else {
-                input.setAttribute(
-                    'placeholder',
-                    currentText.substring(0, charIndex - 1)
-                );
-
-                charIndex--;
-
-                if (charIndex === 0) {
-                    isDeleting = false;
-                    textIndex = (textIndex + 1) % placeholders.length;
-                }
-            }
-
-            setTimeout(typePlaceholder, isDeleting ? 35 : 70);
-        }
-
-        typePlaceholder();
-    </script>
 </body>
 </html>

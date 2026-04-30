@@ -1,0 +1,189 @@
+.doctor-greeting-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.doctor-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.doctor-stat-card {
+    background: linear-gradient(135deg, #deeeff 0%, #eef4ff 100%);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-stat-value {
+    margin: 0 0 12px;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--primary-strong);
+}
+
+.doctor-stat-label {
+    margin: 0 0 2px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #1f2024;
+}
+
+.doctor-stat-location {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.doctor-stat-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    opacity: 0.15;
+}
+
+.doctor-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.doctor-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.doctor-add-schedule-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.doctor-schedule-strip {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.doctor-schedule-card {
+    min-width: 200px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    background: #fff;
+}
+
+.doctor-card-eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.doctor-card-title {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.doctor-card-muted {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.doctor-empty-state {
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.doctor-empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.doctor-patient-table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.doctor-patient-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.doctor-patient-table thead tr {
+    background: #f8f9fb;
+}
+
+.doctor-patient-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.doctor-patient-table tr + tr,
+.doctor-patient-table tbody tr {
+    border-top: 1px solid var(--line);
+}
+
+.doctor-patient-table td {
+    padding: 12px 16px;
+}
+
+.doctor-patient-name {
+    font-weight: 500;
+}
+
+.doctor-patient-date {
+    color: var(--muted);
+}
+
+.doctor-status-pill {
+    background: #eef4ff;
+    color: var(--primary-strong);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.doctor-table-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.doctor-rightbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.doctor-rightbar-list {
+    display: grid;
+    gap: 10px;
+}
+
+.doctor-rightbar-empty {
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}

@@ -7,9 +7,7 @@
     Contoh:
         <x-pasien.sidebar :active="'beranda'" />
 
-    NOTE: View existing di pasien/* belum dimigrate ke component ini
-    karena tim sedang aktif edit. Ke depan, ganti `<aside>` di view
-    pasien dengan tag ini supaya tidak duplikasi sidebar 4 kali.
+    Dipakai oleh halaman pasien supaya markup sidebar tidak duplikatif.
 --}}
 @props(['active' => 'beranda'])
 

@@ -19,9 +19,9 @@
     </div>
 
     <main class="main-content">
-        <div class="logo" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="logo profile-logo-row">
             <div>
-                <img src="{{ asset('images/medihub-logo.png') }}" alt="MediHub" style="height: 32px; width: auto;" />
+                <img src="{{ asset('images/medihub-logo.png') }}" alt="MediHub" class="profile-logo-image" />
             </div>
         </div>
 
