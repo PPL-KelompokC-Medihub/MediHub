@@ -18,9 +18,12 @@ class UpdateExpertiseRequest extends FormRequest
             return false;
         }
 
-        $attributes = method_exists($user, 'getAttributes') ? $user->getAttributes() : [];
+        $role = strtolower(trim((string) ($user->role ?? '')));
+        if ($role === '') {
+            $role = strtolower(trim((string) request()->session()->get('medihub_user_role', '')));
+        }
 
-        return ($attributes['role'] ?? null) === 'dokter';
+        return in_array($role, ['dokter', 'doctor'], true);
     }
 
     /**
