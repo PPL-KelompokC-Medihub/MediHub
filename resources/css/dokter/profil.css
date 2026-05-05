@@ -1,0 +1,444 @@
+/* ============================================================
+   PBI-13: Halaman Profil Dokter (read-only view)
+   ============================================================ */
+
+/* --- Profile Header --- */
+.profil-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.profil-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e0ecff;
+    box-shadow: 0 4px 16px rgba(106, 164, 239, 0.15);
+}
+
+.profil-header-info {
+    flex: 1;
+}
+
+.profil-header-name {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2024;
+}
+
+.profil-header-specialty {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--primary-strong);
+    font-weight: 500;
+}
+
+.profil-header-email {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.profil-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--primary-strong);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.profil-edit-btn:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.profil-edit-btn svg {
+    flex-shrink: 0;
+}
+
+/* --- Section Cards --- */
+.profil-section {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.profil-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    background: #fafbfd;
+}
+
+.profil-section-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2024;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profil-section-title svg {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.profil-section-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid #e0e3ea;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.profil-section-edit:hover {
+    border-color: var(--primary);
+    color: var(--primary-strong);
+}
+
+.profil-section-body {
+    padding: 20px 24px;
+}
+
+/* --- Info Grid --- */
+.profil-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 32px;
+}
+
+.profil-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.profil-info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profil-info-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2024;
+    word-break: break-word;
+}
+
+.profil-info-value.is-empty {
+    color: #c4c8d0;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* --- Gender Badge --- */
+.profil-gender-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.profil-gender-badge.is-pria {
+    background: #e8f0fe;
+    color: #3b7ead;
+}
+
+.profil-gender-badge.is-perempuan {
+    background: #fde8f0;
+    color: #c2185b;
+}
+
+/* --- Service Pills --- */
+.profil-service-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profil-service-pill {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #edf4ff;
+    color: var(--primary-strong);
+    border: 1px solid #d6e6ff;
+}
+
+.profil-service-pill.is-inactive {
+    background: #f5f6f8;
+    color: #b0b4bb;
+    border-color: #e8ebf2;
+}
+
+/* --- Bio --- */
+.profil-bio {
+    margin-top: 18px;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fafbfd;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #3e4250;
+}
+
+/* --- Document List --- */
+.profil-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.profil-doc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fafbfd;
+    transition: border-color 0.2s;
+}
+
+.profil-doc-item:hover {
+    border-color: var(--primary);
+}
+
+.profil-doc-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profil-doc-icon.is-uploaded {
+    background: #e8f5e9;
+    color: var(--success);
+}
+
+.profil-doc-icon.is-missing {
+    background: #ffeaeb;
+    color: var(--danger);
+}
+
+.profil-doc-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profil-doc-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2024;
+}
+
+.profil-doc-status {
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.profil-doc-status.is-uploaded {
+    color: var(--success);
+}
+
+.profil-doc-status.is-missing {
+    color: var(--danger);
+}
+
+/* --- Certification Grid --- */
+.profil-cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.profil-cert-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fafbfd;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.profil-cert-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.profil-cert-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #edf4ff;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profil-cert-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2024;
+}
+
+/* --- Right Sidebar (Pengaturan Akun) --- */
+.profil-account-section {
+    margin-bottom: 24px;
+}
+
+.profil-account-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    margin-bottom: 20px;
+    cursor: default;
+}
+
+.profil-account-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+}
+
+.profil-account-header-text {
+    flex: 1;
+}
+
+.profil-account-header-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.profil-account-header-sub {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.profil-account-menu-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 0 0 10px;
+}
+
+.profil-account-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px;
+    display: grid;
+    gap: 2px;
+}
+
+.profil-account-menu li a,
+.profil-account-menu li button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 14px;
+    color: #3e4250;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.profil-account-menu li a:hover,
+.profil-account-menu li button:hover {
+    background: #f5f7fa;
+}
+
+.profil-account-menu li svg {
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+.profil-menu-add {
+    color: var(--primary-strong) !important;
+}
+
+.profil-menu-delete {
+    color: var(--danger) !important;
+}
+
+.profil-menu-logout {
+    color: var(--muted) !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+    .profil-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profil-doc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profil-cert-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}

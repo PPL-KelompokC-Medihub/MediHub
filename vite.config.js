@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/css/dokter/profile-form.css',
                 'resources/js/dokter/profile-form.js',
                 'resources/js/dokter/profile-expertise.js',
+                'resources/css/dokter/profil.css',
             ],
             refresh: true,
         }),
