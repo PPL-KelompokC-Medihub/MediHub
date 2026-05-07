@@ -52,6 +52,10 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
     Route::get('/dokter/dashboard', [DashboardController::class, 'index'])
         ->name('dokter.dashboard');
 
+    // PBI-13: Halaman Profil Dokter (read-only view)
+    Route::get('/dokter/profil', [ProfileController::class, 'show'])
+        ->name('dokter.profil.show');
+
     // Profil — alias ke step 1 onboarding agar dokter bisa edit data dirinya
     Route::get('/dokter/profile', [ProfileController::class, 'showPersonal'])
         ->name('dokter.profile');

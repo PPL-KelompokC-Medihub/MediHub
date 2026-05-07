@@ -43,6 +43,27 @@ class ProfileController extends Controller
         private MedihubFirestoreRepository $doctorRepository,
     ) {}
 
+    /**
+     * PBI-13: Halaman Profil Dokter (read-only view).
+     *
+     * Menampilkan seluruh informasi pribadi dan profesional dokter
+     * yang sudah terdaftar — data diri, alamat, keahlian, dokumen,
+     * dan sertifikasi.
+     */
+    public function show(): View|RedirectResponse
+    {
+        $userData = $this->getCurrentUserData();
+
+        if (($userData['role'] ?? null) !== 'dokter') {
+            return redirect()->route('dokter.dashboard');
+        }
+
+        return view('dokter.profil.show', [
+            'user' => $userData,
+            'services' => self::AVAILABLE_SERVICES,
+        ]);
+    }
+
     public function showPersonal(): View|RedirectResponse
     {
         $userData = $this->getCurrentUserData();

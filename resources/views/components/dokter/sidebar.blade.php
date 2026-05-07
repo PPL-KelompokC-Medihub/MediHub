@@ -43,7 +43,7 @@
             Riwayat
         </a>
 
-        <a href="{{ route('dokter.profile') }}" class="mediq-nav-item {{ $isActive('profil') }}">
+        <a href="{{ route('dokter.profil.show') }}" class="mediq-nav-item {{ $isActive('profil') }}">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
