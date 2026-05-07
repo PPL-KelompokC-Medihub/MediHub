@@ -1,83 +1,55 @@
 <?php
 
-use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DoctorController;
-use App\Http\Controllers\FacilityController;
-use App\Http\Controllers\FirebaseSessionController;
-use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Pasien\DashboardPasienController;
-use App\Http\Controllers\Pasien\ProfilePasienController;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| File ini cuma sebagai entry point. Route sebenarnya dipisah per
+| role/peran agar mudah dicari saat menambah fitur baru:
+|
+|   routes/public.php   -> halaman tanpa login (landing, dll)
+|   routes/auth.php     -> login, register, logout
+|   routes/dokter.php   -> endpoint role dokter
+|   routes/pasien.php   -> endpoint role pasien
+|
+| Lihat docs/ARCHITECTURE.md untuk struktur folder selengkapnya.
+|
+*/
 
+require __DIR__ . '/public.php';
 
+Route::middleware('guest')->group(base_path('routes/auth.php'));
 
-Route::middleware('guest')->group(function () {
-    Route::get('/login', fn () => redirect()->route('login-dokter'))->name('login');
+Route::get('/dashboard', function (Request $request) {
+    $user = Auth::user();
+    $userData = $user && method_exists($user, 'getAttributes') ? $user->getAttributes() : [];
 
-    Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
-    Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
+    $role = strtolower(trim((string) ($userData['role'] ?? $request->session()->get('medihub_user_role', ''))));
+    $role = match ($role) {
+        'patient' => 'pasien',
+        'doctor' => 'dokter',
+        default => $role,
+    };
 
-    Route::get('/login-dokter', function () {
-        return view('auth.login-dokter');
-    })->name('login-dokter');
-    Route::post('/login-dokter', [FirebaseSessionController::class, 'login'])
-        ->middleware('throttle:10,1');
+    if ($role === 'pasien') {
+        return redirect()->route('pasien.beranda');
+    }
 
-    Route::get('/register-dokter', function () {
-        return view('auth.register-dokter');
-    })->name('register-dokter');
+    if ($role === 'dokter') {
+        return redirect()->route('dokter.dashboard');
+    }
 
-    Route::get('/login-pasien', function () {
-        return view('auth-pasien.login-pasien');
-    })->name('login-pasien');
+    Auth::guard('web')->forgetUser();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-    Route::get('/register-pasien', function () {
-        return view('auth-pasien.register-pasien');
-    })->name('register-pasien');
+    return redirect()->route('login-pasien');
+})->middleware('auth')->name('dashboard');
 
-    Route::post('/auth/firebase/session', [FirebaseSessionController::class, 'login'])
-        ->middleware('throttle:10,1')
-        ->name('firebase.session.login');
-    Route::post('/auth/firebase/register', [FirebaseSessionController::class, 'register'])
-        ->middleware('throttle:10,1')
-        ->name('firebase.register');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    Route::get('/doctor/profile-form', [ProfileController::class, 'showDoctorForm'])->name('doctor.profile-form');
-    Route::post('/doctor/profile-form', [ProfileController::class, 'updateDoctorForm'])->name('doctor.profile.update');
-    Route::get('/doctor/profile-expertise', [ProfileController::class, 'showDoctorExpertiseForm'])->name('doctor.profile.expertise');
-    Route::post('/doctor/profile-expertise', [ProfileController::class, 'updateDoctorExpertiseForm'])->name('doctor.profile.expertise.update');
-    Route::get('/doctor/profile-certification', [ProfileController::class, 'showDoctorCertificationForm'])->name('doctor.profile.certification');
-    Route::post('/doctor/profile-certification', [ProfileController::class, 'updateDoctorCertificationForm'])->name('doctor.profile.certification.update');
-});
-
-Route::middleware(['auth', 'doctor.profile.completed'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/layanan', [DoctorController::class, 'services'])->name('services');
-    Route::get('/doctor/{id}', [DoctorController::class, 'show'])->name('doctor.show');
-    Route::get('/facility/{id}', [FacilityController::class, 'show'])->name('facility.show');
-    Route::get('/booking/{doctorId}', [AppointmentController::class, 'create'])->name('booking.create');
-    Route::post('/booking', [AppointmentController::class, 'store'])->name('booking.store');
-    Route::get('/appointments', [AppointmentController::class, 'history'])->name('appointments.history');
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-    Route::get('/jadwal-dokter', [JadwalDokterController::class, 'index'])->name('jadwal.index');
-    Route::post('/jadwal-dokter', [JadwalDokterController::class, 'store'])->name('jadwal.store');
-    Route::put('/jadwal-dokter/{id}', [JadwalDokterController::class, 'update'])->name('jadwal.update');
-    Route::delete('/jadwal-dokter/{id}', [JadwalDokterController::class, 'destroy'])->name('jadwal.destroy');
-});
-
-Route::middleware('auth')->prefix('pasien')->name('pasien.')->group(function () {
-    Route::get('/beranda', [DashboardPasienController::class, 'index'])->name('beranda');
-    Route::get('/profile', [ProfilePasienController::class, 'index'])->name('profile');
-    Route::put('/profile', [ProfilePasienController::class, 'update'])->name('profile.update');
-    Route::delete('/hapus-akun', [ProfilePasienController::class, 'destroyAccount'])->name('destroy-account');
-});
+require __DIR__ . '/dokter.php';
+require __DIR__ . '/pasien.php';

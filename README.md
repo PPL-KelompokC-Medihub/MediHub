@@ -4,6 +4,8 @@
 
 MediHub adalah platform aplikasi layanan kesehatan modern (HealthTech) yang dirancang untuk menghubungkan pasien dengan dokter, rumah sakit, dan fasilitas kesehatan terpercaya. Didesain dengan antarmuka yang sangat premium, estetis, dan responsif.
 
+> **Anggota tim baru?** Mulai dari [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — 5 menit. Untuk reference detail lihat [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+
 ## Tim Pengembang
 
 | Nama Lengkap | Peran | Tanggung Jawab |

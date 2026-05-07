@@ -20,7 +20,7 @@
             <!-- Left visual panel -->
             <div class="mediq-auth-visual">
                 <div class="mediq-auth-lines"></div>
-                <img class="mediq-auth-image" src="{{ asset('images/dokter-auth-illustration.png') }}" alt="MediHub" />
+                <img class="mediq-auth-image" src="@yield('auth_visual_image', asset('images/dokter-auth-illustration.png'))" alt="MediHub" />
             </div>
 
             <!-- Right form panel -->
