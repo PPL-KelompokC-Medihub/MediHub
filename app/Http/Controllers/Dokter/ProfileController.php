@@ -167,20 +167,28 @@ class ProfileController extends Controller
 
         $userId = (string) $currentUser['id'];
         $storedDocuments = [
-            'STR' => $this->storeDoctorFile($request->file('str_document'), $userId, 'documents'),
-            'SIP' => $this->storeDoctorFile($request->file('sip_document'), $userId, 'documents'),
-            'ijazah_doctor' => $this->storeDoctorFile($request->file('ijazah_doctor'), $userId, 'documents'),
-            'KTP' => $this->storeDoctorFile($request->file('ktp_document'), $userId, 'documents'),
-            'profile_pict' => $this->storeDoctorFile($request->file('profile_pict'), $userId, 'documents'),
+        'STR'           => $this->storeDoctorFileIfExists($request->file('str_document'), $userId, 'documents') ?? ($currentUser['STR'] ?? null),
+        'SIP'           => $this->storeDoctorFileIfExists($request->file('sip_document'), $userId, 'documents') ?? ($currentUser['SIP'] ?? null),
+        'ijazah_doctor' => $this->storeDoctorFileIfExists($request->file('ijazah_doctor'), $userId, 'documents') ?? ($currentUser['ijazah_doctor'] ?? null),
+        'KTP'           => $this->storeDoctorFileIfExists($request->file('ktp_document'), $userId, 'documents') ?? ($currentUser['KTP'] ?? null),
+        'profile_pict'  => $this->storeDoctorFileIfExists($request->file('profile_pict'), $userId, 'documents') ?? ($currentUser['profile_pict'] ?? null),
         ];
 
-        $storedCertifications = array_map(
-            fn (UploadedFile $file): string => $this->storeDoctorFile($file, $userId, 'certifications'),
-            $request->file('certifications', []),
-        );
+       $existingCerts = [];
+        for ($i = 0; $i < 6; $i++) {
+            $existingCerts[$i] = $currentUser['certification' . ($i + 1)] ?? null;
+        }
+
+        foreach ($request->file('certifications', []) as $index => $file) {
+            if ($file instanceof UploadedFile && $file->isValid()) {
+                $existingCerts[$index] = $this->storeDoctorFileIfExists($file, $userId, 'certifications');
+            }
+        }
+
+        $storedCertifications = array_values(array_filter($existingCerts));
 
         $updatedUser = $this->doctorRepository->updateDoctorCertification($userId, [
-            'documents' => $storedDocuments,
+            'documents'      => $storedDocuments,
             'certifications' => $storedCertifications,
         ]);
         Auth::setUser(new FirestoreUser($updatedUser));
@@ -202,9 +210,11 @@ class ProfileController extends Controller
         return $this->doctorRepository->hydrateDoctorData($userData);
     }
 
-    private function storeDoctorFile(?UploadedFile $file, string $userId, string $directory): string
+    private function storeDoctorFileIfExists(?UploadedFile $file, string $userId, string $directory): ?string
     {
-        abort_if(! $file, 422, 'File dokumen dokter tidak valid.');
+        if (! $file || ! $file->isValid()) {
+            return null;
+        }
 
         return $file->store("doctor/{$userId}/{$directory}", 'public');
     }
