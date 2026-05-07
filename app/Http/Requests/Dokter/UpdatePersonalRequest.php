@@ -41,6 +41,7 @@ class UpdatePersonalRequest extends FormRequest
             'country' => ['required', 'string', 'max:100'],
             'city' => ['required', 'string', 'max:100'],
             'postal_code' => ['required', 'string', 'max:20'],
+            'profile_pict' => ['nullable', 'string', 'max:255'], // Bisa berupa URL atau path penyimpanan
         ];
     }
 }

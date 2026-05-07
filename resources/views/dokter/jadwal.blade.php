@@ -34,17 +34,28 @@
                         <p class="doctor-schedule-date">{{ \Carbon\Carbon::parse($j->tanggal)->translatedFormat('l, d F Y') }}</p>
                         <p class="doctor-schedule-time">{{ $j->jam_mulai }} - {{ $j->jam_selesai }}</p>
                         <div class="doctor-schedule-actions">
-                            <button type="button" data-schedule-delete="{{ $j->id }}" class="doctor-delete-button">
+                            <button
+                                type="button"
+                                data-schedule-delete="{{ $j->id }}"
+                                class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
+                            >
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
                                 </svg>
                             </button>
-                            <button type="button" data-schedule-modal="edit" data-schedule-id="{{ $j->id }}" data-tanggal="{{ $j->tanggal }}" data-jam-mulai="{{ $j->jam_mulai }}" data-jam-selesai="{{ $j->jam_selesai }}"
-                                class="mediq-primary-btn doctor-edit-button">
-                                Edit
+                            <button
+                                type="button"
+                                data-schedule-modal="edit"
+                                data-schedule-id="{{ $j->id }}"
+                                data-tanggal="{{ $j->tanggal }}"
+                                data-jam-mulai="{{ $j->jam_mulai }}"
+                                data-jam-selesai="{{ $j->jam_selesai }}"
+                                class="doctor-edit-button"
+                            >
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
+                                Edit
                             </button>
                         </div>
                     </div>
@@ -63,22 +74,34 @@
         @if(count($mingguDepan) > 0)
             <div class="doctor-schedule-grid">
                 @foreach($mingguDepan as $j)
+                    {{-- FIXED: pakai $j bukan $jadwal, dan pakai class + data attributes yang sama --}}
                     <div class="doctor-schedule-card">
                         <p class="doctor-schedule-eyebrow">Jadwal Tersedia</p>
                         <p class="doctor-schedule-date">{{ \Carbon\Carbon::parse($j->tanggal)->translatedFormat('l, d F Y') }}</p>
-                        <p class="doctor-schedule-time">{{ $j->jam_mulai }} - {{ $j->jam_selesai }}</p>
+                        <p class="doctor-schedule-time">{{ $j->jam_mulai ?? '-' }} - {{ $j->jam_selesai ?? '-' }}</p>
                         <div class="doctor-schedule-actions">
-                            <button type="button" data-schedule-delete="{{ $j->id }}" class="doctor-delete-button">
+                            <button
+                                type="button"
+                                data-schedule-delete="{{ $j->id }}"
+                                class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
+                            >
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
                                 </svg>
                             </button>
-                            <button type="button" data-schedule-modal="edit" data-schedule-id="{{ $j->id }}" data-tanggal="{{ $j->tanggal }}" data-jam-mulai="{{ $j->jam_mulai }}" data-jam-selesai="{{ $j->jam_selesai }}"
-                                class="mediq-primary-btn doctor-edit-button">
-                                Edit
+                            <button
+                                type="button"
+                                data-schedule-modal="edit"
+                                data-schedule-id="{{ $j->id }}"
+                                data-tanggal="{{ $j->tanggal }}"
+                                data-jam-mulai="{{ $j->jam_mulai }}"
+                                data-jam-selesai="{{ $j->jam_selesai }}"
+                                class="doctor-edit-button"
+                            >
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path d="M11 5H5a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
+                                Edit
                             </button>
                         </div>
                     </div>
