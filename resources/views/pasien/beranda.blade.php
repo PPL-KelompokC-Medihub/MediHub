@@ -12,26 +12,35 @@
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
-    <div data-patient-home data-doctors="{{ e(json_encode($doctors)) }}"></div>
-    <div class="grid min-h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
+    <div 
+        data-patient-home
+        data-doctors='@json($doctors)'
+    ></div>
+    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
         <x-pasien.sidebar active="beranda" />
 
-        <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">
+        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
+                <a 
+                    href="{{ route('pasien.profile') }}"
+                    class="group flex items-center gap-4 transition-all duration-200 hover:-translate-y-[2px]"
+                >
                     <img 
                         src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
-                        class="h-14 w-14 rounded-full object-cover"
+                        class="h-14 w-14 rounded-full object-cover transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-300"
                         alt="Avatar"
                     >
 
                     <div>
-                        <h1 class="text-lg font-semibold">
+                        <h1 class="text-lg font-semibold transition-colors duration-200 group-hover:text-[#58A7F7]">
                             Halo, {{ auth()->user()->name ?? auth()->user()->fullname ?? 'Pasien' }} 👋
                         </h1>
-                        <p class="text-sm text-gray-500">Bagaimana kabarmu?</p>
+
+                        <p class="text-sm text-gray-500">
+                            Bagaimana kabarmu?
+                        </p>
                     </div>
-                </div>
+                </a>
 
                 <div class="flex items-center gap-3">
                     <div class="flex w-[330px] items-center rounded-xl border border-gray-200 bg-white px-4 py-3">
@@ -62,10 +71,21 @@
 
                 <div class="relative z-10 grid h-full grid-cols-[1fr_240px_1fr] items-center">
                     <div class="ml-35">
-                        <h2 class="mb-4 bg-[linear-gradient(180deg,#FFFFFF_0%,#E7EEF8_100%)] bg-clip-text text-[26px] font-bold leading-none tracking-wide text-transparent drop-shadow-[0_1px_2px_rgba(255,255,255,0.35)]">PROMO SPESIAL</h2>
+                        <h2 
+                            class="mb-4 text-[26px] font-bold leading-none tracking-wide drop-shadow-[0_1px_2px_rgba(255,255,255,0.25)]"
+                            style="
+                                background: linear-gradient(180deg, #E8E8E8 0%, #FFFFFF 100%);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                                color: transparent;
+                            "
+                        >
+                            PROMO SPESIAL
+                        </h2>
                         <button
                             type="button"
-                            class="group relative inline-flex cursor-pointer overflow-hidden rounded-[14px]
+                            class="mt-3 group relative inline-flex cursor-pointer overflow-hidden rounded-[14px]
                                 border border-white/55
                                 bg-white/12
                                 px-5 py-2
@@ -119,11 +139,27 @@
                     </div>
 
                     <div class="relative">
-                        <h2 class="mb-1 text-[32px] font-semibold leading-none tracking-tight">
+                        <h2 
+                            class="mb-1 text-[28px] font-semibold leading-[1.2]"
+                            style="
+                                background: linear-gradient(180deg, #E8E8E8 0%, #FFFFFF 100%);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                                color: transparent;
+                                text-shadow: 0 2px 6px rgba(255,255,255,0.18);
+                            "
+                        >
                             DISKON 30%
                         </h2>
 
-                        <p class="mb-4 text-[18px] font-light leading-[1.4] text-white/95">
+                        <p 
+                            class="mt-2 mb-4 text-[17px] font-normal leading-[1.2]"
+                            style="
+                                color: #FFFFFF;
+                                text-shadow: 0 1px 4px rgba(255,255,255,0.12);
+                            "
+                        >
                             Dapatkan diskon untuk pengguna baru
                         </p>
 
@@ -202,7 +238,7 @@
 
         </main>
 
-        <aside class="flex flex-col border-l border-gray-200 bg-white px-7 py-8">
+        <aside class="sticky top-0 flex h-screen flex-col border-l border-gray-200 bg-white px-7 py-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-lg font-semibold">Jadwal Temu Mendatang</h2>
                 <a href="#" class="text-sm text-blue-500">Batalkan</a>
@@ -262,9 +298,32 @@
                 @endforelse
             </div>
 
-            <a href="{{ route('pasien.booking.create') }}" class="mt-auto flex items-center justify-between rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
-                Buat Jadwal Temu
-                <i class="fa-solid fa-plus"></i>
+            <a href="{{ route('pasien.booking.create') }}" 
+            class="group relative mt-auto flex items-center justify-between overflow-hidden rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(96,165,250,0.45)]">
+
+                <span class="relative z-10 text-white">
+                    Buat Jadwal Temu
+                </span>
+
+                <i class="fa-solid fa-circle-plus relative z-10 text-white text-[18px]"></i>
+
+                <!-- glow -->
+                <span
+                    class="pointer-events-none absolute left-[10%] top-[8%]
+                    h-[42%] w-[80%]
+                    rounded-full bg-white/20 blur-md">
+                </span>
+
+                <!-- shine -->
+                <span
+                    class="pointer-events-none absolute left-[-120%] top-[-40%]
+                    h-[220%] w-[35%]
+                    rotate-[20deg]
+                    bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)]
+                    blur-md
+                    transition-all duration-1000
+                    group-hover:left-[160%]">
+                </span>
             </a>
         </aside>
     </div>
@@ -275,7 +334,7 @@
     </div>
 
     <div id="poliPanel"
-        class="fixed right-0 top-0 z-[9999] h-screen w-[380px] translate-x-full border-l border-gray-200 bg-white px-7 py-10 shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out">
+        class="fixed right-0 top-0 z-[9999] h-screen w-[420px] translate-x-full overflow-y-auto border-l border-gray-200 bg-white px-7 py-10 shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out">
 
         <button 
             type="button"
@@ -290,9 +349,9 @@
         </button>
 
         <div class="mb-6">
-            <h2 class="text-[32px] font-medium leading-none text-blue-400">
+            <p class="text-[32px] font-medium leading-none text-[#59A5F5]">
                 Poli
-            </h2>
+            </p>
 
             <h1 id="poliTitle" class="mt-1 text-[32px] font-medium leading-none text-black"></h1>
         </div>

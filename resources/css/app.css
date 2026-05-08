@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
 :root {
     --bg: #f5f6f8;
     --panel: #ffffff;
@@ -2366,8 +2369,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 112px 16px;
-  background: #fff;
+  padding: 24px 5px 16px;
   position: relative;
   z-index: 10;
 }
