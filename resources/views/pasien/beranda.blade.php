@@ -16,7 +16,7 @@
         data-patient-home
         data-doctors='@json($doctors)'
     ></div>
-    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
+    <div class="grid h-screen grid-cols-[1fr_380px] overflow-hidden ml-[220px]">
         <x-pasien.sidebar active="beranda" />
 
         <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">

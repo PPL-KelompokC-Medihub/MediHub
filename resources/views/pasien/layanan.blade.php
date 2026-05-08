@@ -12,7 +12,7 @@
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
-    <div class="grid min-h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
+    <div class="grid h-screen grid-cols-[1fr_390px] overflow-hidden ml-[220px]">
         <x-pasien.sidebar active="layanan" />
 
         <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-10">

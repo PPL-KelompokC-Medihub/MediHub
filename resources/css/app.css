@@ -685,7 +685,9 @@ textarea.mediq-input {
 .mediq-shell-grid {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 230px 1fr 350px;
+    grid-template-columns: 1fr 350px;
+    margin-left: 230px;
+
 }
 
 .mediq-sidebar,
@@ -695,10 +697,17 @@ textarea.mediq-input {
 }
 
 .mediq-sidebar {
-    border-right: 1px solid var(--line);
+     border-right: 1px solid var(--line);
     padding: 28px 20px;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 230px;
+    z-index: 10;
+    overflow-y: auto;
 }
 
 .mediq-sidebar .mediq-logo img {
