@@ -23,28 +23,25 @@ class ProfileController extends Controller
 
         $uid = $authUser->id;
 
-        $pasien = $this->firestore->find('Pasien', $uid);
+        $pasien = $this->firestore->find('Pasien', $uid) ?? [
+            'id' => $uid,
+            'user_id' => $uid,
+            'city' => 'Bandung',
+            'country' => 'Indonesia',
+            'created_at' => now()->toIso8601String(),
+        ];
 
-        if (! $pasien) {
-            $pasien = [
-                'id' => $uid,
-                'user_id' => $uid,
-                'fullname' => $authUser->fullname ?? $authUser->name ?? '',
-                'email' => $authUser->email ?? '',
-                'role' => 'pasien',
-                'age' => null,
-                'weight' => null,
-                'height' => null,
-                'allergy_history' => '',
-                'city' => 'Bandung',
-                'country' => 'Indonesia',
-                'created_at' => $authUser->created_at ?? null,
-            ];
-        }
+        $userData = $this->firestore->find('Users', $uid) ?? [];
 
-        $user = (object) $pasien;
+        $mergedUser = array_merge($pasien, [
+            'fullname' => $userData['fullname'] ?? $authUser->fullname ?? $authUser->name ?? '',
+            'email' => $userData['email'] ?? $authUser->email ?? '',
+            'role' => $userData['role'] ?? 'pasien',
+        ]);
 
-        return view('pasien.profile', compact('user'));
+        return view('pasien.profile', [
+            'user' => (object) $mergedUser,
+        ]);
     }
 
     public function update(Request $request)
@@ -58,85 +55,91 @@ class ProfileController extends Controller
         $uid = $authUser->id;
 
         $validated = $request->validate([
-            'fullname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-
+            'fullname' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'umur' => ['nullable', 'integer', 'min:0'],
             'weight' => ['nullable', 'numeric', 'min:0'],
             'height' => ['nullable', 'numeric', 'min:0'],
-
+            'gender' => ['nullable', 'string', 'in:Perempuan,Pria'],
+            'blood_type' => ['nullable', 'string', 'in:A,B,AB,O'],
             'allergy_history' => ['nullable', 'string', 'max:1000'],
-
             'country' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'code_pos' => ['nullable', 'string', 'max:100'],
-            'gender' => ['nullable', 'string', 'in:Perempuan,Pria'],
-            'blood_type' => ['nullable', 'string', 'in:A,B,AB,O'],
-            'no_allergy' => ['nullable', 'boolean'],
+            'no_allergy' => ['nullable'],
         ]);
 
-        $existingPasien = $this->firestore->find('Pasien', $uid) ?? [];
+        $existing = $this->firestore->find('Pasien', $uid) ?? [];
 
-        $payload = array_merge($existingPasien, [
+        unset(
+            $existing['fullname'],
+            $existing['email'],
+            $existing['role'],
+            $existing['update_at']
+        );
+
+        $payload = array_merge($existing, [
             'id' => $uid,
             'user_id' => $uid,
-
-            'fullname' => $validated['fullname'] ?? ($existingPasien['fullname'] ?? ''),
-            'email' => $validated['email'] ?? ($existingPasien['email'] ?? ''),
-            'role' => 'pasien',
-
-            'umur' => $request->filled('umur')
-                ? $validated['umur']
-                : ($existingPasien['umur'] ?? null),
-
-            'weight' => $request->filled('weight')
-                ? $validated['weight']
-                : ($existingPasien['weight'] ?? null),
-
-            'height' => $request->filled('height')
-                ? $validated['height']
-                : ($existingPasien['height'] ?? null),
-
-            'allergy_history' => $request->filled('allergy_history')
-                ? $validated['allergy_history']
-                : ($existingPasien['allergy_history'] ?? ''),
-
-            'country' => $request->filled('country')
-                ? $validated['country']
-                : ($existingPasien['country'] ?? 'Indonesia'),
-
-            'city' => $request->filled('city')
-                ? $validated['city']
-                : ($existingPasien['city'] ?? 'Bandung'),
-
-            'code_pos' => $request->filled('code_pos')
-                ? $validated['code_pos']
-                : ($existingPasien['code_pos'] ?? ''),
-
-            'gender' => $request->filled('gender')
-                ? $validated['gender']
-                : ($existingPasien['gender'] ?? ''),
-
-            'blood_type' => $request->filled('blood_type')
-                ? $validated['blood_type']
-                : ($existingPasien['blood_type'] ?? ''),
-
-            'no_allergy' => $request->boolean('no_allergy'),
-
-            'created_at' => $existingPasien['created_at'] ?? now()->toIso8601String(),
-            'update_at' => now()->toIso8601String(),
+            'umur' => $validated['umur'] ?? $existing['umur'] ?? null,
+            'weight' => $validated['weight'] ?? $existing['weight'] ?? null,
+            'height' => $validated['height'] ?? $existing['height'] ?? null,
+            'gender' => $validated['gender'] ?? $existing['gender'] ?? '',
+            'blood_type' => $validated['blood_type'] ?? $existing['blood_type'] ?? '',
+            'allergy_history' => $validated['allergy_history'] ?? $existing['allergy_history'] ?? '',
+            'country' => $validated['country'] ?? $existing['country'] ?? 'Indonesia',
+            'city' => $validated['city'] ?? $existing['city'] ?? 'Bandung',
+            'code_pos' => $validated['code_pos'] ?? $existing['code_pos'] ?? '',
+            'no_allergy' => $request->has('no_allergy'),
+            'created_at' => $existing['created_at'] ?? now()->toIso8601String(),
+            'updated_at' => now()->toIso8601String(),
         ]);
 
         $this->firestore->set('Pasien', $uid, $payload);
 
         $this->firestore->update('Users', $uid, [
-            'fullname' => $payload['fullname'],
-            'email' => $payload['email'],
-            'update_at' => now()->toIso8601String(),
+            'fullname' => $validated['fullname'] ?? '',
+            'email' => $validated['email'] ?? '',
+            'role' => 'pasien',
+            'updated_at' => now()->toIso8601String(),
         ]);
 
-        return redirect()->route('pasien.profile')
+        $this->firestore->deleteFields('Pasien', $uid, [
+            'fullname',
+            'email',
+            'role',
+            'update_at',
+        ]);
+
+        return redirect()
+            ->route('pasien.profile')
             ->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function updatePhoto(Request $request)
+    {
+        $authUser = auth()->user();
+
+        if (! $authUser) {
+            return redirect()->route('login-pasien');
+        }
+
+        $request->validate([
+            'profile_pict' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $uid = $authUser->id;
+
+        $path = $request->file('profile_pict')->store('profile-pictures', 'public');
+
+        $this->firestore->update('Pasien', $uid, [
+            'profile_pict' => $path,
+            'updated_at' => now()->toIso8601String(),
+        ]);
+
+        return redirect()
+            ->route('pasien.profile')
+            ->with('success', 'Foto profil berhasil diperbarui.');
     }
 
     public function destroyAccount(Request $request)
@@ -147,20 +150,19 @@ class ProfileController extends Controller
             return redirect()->route('login-pasien');
         }
 
-        $uid = $user->id ?? null;
+        $uid = $user->id;
 
-        if ($uid) {
-            $this->firestore->delete('Pasien', $uid);
-            $this->firestore->delete('Users', $uid);
-            $this->firestore->auth()->deleteUser($uid);
-        }
+        $this->firestore->delete('Pasien', $uid);
+        $this->firestore->delete('Users', $uid);
+        $this->firestore->auth()->deleteUser($uid);
 
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('register-pasien')
+        return redirect()
+            ->route('register-pasien')
             ->with('success', 'Akun berhasil dihapus.');
     }
 }

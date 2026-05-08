@@ -8,6 +8,10 @@
     $iconClass = fn (string $key) => $active === $key
         ? 'w-[26px] min-w-[26px] text-left text-[18px] text-[#58A7F7] transition-all duration-200'
         : 'w-[26px] min-w-[26px] text-left text-[18px] text-[#8A8A8A] transition-all duration-200 group-hover:text-[#58A7F7]';
+
+    $textClass = fn (string $key) => $active === $key
+    ? 'text-[#58A7F7] transition-all duration-200'
+    : 'text-[#111827] transition-all duration-200 group-hover:text-[#58A7F7]';
 @endphp
 
 <aside class="sticky left-0 top-0 flex h-screen w-full flex-col border-r border-gray-200 bg-white">
@@ -24,28 +28,28 @@
             <a href="{{ route('pasien.beranda') }}" class="{{ $linkClass('beranda') }}">
                 <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
                     <i class="fa-solid fa-house {{ $iconClass('beranda') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Beranda</span>
+                    <span class="{{ $active === 'beranda' ? 'text-[#58A7F7]' : 'text-[#111827] group-hover:text-[#58A7F7]' }} transition-all duration-200">Beranda</span>
                 </div>
             </a>
 
             <a href="{{ route('pasien.layanan') }}" class="{{ $linkClass('layanan') }}">
                 <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
                     <i class="fa-solid fa-bed-pulse {{ $iconClass('layanan') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Layanan</span>
+                    <span class="{{ $active === 'layanan' ? 'text-[#58A7F7]' : 'text-[#111827] group-hover:text-[#58A7F7]' }} transition-all duration-200">Layanan</span>
                 </div>
             </a>
 
             <a href="#" class="{{ $linkClass('riwayat') }}">
                 <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
                     <i class="fa-regular fa-clock {{ $iconClass('riwayat') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Riwayat</span>
+                    <span class="{{ $active === 'riwayat' ? 'text-[#58A7F7]' : 'text-[#111827] group-hover:text-[#58A7F7]' }} transition-all duration-200">Riwayat</span>
                 </div>
             </a>
 
             <a href="{{ route('pasien.profile') }}" class="{{ $linkClass('profil') }}">
                 <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
                     <i class="fa-regular fa-user {{ $iconClass('profil') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Profil</span>
+                    <span class="{{ $active === 'profil' ? 'text-[#58A7F7]' : 'text-[#111827] group-hover:text-[#58A7F7]' }} transition-all duration-200">Profil</span>
                 </div>
             </a>
         </nav>

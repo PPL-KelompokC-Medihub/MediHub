@@ -9,6 +9,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 
 <body class="font-[Poppins] bg-white text-gray-900">
@@ -20,15 +22,38 @@
             <header class="mb-8">
                 <div class="flex items-center gap-4">
                     <div class="relative">
-                        <img 
-                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
-                            class="h-28 w-28 rounded-full object-cover"
-                            alt="Foto Profil"
-                        >
+                        <form id="profilePhotoForm" action="{{ route('pasien.profile.update-photo') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
 
-                        <button class="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white">
-                            <i class="fa-regular fa-pen-to-square"></i>
-                        </button>
+                            <img 
+                                src="{{ !empty($user->profile_pict) ? asset('storage/' . $user->profile_pict) : asset('images/default-profile.png') }}"
+                                class="h-28 w-28 rounded-full object-cover"
+                                alt="Foto Profil"
+                            >
+
+                            <input
+                                type="file"
+                                name="profile_pict"
+                                id="profilePictInput"
+                                accept="image/*"
+                                class="hidden"
+                            >
+
+                            <input type="hidden" name="cropped_image" id="croppedImageInput">
+
+                            <button 
+                                type="button"
+                                id="choosePhotoBtn"
+                                class="group absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-blue-500 text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-[0_8px_25px_rgba(59,130,246,0.55)]"
+                            >
+                                <span class="absolute inset-0 overflow-hidden rounded-full">
+                                    <span class="absolute -left-10 top-0 h-full w-5 rotate-12 bg-white/40 blur-sm transition-all duration-700 group-hover:left-14"></span>
+                                </span>
+
+                                <i class="fa-regular fa-pen-to-square relative z-10 text-sm transition-transform duration-300 group-hover:scale-110"></i>
+                            </button>
+                        </form>
                     </div>
 
                     <div class="pt-1">
@@ -197,10 +222,19 @@
                             >
                             Tidak ada
                         </label>
-                        <div id="saveProfileWrapper" class="mt-5 hidden justify-end">
+                        <div id="saveProfileWrapper" class="mt-5 hidden justify-end gap-3">
+    
+                            <button 
+                                type="button"
+                                id="cancelProfileBtn"
+                                class="rounded-xl border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100"
+                            >
+                                Batal
+                            </button>
+
                             <button 
                                 type="submit"
-                                class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white"
+                                class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-600"
                             >
                                 Simpan
                             </button>
@@ -266,10 +300,18 @@
                         </div>
                     </div>
 
-                    <div id="saveAddressWrapper" class="mt-5 hidden justify-end">
+                    <div id="saveAddressWrapper" class="mt-5 hidden justify-end gap-3">
+                        <button
+                            type="button"
+                            id="cancelAddressBtn"
+                            class="rounded-xl border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100"
+                        >
+                            Batal
+                        </button>
+
                         <button
                             type="submit"
-                            class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white"
+                            class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-600"
                         >
                             Simpan
                         </button>
@@ -307,9 +349,14 @@
             <p class="mb-4 mt-7 text-sm text-gray-400">Login</p>
 
             <div class="flex flex-col gap-5 text-sm">
-                <a href="#" class="flex items-center gap-3 text-blue-500">
-                    <i class="fa-solid fa-plus"></i> Tambah Akun
+                <a 
+                    href="#" 
+                    class="group flex items-center gap-3 text-gray-700 transition-all duration-200 hover:-translate-y-[2px]"
+                >
+                    <i class="fa-solid fa-plus transition-all duration-200 group-hover:text-blue-500"></i>
+                    <span class="text-gray-700 transition-all duration-200 group-hover:text-blue-500">Tambah Akun</span>
                 </a>
+
 
                 <button 
                     type="button"
@@ -322,8 +369,12 @@
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button class="flex items-center gap-3 text-gray-700">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+                    <button 
+                        type="submit"
+                        class="group flex items-center gap-3 text-gray-700 transition-all duration-200 hover:-translate-y-[2px] hover:text-red-500"
+                    >
+                        <i class="fa-solid fa-arrow-right-from-bracket transition-all duration-200 group-hover:text-red-500"></i>
+                        <span>Keluar</span>
                     </button>
                 </form>
             </div>
@@ -358,6 +409,34 @@
                         Ya, Hapus
                     </button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="cropModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+        <div class="w-[520px] rounded-2xl bg-white p-6 shadow-xl">
+            <h2 class="mb-4 text-lg font-semibold">Atur Foto Profil</h2>
+
+            <div class="mb-5 max-h-[420px] overflow-hidden rounded-xl border border-gray-200">
+                <img id="cropPreview" class="max-h-[420px] w-full object-contain">
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button
+                    type="button"
+                    id="cancelCropBtn"
+                    class="rounded-xl border border-gray-200 px-5 py-2 text-sm text-gray-600"
+                >
+                    Batal
+                </button>
+
+                <button
+                    type="button"
+                    id="saveCropBtn"
+                    class="rounded-xl bg-blue-500 px-5 py-2 text-sm font-medium text-white"
+                >
+                    Simpan
+                </button>
             </div>
         </div>
     </div>
