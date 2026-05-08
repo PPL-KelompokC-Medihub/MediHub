@@ -256,7 +256,8 @@ async function syncUserToBackend(url, payload) {
 }
 
 function mapErrorMessage(error) {
-    const code = (error instanceof Error ? error.message : String(error)).toUpperCase();
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const code = rawMessage.toUpperCase();
 
     if (code.includes('EMAIL_EXISTS')) {
         return 'Email sudah terdaftar. Silakan login.';
@@ -270,6 +271,18 @@ function mapErrorMessage(error) {
     if (code.includes('VERIFY_EMAIL_FAILED')) {
         return 'Akun dibuat, tapi gagal kirim email verifikasi. Coba login untuk kirim ulang.';
     }
+    if (code.includes('JENIS AKUN TIDAK SESUAI')) {
+        return 'Email ini sudah terdaftar sebagai jenis akun lain. Gunakan email lain atau login lewat halaman yang sesuai.';
+    }
+    if (code.includes('TOKEN FIREBASE TIDAK VALID')) {
+        return 'Sesi pendaftaran tidak valid. Refresh halaman lalu coba daftar ulang.';
+    }
+    if (code.includes('KONFIGURASI FIREBASE')) {
+        return rawMessage;
+    }
+    if (code.includes('SYNC_REGISTER_FAILED') || code.includes('REGISTER_FAILED')) {
+        return 'Registrasi gagal. Periksa email dan kata sandi, lalu coba lagi.';
+    }
 
-    return 'Registrasi gagal. Silakan coba lagi.';
+    return rawMessage || 'Registrasi gagal. Silakan coba lagi.';
 }

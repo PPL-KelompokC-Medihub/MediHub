@@ -23,6 +23,7 @@ class ScheduleController extends Controller
     use MapsFirestoreData;
 
     private const COLLECTION = 'JadwalDokter';
+    private const DOCTOR_COLLECTION = 'Dokter';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -30,11 +31,7 @@ class ScheduleController extends Controller
 
     public function index(): View
     {
-        $dokterid = Auth::id();
-
-        $jadwal = $this->toObjects(
-            $this->firestore->where(self::COLLECTION, 'dokterid', '=', $dokterid)
-        );
+        $jadwal = $this->toObjects($this->currentDoctorSchedules());
 
         // Kelompokkan per minggu
         $mingguIni = [];
@@ -66,7 +63,7 @@ class ScheduleController extends Controller
         ]);
 
         $this->firestore->add(self::COLLECTION, [
-            'dokterid' => Auth::id(),
+            'dokterid' => $this->currentDoctorId(),
             'tanggal' => $validated['tanggal'],
             'jam_mulai' => $validated['jam_mulai'],
             'jam_selesai' => $validated['jam_selesai'],
@@ -83,6 +80,8 @@ class ScheduleController extends Controller
             'jam_selesai' => 'required|string',
         ]);
 
+        $this->abortIfScheduleIsNotOwnedByCurrentDoctor($id);
+
         $this->firestore->update(self::COLLECTION, $id, $validated);
 
         return response()->json(['success' => true]);
@@ -90,8 +89,53 @@ class ScheduleController extends Controller
 
     public function destroy(string $id)
     {
+        $this->abortIfScheduleIsNotOwnedByCurrentDoctor($id);
+
         $this->firestore->delete(self::COLLECTION, $id);
 
         return response()->json(['success' => true]);
+    }
+
+    private function currentDoctorId(): string
+    {
+        $userId = (string) Auth::id();
+        $doctor = $this->firestore->where(self::DOCTOR_COLLECTION, 'usersId', '=', $userId, 1)[0] ?? null;
+
+        return (string) ($doctor['id'] ?? $userId);
+    }
+
+    private function abortIfScheduleIsNotOwnedByCurrentDoctor(string $id): void
+    {
+        $schedule = $this->firestore->find(self::COLLECTION, $id);
+
+        abort_if(! $schedule, 404);
+        abort_if(! in_array((string) ($schedule['dokterid'] ?? ''), $this->currentDoctorOwnerIds(), true), 403);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function currentDoctorSchedules(): array
+    {
+        $schedules = [];
+
+        foreach ($this->currentDoctorOwnerIds() as $doctorId) {
+            foreach ($this->firestore->where(self::COLLECTION, 'dokterid', '=', $doctorId) as $schedule) {
+                $schedules[$schedule['id']] = $schedule;
+            }
+        }
+
+        return array_values($schedules);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function currentDoctorOwnerIds(): array
+    {
+        return array_values(array_unique([
+            $this->currentDoctorId(),
+            (string) Auth::id(),
+        ]));
     }
 }

@@ -42,13 +42,13 @@ class UpdateCertificationRequest extends FormRequest
         $userData = $repository->hydrateDoctorData($repository->findUser($userId));
 
         return [
-            'str_document'     => [blank($userData['STR'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
-            'sip_document'     => [blank($userData['SIP'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
-            'ijazah_doctor'    => [blank($userData['ijazah_doctor'] ?? null) ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
-            'ktp_document'     => [blank($userData['KTP'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
-            'profile_pict'     => [blank($userData['profile_pict'] ?? null)  ? 'required' : 'nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:10240'],
+            'str_document'     => [blank($userData['STR'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
+            'sip_document'     => [blank($userData['SIP'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
+            'ijazah_doctor'    => [blank($userData['ijazah_doctor'] ?? null) ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
+            'ktp_document'     => [blank($userData['KTP'] ?? null)           ? 'required' : 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
+            'profile_pict'     => [blank($userData['profile_pict'] ?? null)  ? 'required' : 'nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'certifications'   => [blank($userData['certification1'] ?? null) ? 'required' : 'nullable', 'array', 'min:1', 'max:6'],
-            'certifications.*' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
+            'certifications.*' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
         ];
     }
 }

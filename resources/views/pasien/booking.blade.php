@@ -12,11 +12,16 @@
 <body class="bg-white font-[Poppins] text-[#111827]">
     <div
         data-patient-booking
-        data-schedules="{{ e(json_encode($schedules)) }}"
-        data-doctors="{{ e(json_encode($doctors)) }}"
+        data-selected-doctor-id="{{ old('doctor_id', $selectedDoctorId) }}"
         data-selected-schedule-id="{{ old('doctor_schedule_id') }}"
         data-selected-appointment-time="{{ old('appointment_time') }}"
     ></div>
+    <script type="application/json" id="patientBookingSchedules">
+        @json($schedules)
+    </script>
+    <script type="application/json" id="patientBookingDoctors">
+        @json($doctors)
+    </script>
     <div class="grid min-h-screen grid-cols-[1fr_390px] overflow-hidden ml-[220px]">
         <x-pasien.sidebar active="beranda" />
 
@@ -39,7 +44,7 @@
                         <select id="doctor_id" name="doctor_id" required class="mb-1 bg-transparent text-lg font-semibold outline-none">
                             <option value="">Pilih Dokter</option>
                             @foreach ($doctors as $doctor)
-                                <option value="{{ $doctor['id'] }}" @selected(old('doctor_id', $selectedDoctorId) === $doctor['id'])>
+                                <option value="{{ $doctor['id'] }}" @selected((string) old('doctor_id', $selectedDoctorId) === (string) $doctor['id'])>
                                     {{ $doctor['name'] }}
                                 </option>
                             @endforeach
@@ -130,7 +135,8 @@
 
                         <div>
                             <label class="mb-2 block text-sm font-medium">Dokumen Medis</label>
-                            <input name="medical_doc" type="file" accept=".pdf,.png,.jpg,.jpeg" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none">
+                            <input id="medical_doc" name="medical_doc" type="file" accept=".pdf,.png,.jpg,.jpeg" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none">
+                            <p id="medicalDocHelp" class="mt-1 text-xs text-gray-400">Max 2 MB. Format PDF, PNG, JPG, atau JPEG.</p>
                         </div>
 
                         <div>
@@ -145,7 +151,7 @@
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <button type="submit" class="rounded-xl bg-blue-500 px-7 py-3 text-sm font-medium text-white shadow-md">
+                        <button type="submit" data-booking-submit class="rounded-xl bg-blue-500 px-7 py-3 text-sm font-medium text-white shadow-md">
                             Buat Jadwal Temu
                             <i class="fa-solid fa-plus ml-2"></i>
                         </button>
@@ -190,5 +196,166 @@
         </aside>
     </div>
 
+    <script>
+        window.setTimeout(() => {
+            if (window.__medihubPatientBookingReady) {
+                return;
+            }
+
+            const root = document.querySelector('[data-patient-booking]');
+            const doctorSelect = document.getElementById('doctor_id');
+            const dateOptions = document.getElementById('dateOptions');
+            const timeOptions = document.getElementById('timeOptions');
+            const scheduleInput = document.getElementById('doctor_schedule_id');
+            const appointmentTimeInput = document.getElementById('appointment_time');
+            const rangeText = document.getElementById('scheduleRangeText');
+            const emptyText = document.getElementById('schedule-empty-text');
+            const submitButton = document.querySelector('[data-booking-submit]');
+
+            if (!root || !doctorSelect || !dateOptions || !timeOptions || !scheduleInput || !appointmentTimeInput) {
+                return;
+            }
+
+            const parseJsonScript = (id) => {
+                try {
+                    const node = document.getElementById(id);
+                    const parsed = JSON.parse(node ? node.textContent : '[]');
+
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (error) {
+                    console.error('Gagal membaca data booking pasien.', error);
+
+                    return [];
+                }
+            };
+
+            const schedules = parseJsonScript('patientBookingSchedules');
+            const doctors = parseJsonScript('patientBookingDoctors');
+
+            if (!doctorSelect.value) {
+                doctorSelect.value = root.dataset.selectedDoctorId || (doctors[0] ? String(doctors[0].id) : '');
+            }
+
+            const minutes = (time) => {
+                const [hour, minute] = String(time || '').split(':').map((part) => Number.parseInt(part, 10));
+                return Number.isNaN(hour) || Number.isNaN(minute) ? null : (hour * 60) + minute;
+            };
+
+            const formatMinutes = (value) => {
+                const hour = String(Math.floor(value / 60)).padStart(2, '0');
+                const minute = String(value % 60).padStart(2, '0');
+                return `${hour}:${minute}`;
+            };
+
+            const slotsFor = (schedule) => {
+                const start = minutes(schedule.start);
+                const end = minutes(schedule.end);
+                if (start === null || end === null || start >= end) {
+                    return [schedule.start].filter(Boolean);
+                }
+
+                const slots = [];
+                for (let current = start; current < end; current += 30) {
+                    slots.push(formatMinutes(current));
+                }
+                return slots;
+            };
+
+            const setSubmitState = () => {
+                if (!submitButton) {
+                    return;
+                }
+                submitButton.disabled = !scheduleInput.value || !appointmentTimeInput.value;
+                submitButton.classList.toggle('opacity-50', submitButton.disabled);
+                submitButton.classList.toggle('cursor-not-allowed', submitButton.disabled);
+            };
+
+            const selectSchedule = (schedule) => {
+                scheduleInput.value = schedule.id;
+                timeOptions.innerHTML = '';
+
+                const booked = new Set((schedule.booked_times || []).map(String));
+                const slots = slotsFor(schedule);
+                const firstAvailable = slots.find((slot) => !booked.has(slot)) || '';
+                appointmentTimeInput.value = firstAvailable;
+
+                slots.forEach((slot) => {
+                    const button = document.createElement('button');
+                    const isBooked = booked.has(slot);
+                    button.type = 'button';
+                    button.disabled = isBooked;
+                    button.className = isBooked
+                        ? 'rounded-lg border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm text-gray-400'
+                        : 'rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900';
+                    button.textContent = isBooked ? `${slot} penuh` : slot;
+                    button.addEventListener('click', () => {
+                        appointmentTimeInput.value = slot;
+                        setSubmitState();
+                    });
+                    timeOptions.appendChild(button);
+                });
+
+                setSubmitState();
+            };
+
+            const render = () => {
+                const doctorId = doctorSelect.value;
+                const selectedDoctorName = doctorSelect.options[doctorSelect.selectedIndex]?.textContent?.trim() || '';
+                let filtered = schedules.filter((schedule) => {
+                    return String(schedule.doctor_id) === doctorId ||
+                        String(schedule.doctor_user_id || '') === doctorId;
+                });
+
+                if (filtered.length === 0 && selectedDoctorName !== '') {
+                    filtered = schedules.filter((schedule) => {
+                        return String(schedule.doctor_name || '').trim() === selectedDoctorName;
+                    });
+                }
+
+                dateOptions.innerHTML = '';
+                timeOptions.innerHTML = '';
+                scheduleInput.value = '';
+                appointmentTimeInput.value = '';
+
+                if (!doctorId) {
+                    if (rangeText) rangeText.textContent = 'Pilih dokter terlebih dahulu';
+                    if (emptyText) emptyText.classList.add('hidden');
+                    setSubmitState();
+                    return;
+                }
+
+                if (filtered.length === 0) {
+                    if (rangeText) rangeText.textContent = 'Jadwal tidak tersedia';
+                    if (emptyText) emptyText.classList.remove('hidden');
+                    setSubmitState();
+                    return;
+                }
+
+                if (rangeText) rangeText.textContent = `${filtered[0].date || '-'} - ${filtered[filtered.length - 1].date || '-'}`;
+                if (emptyText) emptyText.classList.add('hidden');
+
+                filtered.forEach((schedule) => {
+                    const date = new Date(`${schedule.date}T00:00:00`);
+                    const day = Number.isNaN(date.getTime())
+                        ? '--'
+                        : new Intl.DateTimeFormat('id-ID', { day: '2-digit' }).format(date);
+                    const weekday = Number.isNaN(date.getTime())
+                        ? '-'
+                        : new Intl.DateTimeFormat('id-ID', { weekday: 'short' }).format(date);
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'min-w-[86px] rounded-xl bg-white px-5 py-4 text-center text-gray-500 shadow-sm transition';
+                    button.innerHTML = `<p class="text-2xl font-semibold">${day}</p><p class="text-sm">${weekday}</p>`;
+                    button.addEventListener('click', () => selectSchedule(schedule));
+                    dateOptions.appendChild(button);
+                });
+
+                selectSchedule(filtered[0]);
+            };
+
+            doctorSelect.addEventListener('change', render);
+            render();
+        }, 300);
+    </script>
 </body>
 </html>

@@ -182,7 +182,7 @@ class FirebaseSessionController extends Controller
             'message' => 'Registrasi berhasil.',
             'user_id' => $userData['id'] ?? null,
             'role' => $userData['role'] ?? $validated['role'],
-            'redirect' => route('login-pasien'),
+            'redirect' => $redirectUrl,
         ]);
     }
 
@@ -231,7 +231,12 @@ class FirebaseSessionController extends Controller
 
         $existingRole = $this->normalizeRole($existing['role'] ?? null);
         if ($normalizedRole !== null && $existingRole !== null && $existingRole !== $normalizedRole) {
-            throw new RuntimeException('Jenis akun tidak sesuai. Silakan login melalui halaman yang benar.');
+            Log::info('Updating Firebase user role from selected auth page.', [
+                'user_id' => $existing['id'] ?? $uid,
+                'email' => $email,
+                'from_role' => $existingRole,
+                'to_role' => $normalizedRole,
+            ]);
         }
 
         $payload = [

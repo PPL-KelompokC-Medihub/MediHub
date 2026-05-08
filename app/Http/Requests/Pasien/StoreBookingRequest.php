@@ -19,7 +19,7 @@ class StoreBookingRequest extends FormRequest
         return [
             'doctor_id' => ['required', 'string'],
             'doctor_schedule_id' => ['required', 'string'],
-            'appointment_time' => ['required', 'string', 'max:20'],
+            'appointment_time' => ['required', 'date_format:H:i'],
             'patient_name' => ['required', 'string', 'max:255'],
             'patient_email' => ['nullable', 'email', 'max:255'],
             'patient_age' => ['nullable', 'integer', 'min:0', 'max:130'],
@@ -29,7 +29,7 @@ class StoreBookingRequest extends FormRequest
             'blood_type' => ['nullable', 'string', 'max:5'],
             'allergy_history' => ['nullable', 'string', 'max:1000'],
             'complaint' => ['required', 'string', 'max:2000'],
-            'medical_doc' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
+            'medical_doc' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048'],
         ];
     }
 }

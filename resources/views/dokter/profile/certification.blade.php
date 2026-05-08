@@ -126,6 +126,10 @@
             <div class="form-alert form-alert-success">{{ session('success') }}</div>
         @endif
 
+        @if ($errors->has('files'))
+            <div class="form-alert form-alert-error">{{ $errors->first('files') }}</div>
+        @endif
+
         <div class="stepper stepper--3">
             <div class="stepper-line"></div>
             <div class="step-item active">
@@ -145,6 +149,8 @@
         <form id="doctorCertificationForm" method="POST" action="{{ route('dokter.profile.certification.update') }}"
             enctype="multipart/form-data">
             @csrf
+
+            <div id="uploadSizeWarning" class="form-alert form-alert-error" hidden></div>
 
             <section class="form-section">
                 <h2 class="section-title">Dokumen</h2>
@@ -185,7 +191,7 @@
                                         <input id="str_document" name="str_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                         <span>Pilih File Baru <strong>browse</strong></span>
-                                        <small>PDF atau PNG, Max 10 MB</small>
+                                        <small>PDF atau PNG, Max 2 MB</small>
                                     </label>
                                 </div>
                             </div>
@@ -194,7 +200,7 @@
                                 <input id="str_document" name="str_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <span>Unggah STR <strong>browse</strong></span>
-                                <small>PDF atau PNG, Max 10 MB</small>
+                                <small>PDF atau PNG, Max 2 MB</small>
                             </label>
                         @endif
                     </div>
@@ -234,7 +240,7 @@
                                         <input id="sip_document" name="sip_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                         <span>Pilih File Baru <strong>browse</strong></span>
-                                        <small>PDF atau PNG, Max 10 MB</small>
+                                        <small>PDF atau PNG, Max 2 MB</small>
                                     </label>
                                 </div>
                             </div>
@@ -243,7 +249,7 @@
                                 <input id="sip_document" name="sip_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <span>Unggah SIP <strong>browse</strong></span>
-                                <small>PDF atau PNG, Max 10 MB</small>
+                                <small>PDF atau PNG, Max 2 MB</small>
                             </label>
                         @endif
                     </div>
@@ -283,7 +289,7 @@
                                         <input id="ijazah_doctor" name="ijazah_doctor" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                         <span>Pilih File Baru <strong>browse</strong></span>
-                                        <small>PDF atau PNG, Max 10 MB</small>
+                                        <small>PDF atau PNG, Max 2 MB</small>
                                     </label>
                                 </div>
                             </div>
@@ -292,7 +298,7 @@
                                 <input id="ijazah_doctor" name="ijazah_doctor" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <span>Unggah File <strong>browse</strong></span>
-                                <small>PDF atau PNG, Max 10 MB</small>
+                                <small>PDF atau PNG, Max 2 MB</small>
                             </label>
                         @endif
                     </div>
@@ -332,7 +338,7 @@
                                         <input id="ktp_document" name="ktp_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                         <span>Pilih File Baru <strong>browse</strong></span>
-                                        <small>PDF atau PNG, Max 10 MB</small>
+                                        <small>PDF atau PNG, Max 2 MB</small>
                                     </label>
                                 </div>
                             </div>
@@ -341,7 +347,7 @@
                                 <input id="ktp_document" name="ktp_document" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <span>Unggah File <strong>browse</strong></span>
-                                <small>PDF atau PNG, Max 10 MB</small>
+                                <small>PDF atau PNG, Max 2 MB</small>
                             </label>
                         @endif
                     </div>
@@ -381,7 +387,7 @@
                                         <input id="profile_pict" name="profile_pict" type="file" accept=".png,.jpg,.jpeg,.webp">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                         <span>Pilih File Baru <strong>browse</strong></span>
-                                        <small>JPG, PNG atau WebP, Max 10 MB</small>
+                                        <small>JPG, PNG atau WebP, Max 2 MB</small>
                                     </label>
                                 </div>
                             </div>
@@ -390,7 +396,7 @@
                                 <input id="profile_pict" name="profile_pict" type="file" accept=".png,.jpg,.jpeg,.webp">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <span>Unggah File <strong>browse</strong></span>
-                                <small>JPG, PNG atau WebP, Max 10 MB</small>
+                                <small>JPG, PNG atau WebP, Max 2 MB</small>
                             </label>
                         @endif
                     </div>
@@ -443,7 +449,7 @@
                                             <input id="certification_{{ $index }}" name="certifications[{{ $certIndex }}]" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                             <i class="fa-solid fa-cloud-arrow-up"></i>
                                             <span>Pilih File Baru <strong>browse</strong></span>
-                                            <small>PDF atau PNG, Max 10 MB</small>
+                                            <small>PDF atau PNG, Max 2 MB</small>
                                         </label>
                                     </div>
                                 </div>
@@ -453,7 +459,7 @@
                                     <input id="certification_{{ $index }}" name="certifications[{{ $certIndex }}]" type="file" accept=".pdf,.png,.jpg,.jpeg">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
                                     <span>Unggah File <strong>browse</strong></span>
-                                    <small>PDF atau PNG, Max 10 MB</small>
+                                    <small>PDF atau PNG, Max 2 MB</small>
                                 </label>
                             @endif
                         </div>
@@ -468,6 +474,25 @@
     </main>
 
     <script>
+        const certificationForm = document.getElementById('doctorCertificationForm');
+        const uploadSizeWarning = document.getElementById('uploadSizeWarning');
+        const maxFileSize = 2 * 1024 * 1024;
+        const maxTotalSize = 8 * 1024 * 1024;
+
+        function formatFileSize(bytes) {
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
+
+        function showUploadWarning(message) {
+            if (uploadSizeWarning) {
+                uploadSizeWarning.textContent = message;
+                uploadSizeWarning.hidden = false;
+                uploadSizeWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            alert(message);
+        }
+
         function toggleUpdate(event, sectionId) {
             event.preventDefault();
             const section = document.getElementById(sectionId);
@@ -475,6 +500,34 @@
             const button = event.target.closest('.file-update-toggle');
             button.textContent = section.classList.contains('show') ? 'Batal' : 'Ganti File';
         }
+
+        certificationForm?.addEventListener('submit', (event) => {
+            const selectedFiles = Array.from(certificationForm.querySelectorAll('input[type="file"]'))
+                .flatMap((input) => Array.from(input.files || []));
+
+            const oversizedFile = selectedFiles.find((file) => file.size > maxFileSize);
+            if (oversizedFile) {
+                event.preventDefault();
+                showUploadWarning(
+                    `File "${oversizedFile.name}" berukuran ${formatFileSize(oversizedFile.size)}, melebihi batas 2 MB. Kompres atau pilih file yang lebih kecil.`
+                );
+                return;
+            }
+
+            const totalSize = selectedFiles.reduce((total, file) => total + file.size, 0);
+            if (totalSize > maxTotalSize) {
+                event.preventDefault();
+                showUploadWarning(
+                    `Total ukuran dokumen ${formatFileSize(totalSize)}, melebihi batas 8 MB. Kurangi jumlah file atau kompres dokumen terlebih dahulu.`
+                );
+                return;
+            }
+
+            if (uploadSizeWarning) {
+                uploadSizeWarning.hidden = true;
+                uploadSizeWarning.textContent = '';
+            }
+        });
     </script>
 </body>
 
