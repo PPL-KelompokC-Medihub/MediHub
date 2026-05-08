@@ -125,6 +125,27 @@ class FirestoreService
         }
     }
 
+    public function deleteFields(string $collection, string $id, array $fields): void
+    {
+        $params = [];
+
+        foreach ($fields as $field) {
+            $params[] = 'updateMask.fieldPaths=' . $field;
+        }
+
+        $response = $this->patch(
+            $this->documentPath($collection, $id) . '?' . implode('&', $params),
+            ['fields' => []],
+        );
+
+        if (! $response->ok()) {
+            Log::error('Firestore deleteFields() error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+        }
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -181,6 +202,13 @@ class FirestoreService
         $this->initializeIfNeeded();
 
         return $this->buildFactory()->createAuth();
+    }
+
+    public function storage()
+    {
+        $this->initializeIfNeeded();
+
+        return $this->buildFactory()->createStorage();
     }
 
     /** @param array<string, mixed> $doc */

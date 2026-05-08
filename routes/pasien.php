@@ -35,6 +35,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.profile.update');
     Route::delete('/pasien/account', [ProfileController::class, 'destroyAccount'])
         ->name('pasien.destroy-account');
+    Route::put('/pasien/profile/photo', [ProfileController::class, 'updatePhoto'])
+        ->name('pasien.profile.update-photo');
 
     // Booking jadwal temu (PBI-11 / KFP-06)
     Route::get('/pasien/booking', [BookingController::class, 'create'])
