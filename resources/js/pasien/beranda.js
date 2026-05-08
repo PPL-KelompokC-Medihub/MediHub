@@ -13,7 +13,24 @@ if (homeRoot) {
         dokterJagaList.innerHTML = '';
 
         const selectedPoli = normalizeText(poliName);
-        const filteredDoctors = doctorsBySpecialist.filter((doctor) => normalizeText(doctor.spesialis).includes(selectedPoli));
+
+        console.log('DATA DOCTORS:', doctorsBySpecialist);
+        console.log('POLI DIPILIH:', selectedPoli);
+
+        const filteredDoctors = doctorsBySpecialist.filter((doctor) => {
+            const spesialis = normalizeText(
+                doctor.spesialis ||
+                doctor.specialist ||
+                doctor.spesialisasi ||
+                doctor.category ||
+                doctor.poli ||
+                ''
+            );
+
+            return spesialis.includes(selectedPoli) || selectedPoli.includes(spesialis);
+        });
+
+        console.log('HASIL FILTER:', filteredDoctors);
 
         if (filteredDoctors.length === 0) {
             dokterJagaList.innerHTML = `
@@ -47,10 +64,14 @@ if (homeRoot) {
                                 Terlayani
                             </p>
                         </div>
-                        <div class="absolute bottom-0 right-0 z-20 flex h-full w-[55%] items-end justify-center">
-                            <div class="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/50 text-blue-400">
-                                <i class="fa-solid fa-user-doctor text-5xl"></i>
-                            </div>
+                        <div class="absolute bottom-0 right-0 z-20 flex h-full w-[58%] items-end justify-center">
+                            ${
+                                doctor.foto
+                                    ? `<img src="${doctor.foto}" alt="${doctor.nama}" class="h-[210px] w-auto object-contain">`
+                                    : `<div class="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/50 text-blue-400">
+                                        <i class="fa-solid fa-user-doctor text-5xl"></i>
+                                    </div>`
+                            }
                         </div>
                     </button>
                 `;

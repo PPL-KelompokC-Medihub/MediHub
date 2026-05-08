@@ -13,37 +13,40 @@
 
 <body class="font-[Poppins] bg-white text-gray-900">
     <div data-patient-profile></div>
-    <div class="grid min-h-screen grid-cols-[220px_1fr_300px]">
+    <div class="grid h-screen grid-cols-[220px_1fr_300px] overflow-hidden">
         <x-pasien.sidebar active="profil" />
 
-        <main class="px-8 py-10">
-            <header class="mb-8 flex items-center gap-6">
-                <div class="relative">
-                    <img 
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
-                        class="h-28 w-28 rounded-full object-cover"
-                        alt="Foto Profil"
-                    >
-                    <button class="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white">
-                        <i class="fa-regular fa-pen-to-square"></i>
-                    </button>
-                </div>
+        <main class="h-screen overflow-y-auto bg-white px-8 py-10">
+            <header class="mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <img 
+                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
+                            class="h-28 w-28 rounded-full object-cover"
+                            alt="Foto Profil"
+                        >
 
-                <div>
-                    <h1 class="text-xl font-semibold">
-                        {{ $user->fullname ?? $user->name ?? 'Pasien' }}
-                    </h1>
+                        <button class="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </div>
 
-                    <div class="mt-3 flex gap-8 text-sm text-gray-500">
-                        <span>
-                            <i class="fa-regular fa-calendar mr-2"></i>
-                            Bergabung {{ isset($user->created_at) ? \Carbon\Carbon::parse($user->created_at)->translatedFormat('F Y') : '-' }}
-                        </span>
+                    <div class="pt-1">
+                        <h1 class="text-xl font-semibold">
+                            {{ $user->fullname ?? $user->name ?? 'Pasien' }}
+                        </h1>
 
-                        <span>
-                            <i class="fa-solid fa-location-dot mr-2"></i>
-                            Bandung, Indonesia
-                        </span>
+                        <div class="mt-2 flex gap-6 text-sm text-gray-500">
+                            <span>
+                                <i class="fa-regular fa-calendar mr-2"></i>
+                                Bergabung {{ isset($user->created_at) ? \Carbon\Carbon::parse($user->created_at)->translatedFormat('F Y') : '-' }}
+                            </span>
+
+                            <span>
+                                <i class="fa-solid fa-location-dot mr-2"></i>
+                                Bandung, Indonesia
+                            </span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -275,7 +278,7 @@
             </section>
         </main>
 
-        <aside class="border-l border-gray-200 px-6 py-8">
+        <aside class="sticky top-0 h-screen overflow-hidden border-l border-gray-200 bg-white px-6 py-8">
             <h2 class="mb-5 text-lg font-semibold">Pengaturan Akun</h2>
 
             <div class="mb-6 rounded-xl border border-gray-200 p-4">
@@ -287,19 +290,18 @@
                             <p class="text-xs text-gray-400">Kata sandi, keamanan, dan detail pribadi.</p>
                         </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>
                 </div>
             </div>
 
             <p class="mb-4 text-sm text-gray-400">Informasi & Layanan</p>
 
             <div class="flex flex-col gap-5 text-sm">
-                <a href="#" class="flex items-center gap-3"><i class="fa-solid fa-person"></i> Aksesibilitas</a>
-                <a href="#" class="flex items-center gap-3"><i class="fa-regular fa-bell"></i> Notifikasi</a>
-                <a href="#" class="flex items-center gap-3"><i class="fa-solid fa-globe"></i> Bahasa & Tampilan</a>
-                <a href="#" class="flex items-center gap-3"><i class="fa-solid fa-shield-halved"></i> Privasi</a>
-                <a href="#" class="flex items-center gap-3"><i class="fa-regular fa-circle-question"></i> Bantuan</a>
-                <a href="#" class="flex items-center gap-3"><i class="fa-solid fa-key"></i> Izin Aplikasi & Website</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-solid fa-person"></i> Aksesibilitas</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-regular fa-bell"></i> Notifikasi</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-solid fa-globe"></i> Bahasa & Tampilan</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-solid fa-shield-halved"></i> Privasi</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-regular fa-circle-question"></i> Bantuan</a>
+                <a href="#" class="group flex items-center gap-3 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"><i class="fa-solid fa-key"></i> Izin Aplikasi & Website</a>
             </div>
 
             <p class="mb-4 mt-7 text-sm text-gray-400">Login</p>
@@ -312,9 +314,10 @@
                 <button 
                     type="button"
                     data-modal-open="deleteAccountModal"
-                    class="flex items-center gap-3 text-red-500"
+                    class="group flex items-center gap-3 text-red-500 transition-all duration-200 hover:-translate-y-[2px] hover:text-red-600"
                 >
-                    <i class="fa-regular fa-trash-can"></i> Hapus Akun
+                    <i class="fa-regular fa-trash-can transition-all duration-200 group-hover:text-red-600"></i>
+                    <span>Hapus Akun</span>
                 </button>
 
                 <form action="{{ route('logout') }}" method="POST">
