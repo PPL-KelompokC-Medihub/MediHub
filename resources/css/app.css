@@ -182,13 +182,13 @@ textarea.mediq-input {
 .mediq-pill-btn,
 .mediq-social-btn,
 .mediq-logout {
-    border: 0;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font: inherit;
-    font-size: 14px;
-    cursor: pointer;
-    text-align: center;
+    display: flex;
+    width: 183px;
+    padding: 12px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--Foundation-Neutral-Light, #F1F1F1);
 }
 
 .mediq-primary-btn:disabled {

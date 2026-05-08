@@ -4,34 +4,32 @@ namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * Dashboard utama dokter setelah login.
- *
- * Menampilkan ringkasan: total pasien, jadwal hari ini, jadwal yang
- * sudah dibuat, dan daftar booking pasien yang masuk.
- */
 class DashboardController extends Controller
 {
     use MapsFirestoreData;
 
-    private const DOCTOR_COLLECTION = 'Dokter';
     private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
     private const SCHEDULE_COLLECTION = 'JadwalDokter';
 
     public function __construct(
         private FirestoreService $firestore,
+        private MedihubFirestoreRepository $doctorRepository,
     ) {}
 
     public function index(): View
     {
-        $doctorId = Auth::id();
+        $doctorId = (string) Auth::id();
 
-        $dokter = $this->firestore->find(self::DOCTOR_COLLECTION, $doctorId);
-        $dokter = $dokter ? $this->toObject($dokter) : null;
+        // Ambil data dokter lengkap termasuk profile_pict via repository
+        $userData = $this->doctorRepository->findUser($doctorId);
+        $dokter = $userData
+            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
+            : null;
 
         $appointments = $this->toObjects(
             $this->firestore->where(self::APPOINTMENT_COLLECTION, 'dokterid', '=', $doctorId)

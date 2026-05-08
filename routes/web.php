@@ -51,5 +51,13 @@ Route::get('/dashboard', function (Request $request) {
     return redirect()->route('login-pasien');
 })->middleware('auth')->name('dashboard');
 
+Route::get('/debug-photo', function () {
+    $user = auth()->user();
+    echo "User ID: " . ($user->id ?? 'null') . "<br>";
+    echo "Profile Picture: " . ($user->profile_pict ?? 'Kosong') . "<br>";
+    echo "Full User Data: <pre>";
+    dd($user);
+});
+
 require __DIR__ . '/dokter.php';
 require __DIR__ . '/pasien.php';

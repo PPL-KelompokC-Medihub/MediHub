@@ -45,6 +45,7 @@ class MedihubFirestoreRepository
 
         $specialization = $this->findDoctorSpecialization((string) $doctor['id']);
         $certification = $this->findDoctorCertification((string) $doctor['id']);
+        $documents = $this->findDoctorDocument((string) $doctor['id']);
 
         $mappedDoctor = [
             'doctor_id' => $doctor['id'],
@@ -56,6 +57,7 @@ class MedihubFirestoreRepository
             'country' => $doctor['country'] ?? null,
             'city' => $doctor['city'] ?? null,
             'postal_code' => $doctor['codePos'] ?? null,
+            'profile_pict' => $documents['profile_pict'] ?? null,
         ];
 
         $mappedSpecialization = [];
@@ -90,7 +92,17 @@ class MedihubFirestoreRepository
             ];
         }
 
-        return array_merge($userData, $mappedDoctor, $mappedSpecialization, $mappedCertification);
+        $mappedDocuments = [];
+        if ($documents) {
+            $mappedDocuments = [
+                'STR' => $documents['STR'] ?? null,
+                'SIP' => $documents['SIP'] ?? null,
+                'ijazah_doctor' => $documents['ijazah_doctor'] ?? null,
+                'KTP' => $documents['KTP'] ?? null,
+            ];
+        }
+
+        return array_merge($userData, $mappedDoctor, $mappedSpecialization, $mappedCertification, $mappedDocuments);
     }
 
     /**
@@ -151,6 +163,9 @@ class MedihubFirestoreRepository
             'codePos' => $validated['postal_code'],
             'update_at' => now()->toIso8601String(),
         ];
+        if (isset($validated['profile_pict']) && !empty($validated['profile_pict'])) {
+            $doctorPayload['profile_pict'] = $validated['profile_pict'];
+        }
 
         $this->firestore->update(self::DOCTORS_COLLECTION, (string) $doctor['id'], $doctorPayload);
 

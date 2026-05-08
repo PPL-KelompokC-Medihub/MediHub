@@ -4,37 +4,151 @@
     color: var(--muted);
 }
 
+/* ── STATS + DONUT ROW ── */
+.dash-stats-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: stretch;
+}
+
+/* ── DONUT CARD ── */
+.dash-donut-card {
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-width: 160px;
+}
+
+.dash-donut-wrap {
+    position: relative;
+    width: 130px;
+    height: 130px;
+}
+
+.dash-donut-svg {
+    width: 130px;
+    height: 130px;
+}
+
+.dash-donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.dash-donut-num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--primary-strong);
+    line-height: 1;
+}
+
+.dash-donut-label {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.3;
+    margin-top: 4px;
+}
+
+.dash-donut-legend {
+    width: 100%;
+    display: grid;
+    gap: 6px;
+}
+
+.dash-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.dash-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dash-legend-text {
+    flex: 1;
+    color: var(--muted);
+}
+
+.dash-legend-val {
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* ── STATS GRID ── */
 .doctor-stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
 }
 
-.doctor-stat-card {
-    background: linear-gradient(135deg, #deeeff 0%, #eef4ff 100%);
+.doctor-stat-card-1 {
+    background: linear-gradient(90deg, #D8EDFA 0%, #E5F5FF 50.86%, #C2E8FF 100%);
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-stat-card-2 {
+    background: linear-gradient(180deg, #E8E8E8 0%, #FFF 100%);
+    border-radius: 16px;
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-stat-card-3 {
+    background: linear-gradient(180deg, #E8E8E8 0%, #FFF 100%);
+    border-radius: 16px;
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-stat-card-4 {
+    background: linear-gradient(90deg, #D8EDFA 0%, #E5F5FF 50.86%, #C2E8FF 100%);
+    border-radius: 16px;
+    padding: 20px 20px 16px;
     position: relative;
     overflow: hidden;
 }
 
 .doctor-stat-value {
-    margin: 0 0 12px;
-    font-size: 32px;
-    font-weight: 400;
-    color: var(--primary-strong);
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #0077C2 0%, #003556 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .doctor-stat-label {
     margin: 0 0 2px;
-    font-size: 14px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 500;
     color: #1f2024;
 }
 
 .doctor-stat-location {
     margin: 0;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
 }
 
@@ -45,6 +159,7 @@
     opacity: 0.15;
 }
 
+/* ── SECTION HEAD ── */
 .doctor-section-head {
     display: flex;
     justify-content: space-between;
@@ -53,7 +168,7 @@
 }
 
 .doctor-section-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     margin: 0;
 }
@@ -65,55 +180,247 @@
     padding: 8px 16px;
     font-size: 13px;
     text-decoration: none;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
 }
 
+/* ── SCHEDULE CARD (unified with jadwal page) ── */
+.doctor-schedule-card {
+    min-width: 210px;
+    border-radius: 12px;
+    padding: 14px;
+    background: #FFF;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.doctor-schedule-card:hover {
+    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Schedule card content */
+.doctor-schedule-eyebrow {
+    margin: 0 0 6px;
+    color: var(--primary);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
+}
+
+.doctor-schedule-date {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+}
+
+.doctor-schedule-time {
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* ── SCHEDULE ACTIONS ── */
+.doctor-schedule-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.doctor-schedule-btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.doctor-schedule-btn-delete:hover {
+    background: #fff0f0;
+    border-color: #fca5a5;
+    color: #ef4444;
+}
+
+.doctor-edit-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 12px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.doctor-edit-button:hover {
+    background: var(--primary-strong);
+}
+
+/* ── SCHEDULE STRIP (horizontal scroll) ── */
 .doctor-schedule-strip {
     display: flex;
     gap: 12px;
     overflow-x: auto;
     padding-bottom: 6px;
+    scrollbar-width: thin;
 }
 
-.doctor-schedule-card {
-    min-width: 200px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 14px;
-    background: #fff;
+.doctor-schedule-strip .doctor-schedule-card {
+    flex-shrink: 0;
 }
 
-.doctor-card-eyebrow {
-    margin: 0 0 6px;
-    font-size: 12px;
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.doctor-card-title {
-    margin: 0 0 2px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.doctor-card-muted {
-    margin: 0;
-    font-size: 12px;
-    color: var(--muted);
-}
-
-.doctor-empty-state {
+/* ── EMPTY STATE ── */
+.doctor-schedule-empty {
     border: 1px dashed var(--line);
     border-radius: 14px;
     padding: 24px;
     text-align: center;
     color: var(--muted);
-}
-
-.doctor-empty-state p {
-    margin: 0;
     font-size: 14px;
 }
 
+.doctor-schedule-empty p {
+    margin: 0;
+}
+
+/* ── FOOTER ── */
+.doctor-schedule-footer {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.doctor-schedule-btn-more {
+    padding: 10px 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.doctor-schedule-btn-more:hover {
+    background: #f8fbff;
+    border-color: var(--primary);
+    color: var(--primary-strong);
+}
+
+/* ── MODAL OVERLAY & DIALOG ── */
+.doctor-schedule-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+}
+
+.doctor-schedule-modal.is-open {
+    display: flex;
+}
+
+.doctor-schedule-dialog {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    width: min(420px, 90%);
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-schedule-modal-title {
+    margin: 0 0 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* ── MODAL FORM FIELDS ── */
+.doctor-schedule-form-fields {
+    display: grid;
+    gap: 16px;
+}
+
+.doctor-schedule-form-fields label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.doctor-schedule-form-fields input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.doctor-schedule-form-fields input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.1);
+}
+
+/* ── MODAL ACTIONS ── */
+.doctor-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.doctor-modal-cancel {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+}
+
+.doctor-modal-cancel:hover {
+    background: #f8f9fb;
+    color: var(--text);
+}
+
+.doctor-modal-submit {
+    flex: 1;
+    padding: 12px;
+    font-size: 14px;
+}
+
+/* ── PATIENT TABLE ── */
 .doctor-patient-table-wrap {
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -170,6 +477,7 @@
     color: var(--muted);
 }
 
+/* ── RIGHTBAR ── */
 .doctor-rightbar-title {
     font-size: 15px;
     font-weight: 600;
@@ -186,4 +494,118 @@
     font-size: 14px;
     text-align: center;
     padding: 20px 0;
+}
+
+.dash-rightbar-date-group {
+    margin-bottom: 12px;
+}
+
+.dash-rightbar-date-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 8px;
+}
+
+/* ── DELETE CONFIRMATION DIALOG ── */
+.doctor-schedule-delete-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.doctor-schedule-delete-dialog {
+    display: flex;
+    width: 466px;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    border-radius: 12px;
+    background: #FFF;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.doctor-schedule-delete-title {
+    align-self: stretch;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
+    font-size: 16px;
+    color: #000;
+    letter-spacing: -0.3px;
+}
+
+.doctor-schedule-delete-subtitle {
+    align-self: stretch;
+    color: var(--Foundation-Neutral-Normal, #737373);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%; 
+}
+
+.doctor-schedule-delete-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.doctor-delete-btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.doctor-delete-cancel {
+    background: #f3f4f6;
+    color: #6b7280;
+    order: 1;
+}
+
+.doctor-delete-cancel:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.doctor-delete-confirm {
+    background: #6aa4ef;
+    color: #fff;
+    order: 2;
+    flex: 1;
+}
+
+.doctor-delete-confirm:hover {
+    background: #5a94df;
 }

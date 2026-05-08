@@ -15,8 +15,15 @@
 @section('content')
     {{-- Profile Header --}}
     <div class="profil-header">
-        <img src="https://ui-avatars.com/api/?name={{ urlencode($user['name'] ?? 'Dokter') }}&background=6aa4ef&color=fff&size=176&font-size=0.38"
-             alt="Foto Profil" class="profil-avatar" />
+        @if(!blank($user['profile_pict'] ?? null))
+            <img src="{{ asset('storage/' . $user['profile_pict']) }}" 
+                alt="Foto Profil" 
+                class="profil-avatar" />
+        @else
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($user['name'] ?? 'Dokter') }}&background=6aa4ef&color=fff&size=176&font-size=0.38"
+                alt="Foto Profil" 
+                class="profil-avatar" />
+        @endif
         <div class="profil-header-info">
             <h1 class="profil-header-name">dr. {{ $user['name'] ?? '-' }}</h1>
             <p class="profil-header-specialty">{{ $user['specialty'] ?? 'Spesialisasi belum diisi' }}</p>

@@ -11,8 +11,8 @@
 }
 
 .doctor-schedule-page-title {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
 }
 
@@ -20,14 +20,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
+    padding: 8px 16px;
+    font-size: 13px;
 }
 
 .doctor-schedule-section-title {
     font-size: 15px;
     font-weight: 600;
     margin: 0 0 12px;
-    color: var(--muted);
+    color: var(--text);
 }
 
 .doctor-schedule-grid {
@@ -37,43 +38,64 @@
 }
 
 .doctor-schedule-card {
-    border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 16px;
-    background: #fff;
+    background: #FFF;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.doctor-schedule-card:hover {
+    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.08);
 }
 
 .doctor-schedule-eyebrow {
-    margin: 0 0 4px;
-    font-size: 12px;
+    margin: 0 0 6px;
     color: var(--primary);
-    font-weight: 600;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
 }
 
 .doctor-schedule-date {
     margin: 0 0 2px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 400;
+    color: var(--text);
 }
 
 .doctor-schedule-time {
     margin: 0 0 14px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--muted);
 }
 
 .doctor-schedule-actions {
     display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.doctor-delete-button {
+.doctor-schedule-btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     border: 1px solid var(--line);
     background: #fff;
-    border-radius: 8px;
-    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    color: var(--danger);
+    color: var(--muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.doctor-schedule-btn-delete:hover {
+    background: #fff0f0;
+    border-color: #fca5a5;
+    color: #ef4444;
 }
 
 .doctor-edit-button {
@@ -82,19 +104,33 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 7px 12px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
     font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.doctor-edit-button:hover {
+    background: var(--primary-strong);
 }
 
 .doctor-schedule-empty {
     border: 1px dashed var(--line);
     border-radius: 14px;
-    padding: 20px;
+    padding: 24px;
     text-align: center;
     color: var(--muted);
     margin-bottom: 16px;
+    font-size: 14px;
 }
 
+/* ── MODAL ── */
 .doctor-schedule-modal {
     display: none;
     position: fixed;
@@ -113,25 +149,53 @@
     background: #fff;
     border-radius: 20px;
     padding: 32px;
-    width: min(400px, 90%);
+    width: min(420px, 90%);
     position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .doctor-schedule-modal-title {
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     font-size: 18px;
     font-weight: 700;
+    color: var(--text);
 }
 
 .doctor-schedule-form-fields {
     display: grid;
-    gap: 14px;
+    gap: 16px;
+}
+
+.doctor-schedule-form-fields label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.doctor-schedule-form-fields input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.doctor-schedule-form-fields input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.1);
 }
 
 .doctor-modal-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
 }
 
 .doctor-modal-cancel {
@@ -143,11 +207,20 @@
     cursor: pointer;
     font: inherit;
     font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+}
+
+.doctor-modal-cancel:hover {
+    background: #f8f9fb;
+    color: var(--text);
 }
 
 .doctor-modal-submit {
     flex: 1;
     padding: 12px;
+    font-size: 14px;
 }
 
 .doctor-rightbar-title {
@@ -161,4 +234,105 @@
     font-size: 14px;
     text-align: center;
     padding: 20px 0;
+}
+
+/* ── DELETE CONFIRMATION DIALOG ── */
+.doctor-schedule-delete-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.doctor-schedule-delete-dialog {
+    display: flex;
+    width: 466px;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    border-radius: 12px;
+    background: #FFF;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.doctor-schedule-delete-title {
+    align-self: stretch;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
+    font-size: 16px;
+    color: #000;
+    letter-spacing: -0.3px;
+}
+
+.doctor-schedule-delete-subtitle {
+    align-self: stretch;
+    color: var(--Foundation-Neutral-Normal, #737373);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%; 
+}
+
+.doctor-schedule-delete-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.doctor-delete-btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.doctor-delete-cancel {
+    background: #f3f4f6;
+    color: #6b7280;
+    order: 1;
+}
+
+.doctor-delete-cancel:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.doctor-delete-confirm {
+    background: #6aa4ef;
+    color: #fff;
+    order: 2;
+    flex: 1;
+}
+
+.doctor-delete-confirm:hover {
+    background: #5a94df;
 }
