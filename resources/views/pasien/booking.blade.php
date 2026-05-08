@@ -17,7 +17,7 @@
         data-selected-schedule-id="{{ old('doctor_schedule_id') }}"
         data-selected-appointment-time="{{ old('appointment_time') }}"
     ></div>
-    <div class="grid min-h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
+    <div class="grid min-h-screen grid-cols-[1fr_390px] overflow-hidden ml-[220px]">
         <x-pasien.sidebar active="beranda" />
 
         <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">

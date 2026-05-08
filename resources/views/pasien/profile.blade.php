@@ -13,7 +13,7 @@
 
 <body class="font-[Poppins] bg-white text-gray-900">
     <div data-patient-profile></div>
-    <div class="grid h-screen grid-cols-[220px_1fr_300px] overflow-hidden">
+    <div class="grid h-screen grid-cols-[1fr_300px] overflow-hidden ml-[220px]">
         <x-pasien.sidebar active="profil" />
 
         <main class="h-screen overflow-y-auto bg-white px-8 py-10">

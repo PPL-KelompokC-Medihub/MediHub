@@ -1,61 +1,62 @@
 @props(['active' => 'beranda'])
 
 @php
-    $linkClass = fn (string $key) => $active === $key
-        ? 'group flex h-8 items-center text-[15px] font-medium text-[#58A7F7] transition-all duration-200 hover:-translate-y-[2px]'
-        : 'group flex h-8 items-center text-[15px] font-normal text-[#111827] transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]';
-
-    $iconClass = fn (string $key) => $active === $key
-        ? 'w-[26px] min-w-[26px] text-left text-[18px] text-[#58A7F7] transition-all duration-200'
-        : 'w-[26px] min-w-[26px] text-left text-[18px] text-[#8A8A8A] transition-all duration-200 group-hover:text-[#58A7F7]';
+    $isActive = fn (string $key) => $active === $key ? 'is-active' : '';
 @endphp
 
-<aside class="sticky left-0 top-0 flex h-screen w-full flex-col border-r border-gray-200 bg-white">
-    <div class="flex flex-1 flex-col px-6 py-10">
-        <img
-            src="{{ asset('images/Medihub.png') }}"
-            alt="Logo MediHub"
-            class="mb-16 h-auto w-[128px] object-contain"
-        >
+<aside class="mediq-sidebar">
+    <a href="{{ route('pasien.beranda') }}" class="mediq-logo">
+        <img src="{{ asset('images/Medihub.png') }}" alt="MediHub" />
+    </a>
 
-        <p class="mb-8 font-[Poppins] text-[18px] font-medium text-black">Menu</p>
+    <nav class="mediq-nav">
+        <p class="mediq-nav-title">Menu</p>
 
-        <nav class="flex flex-col gap-7">
-            <a href="{{ route('pasien.beranda') }}" class="{{ $linkClass('beranda') }}">
-                <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
-                    <i class="fa-solid fa-house {{ $iconClass('beranda') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Beranda</span>
-                </div>
-            </a>
+        <a href="{{ route('pasien.beranda') }}" class="mediq-nav-item {{ $isActive('beranda') }}">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 9.75L12 3l9 6.75V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.75z"/>
+                <path d="M9 22V12h6v10"/>
+            </svg>
+            Beranda
+        </a>
 
-            <a href="{{ route('pasien.layanan') }}" class="{{ $linkClass('layanan') }}">
-                <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
-                    <i class="fa-solid fa-bed-pulse {{ $iconClass('layanan') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Layanan</span>
-                </div>
-            </a>
+        <a href="{{ route('pasien.layanan') }}" class="mediq-nav-item {{ $isActive('layanan') }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8.5V19.5"/>
+                <path d="M21 12.5V19.5"/>
+                <path d="M13 7.5H19"/>
+                <path d="M5.5 11H8.5"/>
+                <path d="M3 14H21"/>
+                <path d="M3 17H21"/>
+                <path d="M16 4.5V10.5"/>
+            </svg>
+            Layanan
+        </a>
 
-            <a href="#" class="{{ $linkClass('riwayat') }}">
-                <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
-                    <i class="fa-regular fa-clock {{ $iconClass('riwayat') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Riwayat</span>
-                </div>
-            </a>
+        <a href="#" class="mediq-nav-item {{ $isActive('riwayat') }}">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Riwayat
+        </a>
 
-            <a href="{{ route('pasien.profile') }}" class="{{ $linkClass('profil') }}">
-                <div class="grid w-[150px] grid-cols-[24px_1fr] items-center gap-5">
-                    <i class="fa-regular fa-user {{ $iconClass('profil') }}"></i>
-                    <span class="transition-all duration-200 group-hover:text-[#58A7F7]">Profil</span>
-                </div>
-            </a>
-        </nav>
+        <a href="{{ route('pasien.profile') }}" class="mediq-nav-item {{ $isActive('profil') }}">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profil
+        </a>
+    </nav>
+
+    <div class="mediq-logout-wrap">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="mediq-logout">
+                <svg class="mediq-sidebar-icon-spaced" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Keluar
+            </button>
+        </form>
     </div>
-
-    <form action="{{ route('logout') }}" method="POST" class="mt-auto px-6 pb-8 pt-4">
-        @csrf
-        <button class="group flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-[14px] font-normal text-[#8A8A8A] transition-all duration-200 hover:-translate-y-[2px] hover:bg-gray-50 hover:text-[#58A7F7]">
-            <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center transition-all duration-200 group-hover:text-[#58A7F7]"></i>
-            <span>Keluar</span>
-        </button>
-    </form>
 </aside>
