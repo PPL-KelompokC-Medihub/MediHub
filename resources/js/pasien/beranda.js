@@ -11,6 +11,7 @@ if (homeRoot) {
 
         const dokterJagaList = document.getElementById('dokterJagaList');
         dokterJagaList.innerHTML = '';
+        selectedDoctorIndex = null;
 
         const selectedPoli = normalizeText(poliName);
 
@@ -49,29 +50,30 @@ if (homeRoot) {
                         type="button"
                         data-doctor-index="${index}"
                         id="doctorCard-${index}"
-                        class="js-select-doctor doctor-card relative h-[230px] w-full overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#D8EDFA_0%,#E5F5FF_45%,#C2EBFF_100%)] text-left shadow-md">
-                        <div id="doctorCheck-${index}" class="doctor-check absolute right-4 top-4 z-30 hidden flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0077C2] bg-blue-100 text-[#0077C2]">
+                        class="js-select-doctor doctor-card relative mt-4 mb-3 w-full overflow-hidden rounded-2xl border-2 border-transparent bg-[linear-gradient(135deg,#D8EDFA_0%,#E5F5FF_45%,#C2EBFF_100%)] text-left shadow-md transition-all hover:shadow-lg">
+                        
+                        <div id="doctorCheck-${index}" class="doctor-check absolute right-3 top-3 z-30 hidden h-7 w-7 items-center justify-center rounded-full border-2 border-[#0077C2] bg-blue-100 text-[#0077C2]">
                             <i class="fa-solid fa-check text-sm"></i>
                         </div>
-                        <div class="absolute left-5 top-8 z-10 max-w-[150px]">
-                            <h2 class="min-h-[92px] text-[34px] font-semibold uppercase leading-tight tracking-wide text-blue-300/70">
-                                ${String(doctor.nama || '').replace('dr. ', '')}
-                            </h2>
-                            <p class="mt-15 bg-[linear-gradient(90deg,#0077C2_0%,#003556_100%)] bg-clip-text text-sm font-semibold text-transparent">
-                                ${doctor.pasien || ''}
-                            </p>
-                            <p class="bg-[linear-gradient(90deg,#0077C2_0%,#003556_100%)] bg-clip-text text-xs text-transparent">
-                                Terlayani
-                            </p>
-                        </div>
-                        <div class="absolute bottom-0 right-0 z-20 flex h-full w-[58%] items-end justify-center">
-                            ${
-                                doctor.foto
-                                    ? `<img src="${doctor.foto}" alt="${doctor.nama}" class="h-[210px] w-auto object-contain">`
-                                    : `<div class="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/50 text-blue-400">
-                                        <i class="fa-solid fa-user-doctor text-5xl"></i>
-                                    </div>`
-                            }
+
+                        <div class="flex items-center gap-4 p-4">
+                            <div class="h-[90px] w-[90px] flex-shrink-0 overflow-hidden rounded-xl bg-white/50">
+                                ${
+                                    doctor.foto
+                                        ? `<img src="${doctor.foto}" alt="${doctor.nama}" class="h-full w-full object-cover object-top">`
+                                        : `<div class="flex h-full w-full items-center justify-center text-blue-300">
+                                            <i class="fa-solid fa-user-doctor text-4xl"></i>
+                                        </div>`
+                                }
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-[15px] font-semibold leading-snug text-[#1a1e26]">
+                                    dr. ${String(doctor.nama || '').replace('dr. ', '')}
+                                </h2>
+                                <p class="mt-1 text-xs text-gray-500">${doctor.spesialis || ''}</p>
+                                <p class="mt-3 text-xs font-semibold text-[#0077C2]">${doctor.pasien || ''} Terlayani</p>
+                            </div>
                         </div>
                     </button>
                 `;
@@ -85,8 +87,16 @@ if (homeRoot) {
             `;
         }
 
+        document.getElementById('lihatDetailButton')?.addEventListener('click', () => {
+            if (selectedDoctorIndex === null) return;
+            const doctor = filteredDoctors[selectedDoctorIndex];
+            if (!doctor?.id) return;
+            window.location.href = `/pasien/booking?doctor_id=${doctor.id}`;
+        });
+
         document.getElementById('poliOverlay').classList.remove('hidden');
         document.getElementById('poliPanel').classList.remove('translate-x-full');
+
     };
 
     const closePoliPanel = () => {
@@ -98,26 +108,42 @@ if (homeRoot) {
     };
 
     const selectDoctor = (index) => {
-        const detailButton = document.getElementById('lihatDetailButton');
-        if (!detailButton) return;
+    const detailButton = document.getElementById('lihatDetailButton');
+    if (!detailButton) return;
 
-        if (selectedDoctorIndex === index) {
-            selectedDoctorIndex = null;
-            document.getElementById(`doctorCheck-${index}`)?.classList.add('hidden');
-            detailButton.classList.remove('bg-blue-400', 'text-white');
-            detailButton.classList.add('bg-gray-200', 'text-gray-500');
-            return;
-        }
-
-        selectedDoctorIndex = index;
-
-        document.querySelectorAll('.doctor-check').forEach((check) => {
+    // Deselect semua
+    document.querySelectorAll('.doctor-card').forEach((card, i) => {
+        card.classList.remove('border-[#0077C2]');
+        card.classList.add('border-transparent');
+        const check = document.getElementById(`doctorCheck-${i}`);
+        if (check) {
             check.classList.add('hidden');
-        });
+            check.classList.remove('flex', 'bg-[#0077C2]', 'border-[#0077C2]');
+            check.classList.add('bg-white', 'border-gray-300');
+        }
+    });
 
-        document.getElementById(`doctorCheck-${index}`)?.classList.remove('hidden');
-        detailButton.classList.remove('bg-gray-200', 'text-gray-500');
-        detailButton.classList.add('bg-blue-400', 'text-white');
+    if (selectedDoctorIndex === index) {
+        selectedDoctorIndex = null;
+        detailButton.classList.remove('bg-blue-400', 'text-white');
+        detailButton.classList.add('bg-gray-200', 'text-gray-500');
+        return;
+    }
+
+    selectedDoctorIndex = index;
+
+    const selectedCard = document.getElementById(`doctorCard-${index}`);
+    selectedCard?.classList.remove('border-transparent');
+    selectedCard?.classList.add('border-[#0077C2]');
+
+    const check = document.getElementById(`doctorCheck-${index}`);
+    if (check) {
+        check.classList.remove('hidden', 'bg-white', 'border-gray-300');
+        check.classList.add('flex', 'bg-[#0077C2]', 'border-[#0077C2]');
+    }
+
+    detailButton.classList.remove('bg-gray-200', 'text-gray-500');
+    detailButton.classList.add('bg-blue-400', 'text-white');
     };
 
     document.querySelectorAll('[data-poli-name]').forEach((button) => {
@@ -130,10 +156,25 @@ if (homeRoot) {
 
     document.getElementById('dokterJagaList')?.addEventListener('click', (event) => {
         const doctorButton = event.target.closest('.js-select-doctor');
-        if (!doctorButton) return;
+        if (doctorButton) {
+            selectDoctor(Number.parseInt(doctorButton.dataset.doctorIndex, 10));
+            return;
+        }
 
-        selectDoctor(Number.parseInt(doctorButton.dataset.doctorIndex, 10));
-    });
+        const detailButton = event.target.closest('#lihatDetailButton');
+        if (detailButton) {
+            if (selectedDoctorIndex === null) return;
+            const openPoli = document.getElementById('poliTitle')?.innerText || '';
+            const filtered = doctorsBySpecialist.filter((doctor) => {
+                const spesialis = normalizeText(doctor.spesialis || doctor.specialist || doctor.spesialisasi || doctor.category || doctor.poli || '');
+                const poli = normalizeText(openPoli);
+                return spesialis.includes(poli) || poli.includes(spesialis);
+            });
+            const doctor = filtered[selectedDoctorIndex];
+            if (!doctor?.id) return;
+            window.location.href = `/pasien/booking?doctor_id=${doctor.id}`;
+        }
+    }); 
 
     const placeholders = [
         'Dokter Umum',

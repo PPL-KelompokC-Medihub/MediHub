@@ -54,12 +54,4 @@
             </a>
         </nav>
     </div>
-
-    <form action="{{ route('logout') }}" method="POST" class="mt-auto px-6 pb-8 pt-4">
-        @csrf
-        <button class="group flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-[14px] font-normal text-[#8A8A8A] transition-all duration-200 hover:-translate-y-[2px] hover:bg-gray-50 hover:text-[#58A7F7]">
-            <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center transition-all duration-200 group-hover:text-[#58A7F7]"></i>
-            <span>Keluar</span>
-        </button>
-    </form>
 </aside>

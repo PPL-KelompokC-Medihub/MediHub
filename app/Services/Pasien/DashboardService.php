@@ -119,6 +119,7 @@ class DashboardService
         $userDocuments = $this->firestore->all('Users');
         $doctorDocuments = $this->firestore->all('Dokter');
         $specializationDocuments = $this->firestore->all('Dokter_spesialisasi');
+        $documentDocuments = $this->firestore->all('Dokter_dokumen');
 
         $users = [];
         foreach ($userDocuments as $user) {
@@ -131,6 +132,13 @@ class DashboardService
         foreach ($specializationDocuments as $specialization) {
             if (isset($specialization['dokterid'])) {
                 $specializations[$specialization['dokterid']] = $specialization;
+            }
+        }
+
+        $documents = [];
+        foreach ($documentDocuments as $doc) {
+            if (isset($doc['dokterid'])) {
+                $documents[$doc['dokterid']] = $doc;
             }
         }
 
@@ -165,7 +173,9 @@ class DashboardService
                 'spesialis_key' => strtolower($specialist['service'] ?? 'Tidak Diketahui'),
                 'rating' => '5.0',
                 'pasien' => '450+ Total Pasien',
-                'foto' => $doctorImages[count($doctors) % count($doctorImages)],
+                'foto' => isset($documents[$doctorId]['profile_pict']) 
+                    ? asset('storage/' . $documents[$doctorId]['profile_pict'])
+                    : $doctorImages[count($doctors) % count($doctorImages)],
             ];
         }
 

@@ -182,7 +182,7 @@ class FirebaseSessionController extends Controller
             'message' => 'Registrasi berhasil.',
             'user_id' => $userData['id'] ?? null,
             'role' => $userData['role'] ?? $validated['role'],
-            'redirect' => $redirectUrl,
+            'redirect' => route('login-pasien'),
         ]);
     }
 
