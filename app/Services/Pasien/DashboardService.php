@@ -3,9 +3,16 @@
 namespace App\Services\Pasien;
 
 use App\Services\FirestoreService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardService
 {
+    private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
+    private const DOCTOR_COLLECTION = 'Dokter';
+    private const DOCTOR_SPECIALIZATION_COLLECTION = 'Dokter_spesialisasi';
+    private const USERS_COLLECTION = 'Users';
+
     public function __construct(
         private FirestoreService $firestore,
     ) {}
@@ -18,9 +25,126 @@ class DashboardService
         $categories = $this->categories();
         $doctors = $this->doctors();
         $facilities = $this->facilities();
-        $appointments = [];
+        $appointments = $this->appointments();
 
         return compact('categories', 'doctors', 'facilities', 'appointments');
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function appointments(): array
+    {
+        $patientId = (string) Auth::id();
+        $patientEmail = (string) (Auth::user()?->email ?? '');
+        $doctorSummaries = $this->doctorSummariesById();
+
+        $appointments = array_values(array_filter(
+            $this->firestore->all(self::APPOINTMENT_COLLECTION),
+            function (array $appointment) use ($patientId, $patientEmail): bool {
+                $belongsToPatient = in_array($patientId, [
+                    (string) ($appointment['patient_id'] ?? ''),
+                    (string) ($appointment['user_uid'] ?? ''),
+                ], true) || (
+                    $patientEmail !== '' &&
+                    $patientEmail === (string) ($appointment['patient_email'] ?? '')
+                );
+
+                if (! $belongsToPatient) {
+                    return false;
+                }
+
+                $status = strtolower((string) ($appointment['status'] ?? ''));
+
+                return ! in_array($status, ['batal', 'dibatalkan', 'selesai'], true);
+            },
+        ));
+
+        usort($appointments, fn (array $a, array $b): int => strcmp(
+            trim((string) ($a['appointment_date'] ?? '') . ' ' . (string) ($a['appointment_time'] ?? '')),
+            trim((string) ($b['appointment_date'] ?? '') . ' ' . (string) ($b['appointment_time'] ?? '')),
+        ));
+
+        return array_map(function (array $appointment) use ($doctorSummaries): array {
+            $date = (string) ($appointment['appointment_date'] ?? '');
+            $doctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
+            $doctor = $doctorSummaries[$doctorId] ?? ['name' => 'Dokter', 'specialization' => 'Jadwal Temu'];
+            $timeStart = (string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? '');
+            $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
+
+            return [
+                'hari' => $this->appointmentDayLabel($date),
+                'jenis' => $doctor['specialization'] . ' - ' . $doctor['name'],
+                'rs' => 'RS Medic Center - Bandung',
+                'antrian' => (string) ($appointment['queue_number'] ?? '-'),
+                'tanggal' => $this->appointmentDateLabel($date),
+                'jam' => trim($timeStart . ($timeEnd !== '' ? ' - ' . $timeEnd : '')),
+            ];
+        }, $appointments);
+    }
+
+    /**
+     * @return array<string, array{name: string, specialization: string}>
+     */
+    private function doctorSummariesById(): array
+    {
+        $users = [];
+        foreach ($this->firestore->all(self::USERS_COLLECTION) as $user) {
+            $users[(string) ($user['id'] ?? '')] = $user;
+        }
+
+        $specializations = [];
+        foreach ($this->firestore->all(self::DOCTOR_SPECIALIZATION_COLLECTION) as $specialization) {
+            $doctorId = (string) ($specialization['dokterid'] ?? '');
+
+            if ($doctorId !== '') {
+                $specializations[$doctorId] = $specialization['service']
+                    ?? $specialization['main_specialization']
+                    ?? 'Jadwal Temu';
+            }
+        }
+
+        $summaries = [];
+        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doctor) {
+            $doctorId = (string) ($doctor['id'] ?? '');
+            $userId = (string) ($doctor['usersId'] ?? '');
+            $user = $users[$userId] ?? [];
+
+            if ($doctorId !== '') {
+                $summaries[$doctorId] = [
+                    'name' => 'dr. ' . ($user['fullname'] ?? $doctor['email'] ?? 'Dokter'),
+                    'specialization' => $specializations[$doctorId] ?? 'Jadwal Temu',
+                ];
+            }
+        }
+
+        return $summaries;
+    }
+
+    private function appointmentDayLabel(string $date): string
+    {
+        if ($date === '') {
+            return 'Jadwal Temu';
+        }
+
+        $appointmentDate = Carbon::parse($date)->startOfDay();
+
+        if ($appointmentDate->isToday()) {
+            return 'Hari ini';
+        }
+
+        if ($appointmentDate->isTomorrow()) {
+            return 'Besok';
+        }
+
+        return $appointmentDate->translatedFormat('l');
+    }
+
+    private function appointmentDateLabel(string $date): string
+    {
+        return $date === ''
+            ? '-'
+            : Carbon::parse($date)->translatedFormat('d F Y');
     }
 
     /**
