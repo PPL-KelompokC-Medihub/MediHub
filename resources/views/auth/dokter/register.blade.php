@@ -10,7 +10,7 @@
 
         <p class="mediq-auth-switch">Sudah memiliki akun? <a href="{{ route('login-dokter') }}">Sign in</a></p>
 
-        <form id="firebase-sign-up-form" class="mediq-auth-form" data-sign-in-url="{{ route('sign-in') }}"
+        <form id="firebase-sign-up-form" class="mediq-auth-form" data-sign-in-url="{{ route('login-dokter') }}"
             data-register-url="{{ route('firebase.register') }}"
             data-firebase-api-key="{{ config('services.firebase.api_key') }}">
             @csrf
