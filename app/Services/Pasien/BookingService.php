@@ -186,7 +186,7 @@ class BookingService
             (string) ($b['tanggal'] ?? ''),
         ));
 
-        $scheduleOptions = array_map(fn (array $schedule): array => [
+        return array_map(fn (array $schedule): array => [
             'id' => $schedule['id'],
             'doctor_id' => $doctorIdsByUserId[$schedule['dokterid'] ?? ''] ?? $schedule['dokterid'] ?? '',
             'doctor_user_id' => $doctorUserIdsByDoctorId[$schedule['dokterid'] ?? ''] ?? $schedule['dokterid'] ?? '',
@@ -196,8 +196,6 @@ class BookingService
             'end' => $schedule['jam_selesai'] ?? '',
             'booked_times' => $bookedTimesBySchedule[$schedule['id'] ?? ''] ?? [],
         ], $schedules);
-
-        return $scheduleOptions;
     }
 
     /**
@@ -340,5 +338,4 @@ class BookingService
             $bookedTimes,
         );
     }
-
 }
