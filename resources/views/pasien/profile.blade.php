@@ -15,10 +15,10 @@
 
 <body class="font-[Poppins] bg-white text-gray-900">
     <div data-patient-profile></div>
-    <div class="grid h-screen grid-cols-[1fr_300px] overflow-hidden ml-[220px]">
+    <div class="grid h-screen grid-cols-[220px_1fr_360px] overflow-hidden bg-[#F8FAFC]">
         <x-pasien.sidebar active="profil" />
 
-        <main class="h-screen overflow-y-auto bg-white px-8 py-10">
+        <main class="h-screen overflow-y-auto bg-[#F8FAFC] px-8 py-8">
             <header class="mb-8">
                 <div class="flex items-center gap-4">
                     <div class="relative">
@@ -320,7 +320,7 @@
             </section>
         </main>
 
-        <aside class="sticky top-0 h-screen overflow-hidden border-l border-gray-200 bg-white px-6 py-8">
+        <aside class="h-screen overflow-y-auto border-l border-gray-200 bg-white px-8 py-8">
             <h2 class="mb-5 text-lg font-semibold">Pengaturan Akun</h2>
 
             <div class="mb-6 rounded-xl border border-gray-200 p-4">
