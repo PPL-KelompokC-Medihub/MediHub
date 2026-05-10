@@ -26,7 +26,7 @@
                     class="group flex items-center gap-4 transition-all duration-200 hover:-translate-y-[2px]"
                 >
                     <img 
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
+                        src="{{ $patient['profile_pict'] }}"
                         class="h-14 w-14 rounded-full object-cover transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-300"
                         alt="Avatar"
                     >

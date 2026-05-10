@@ -12,6 +12,7 @@ class DashboardService
     private const DOCTOR_COLLECTION = 'Dokter';
     private const DOCTOR_SPECIALIZATION_COLLECTION = 'Dokter_spesialisasi';
     private const USERS_COLLECTION = 'Users';
+    private const PATIENT_COLLECTION = 'Pasien';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -26,8 +27,36 @@ class DashboardService
         $doctors = $this->doctors();
         $facilities = $this->facilities();
         $appointments = $this->appointments();
+        $patient = $this->patient();
 
-        return compact('categories', 'doctors', 'facilities', 'appointments');
+        return compact('categories', 'doctors', 'facilities', 'appointments', 'patient');
+    }
+
+    private function patient(): array
+    {
+        $userId = (string) Auth::id();
+
+        $patients = $this->firestore->all(self::PATIENT_COLLECTION);
+
+        $patient = collect($patients)->first(function (array $patient) use ($userId): bool {
+            return (string) ($patient['user_id'] ?? '') === $userId
+                || (string) ($patient['id'] ?? '') === $userId;
+        });
+
+        if (! $patient) {
+            return [
+                'fullname' => Auth::user()?->name ?? 'Pasien',
+                'profile_pict' => asset('images/default-avatar.png'),
+            ];
+        }
+
+        $profilePict = $patient['profile_pict'] ?? null;
+
+        $patient['profile_pict'] = $profilePict
+            ? asset('storage/' . $profilePict)
+            : asset('images/default-avatar.png');
+
+        return $patient;
     }
 
     /**
