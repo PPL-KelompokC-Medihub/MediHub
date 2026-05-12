@@ -12,10 +12,10 @@
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
-    <div class="grid h-screen grid-cols-[1fr_390px] overflow-hidden ml-[220px]">
+    <div class="grid h-screen grid-cols-[220px_1fr_390px] overflow-hidden bg-[#FBFBFB]">
         <x-pasien.sidebar active="layanan" />
 
-        <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-10">
+        <main class="h-screen overflow-y-auto bg-[#FBFBFB] px-6 py-8">
             <div class="mb-5 flex items-start justify-between gap-6">
                 <div>
                     <p class="mb-1 text-2xl font-semibold text-blue-400">{{ $hospital['type'] }}</p>
@@ -113,37 +113,41 @@
             </section>
         </main>
 
-        <aside class="flex h-screen flex-col border-l border-gray-200 bg-white px-7 py-10">
-            <h2 class="mb-6 text-lg font-semibold">Ulasan Pasien</h2>
+        <aside class="h-screen overflow-y-auto border-l border-gray-200 bg-white px-7 py-8">
+            <div class="flex min-h-full flex-col">
+                <h2 class="mb-6 text-lg font-semibold">
+                    Ulasan Pasien
+                </h2>
 
-            <div class="min-h-0 flex-1 overflow-y-auto pr-1">
-                @foreach ($reviews as $review)
-                    <article class="border-b border-gray-100 pb-5 mb-5">
-                        <div class="mb-3 flex items-start gap-3">
-                            <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover">
+                <div class="min-h-0 flex-1 overflow-y-auto pr-1">
+                    @foreach ($reviews as $review)
+                        <article class="border-b border-gray-100 pb-5 mb-5">
+                            <div class="mb-3 flex items-start gap-3">
+                                <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover">
 
-                            <div>
-                                <h3 class="text-sm font-medium">{{ $review['name'] }}</h3>
-                                <p class="text-sm text-gray-500">
-                                    <i class="fa-solid fa-star text-yellow-400"></i>
-                                    {{ $review['rating'] }}
-                                </p>
+                                <div>
+                                    <h3 class="text-sm font-medium">{{ $review['name'] }}</h3>
+                                    <p class="text-sm text-gray-500">
+                                        <i class="fa-solid fa-star text-yellow-400"></i>
+                                        {{ $review['rating'] }}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        <p class="mb-4 text-sm leading-snug text-gray-900">{{ $review['text'] }}</p>
+                            <p class="mb-4 text-sm leading-snug text-gray-900">{{ $review['text'] }}</p>
 
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span>{{ $review['date'] }}</span>
-                            <span><i class="fa-regular fa-heart mr-1"></i>{{ $review['likes'] }}</span>
-                        </div>
-                    </article>
-                @endforeach
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>{{ $review['date'] }}</span>
+                                <span><i class="fa-regular fa-heart mr-1"></i>{{ $review['likes'] }}</span>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+
+                <button class="mt-5 rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
+                    Buat Ulasan
+                </button>
             </div>
-
-            <button class="mt-5 rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
-                Buat Ulasan
-            </button>
         </aside>
     </div>
 

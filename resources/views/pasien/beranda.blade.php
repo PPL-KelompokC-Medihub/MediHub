@@ -16,7 +16,7 @@
         data-patient-home
         data-doctors='@json($doctors)'
     ></div>
-    <div class="grid h-screen grid-cols-[1fr_380px] overflow-hidden ml-[220px]">
+    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
         <x-pasien.sidebar active="beranda" />
 
         <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
@@ -26,7 +26,7 @@
                     class="group flex items-center gap-4 transition-all duration-200 hover:-translate-y-[2px]"
                 >
                     <img 
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop"
+                        src="{{ $patient['profile_pict'] }}"
                         class="h-14 w-14 rounded-full object-cover transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-300"
                         alt="Avatar"
                     >
@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="relative z-10 grid h-full grid-cols-[1fr_240px_1fr] items-center">
-                    <div class="ml-35">
+                    <div class="ml-[35px]">
                         <h2 
                             class="mb-4 text-[26px] font-bold leading-none tracking-wide drop-shadow-[0_1px_2px_rgba(255,255,255,0.25)]"
                             style="
