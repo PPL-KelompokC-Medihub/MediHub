@@ -44,11 +44,16 @@ class BookingController extends Controller
      * Batalkan / hapus jadwal temu pasien.
      */
     public function destroy(
-    Request $request,
-    BookingService $bookingService,
+        Request $request,
+        BookingService $bookingService,
     ): RedirectResponse {
-
         $appointmentIds = $request->input('appointments', []);
+
+        if (empty($appointmentIds)) {
+            return redirect()
+                ->route('pasien.beranda')
+                ->with('error', 'Pilih jadwal temu yang ingin dibatalkan terlebih dahulu.');
+        }
 
         $bookingService->deleteAppointment($appointmentIds);
 

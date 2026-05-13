@@ -277,7 +277,7 @@
                                     <input 
                                         type="checkbox"
                                         name="appointments[]"
-                                        value="{{ $appointment['appointment_id'] }}"
+                                        value="{{ $appointment['appointment_id'] ?? $appointment['id'] }}"
                                         class="h-6 w-6 accent-red-500"
                                     >
                                 </label>

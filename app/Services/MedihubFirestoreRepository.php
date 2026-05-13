@@ -383,7 +383,11 @@ class MedihubFirestoreRepository
 
     public function deleteAppointment(string $appointmentId): void
     {
-        $this->firestore->delete('appointments', $appointmentId);
+        if ($appointmentId === '') {
+            return;
+        }
+
+        $this->firestore->delete('BuatJadwalTemu', $appointmentId);
     }
 
 

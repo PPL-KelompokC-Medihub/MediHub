@@ -22,10 +22,10 @@
     <script type="application/json" id="patientBookingDoctors">
         @json($doctors)
     </script>
-    <div class="grid min-h-screen grid-cols-[1fr_390px] overflow-hidden ml-[220px]">
+    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
         <x-pasien.sidebar active="beranda" />
 
-        <main class="overflow-y-auto bg-[#fbfbfb] px-6 py-8">
+        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             @if ($errors->any())
                 <div class="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
                     {{ $errors->first() }}

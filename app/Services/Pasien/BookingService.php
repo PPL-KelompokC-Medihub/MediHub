@@ -346,9 +346,13 @@ class BookingService
     public function deleteAppointment(array $appointmentIds): void
     {
         foreach ($appointmentIds as $appointmentId) {
+            $appointmentId = (string) $appointmentId;
 
-            $this->medihubFirestoreRepository
-                ->deleteAppointment($appointmentId);
+            if ($appointmentId === '') {
+                continue;
+            }
+
+            $this->medihubFirestoreRepository->deleteAppointment($appointmentId);
         }
     }
 }
