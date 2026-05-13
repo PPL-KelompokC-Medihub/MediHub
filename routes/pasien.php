@@ -43,6 +43,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.create');
     Route::post('/pasien/booking', [BookingController::class, 'store'])
         ->name('pasien.booking.store');
+    Route::delete('/pasien/booking/delete', [BookingController::class, 'destroy'])
+        ->name('pasien.booking.destroy');
 });
 
 // --- Halaman publik untuk pasien (katalog dokter & fasilitas RS) ---

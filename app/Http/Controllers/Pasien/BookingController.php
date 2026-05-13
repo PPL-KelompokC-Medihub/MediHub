@@ -40,4 +40,20 @@ class BookingController extends Controller
 
         return redirect()->route('pasien.beranda')->with('success', 'Jadwal temu berhasil dibuat.');
     }
+    /**
+     * Batalkan / hapus jadwal temu pasien.
+     */
+    public function destroy(
+    Request $request,
+    BookingService $bookingService,
+    ): RedirectResponse {
+
+        $appointmentIds = $request->input('appointments', []);
+
+        $bookingService->deleteAppointment($appointmentIds);
+
+        return redirect()
+            ->route('pasien.beranda')
+            ->with('success', 'Jadwal temu berhasil dibatalkan.');
+    }
 }

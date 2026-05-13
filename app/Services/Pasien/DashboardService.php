@@ -102,12 +102,21 @@ class DashboardService
             $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
 
             return [
+
+                'appointment_id' => $appointment['id'],
+
                 'hari' => $this->appointmentDayLabel($date),
+
                 'jenis' => $doctor['specialization'] . ' - ' . $doctor['name'],
+
                 'rs' => 'RS Medic Center - Bandung',
+
                 'antrian' => (string) ($appointment['queue_number'] ?? '-'),
+
                 'tanggal' => $this->appointmentDateLabel($date),
+
                 'jam' => trim($timeStart . ($timeEnd !== '' ? ' - ' . $timeEnd : '')),
+
             ];
         }, $appointments);
     }

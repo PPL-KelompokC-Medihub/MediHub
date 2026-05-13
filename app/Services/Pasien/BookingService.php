@@ -3,6 +3,7 @@
 namespace App\Services\Pasien;
 
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,7 @@ class BookingService
 
     public function __construct(
         private FirestoreService $firestore,
+        protected MedihubFirestoreRepository $medihubFirestoreRepository,
     ) {}
 
     /**
@@ -337,5 +339,16 @@ class BookingService
             fn (array $times): array => array_values(array_unique($times)),
             $bookedTimes,
         );
+    }
+    /**
+     * Hapus / batalkan appointment pasien.
+     */
+    public function deleteAppointment(array $appointmentIds): void
+    {
+        foreach ($appointmentIds as $appointmentId) {
+
+            $this->medihubFirestoreRepository
+                ->deleteAppointment($appointmentId);
+        }
     }
 }

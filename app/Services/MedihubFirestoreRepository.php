@@ -316,6 +316,7 @@ class MedihubFirestoreRepository
         return $this->hydrateDoctorData($updatedUser);
     }
 
+
     /**
      * @return array<string, mixed>|null
      */
@@ -379,4 +380,11 @@ class MedihubFirestoreRepository
 
         return (int) $digits;
     }
+
+    public function deleteAppointment(string $appointmentId): void
+    {
+        $this->firestore->delete('appointments', $appointmentId);
+    }
+
+
 }
