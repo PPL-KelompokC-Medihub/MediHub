@@ -11,6 +11,7 @@ class MedihubFirestoreRepository
     private const DOCTOR_SPECIALIZATIONS_COLLECTION = 'Dokter_spesialisasi';
     private const DOCTOR_CERTIFICATIONS_COLLECTION = 'Dokter_sertifikasi';
     private const DOCTOR_DOCUMENTS_COLLECTION = 'Dokter_dokumen';
+    private const NOTIFICATION_COLLECTION = 'Notifications';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -390,5 +391,31 @@ class MedihubFirestoreRepository
         $this->firestore->delete('BuatJadwalTemu', $appointmentId);
     }
 
+    /**
+     * Simpan notification pasien.
+     */
+    public function createNotification(array $data): void
+    {
+        $this->firestore->add(self::NOTIFICATION_COLLECTION, [
+            'patient_id' => $data['patient_id'],
+            'title' => $data['title'],
+            'message' => $data['message'],
+            'type' => $data['type'] ?? 'info',
+            'created_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Ambil semua notification pasien.
+     */
+    public function getPatientNotifications(string $patientId): array
+    {
+        return $this->firestore->where(
+            self::NOTIFICATION_COLLECTION,
+            'patient_id',
+            '=',
+            $patientId
+        );
+    }
 
 }

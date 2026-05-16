@@ -53,8 +53,15 @@
                         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     </div>
 
-                    <button class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500">
+                    <button 
+                        id="notificationButton"
+                        class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500 relative"
+                    >
                         <i class="fa-regular fa-bell"></i>
+
+                        @if(count($appointments) > 0)
+                            <span class="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                        @endif
                     </button>
                 </div>
             </header>
@@ -432,8 +439,102 @@
         </div>
     </div>
  </div>
+ <!-- OVERLAY -->
+<div 
+    id="notificationOverlay"
+    class="fixed inset-0 z-[9998] hidden bg-black/20"
+></div>
+
+<!-- PANEL NOTIFIKASI -->
+<div
+    id="notificationPanel"
+    class="fixed right-8 top-24 z-[9999] hidden w-[360px] rounded-2xl bg-white p-6 shadow-2xl"
+>
+
+    <div class="mb-5 flex items-center justify-between">
+        <h2 class="text-xl font-semibold">
+            Pusat Notifikasi
+        </h2>
+
+        <button 
+            id="closeNotification"
+            class="text-gray-400 hover:text-gray-600"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="space-y-5">
+
+        @forelse ($notifications as $notification)
+
+            <div class="flex gap-3 py-4">
+
+                {{-- ICON --}}
+                <div class="mt-1 text-gray-400">
+                    <i class="fa-regular fa-file-lines text-[18px]"></i>
+                </div>
+
+                {{-- CONTENT --}}
+                <div class="flex-1 border-b border-gray-200 pb-4">
+
+                    {{-- HEADER --}}
+                    <div class="mb-2 flex items-start justify-between gap-3">
+
+                        <h3 class="text-[16px] font-semibold leading-5 text-[#1E1E1E]">
+                            {{ $notification['title'] }}
+                        </h3>
+
+                        <span class="whitespace-nowrap text-[13px] text-gray-400">
+                            @if(\Carbon\Carbon::parse($notification['date'])->isToday())
+                                Hari ini
+                            @else
+                                {{ \Carbon\Carbon::parse($notification['date'])->translatedFormat('d F') }}
+                            @endif
+                        </span>
+
+                    </div>
+
+                    {{-- MESSAGE --}}
+                    <p class="text-[15px] leading-[22px] text-[#7A7A7A]">
+                        {{ $notification['message'] }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div class="py-10 text-center text-sm text-gray-400">
+                Belum ada notifikasi
+            </div>
+
+        @endforelse
+
 
     <script>
+        const notificationButton = document.getElementById('notificationButton');
+        const notificationPanel = document.getElementById('notificationPanel');
+        const notificationOverlay = document.getElementById('notificationOverlay');
+        const closeNotification = document.getElementById('closeNotification');
+
+        notificationButton.addEventListener('click', () => {
+
+            notificationPanel.classList.remove('hidden');
+            notificationOverlay.classList.remove('hidden');
+
+        });
+
+        closeNotification.addEventListener('click', closeNotificationPanel);
+        notificationOverlay.addEventListener('click', closeNotificationPanel);
+
+        function closeNotificationPanel() {
+
+            notificationPanel.classList.add('hidden');
+            notificationOverlay.classList.add('hidden');
+
+        }
 
         const toggleButton = document.getElementById('toggleCancelMode');
         const cancelButton = document.getElementById('submitCancelButton');
