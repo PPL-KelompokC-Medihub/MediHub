@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -28,7 +29,7 @@ class DashboardController extends Controller
         private MedihubFirestoreRepository $doctorRepository,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $userId = (string) Auth::id();
 
@@ -38,12 +39,33 @@ class DashboardController extends Controller
             ? (object) $this->doctorRepository->hydrateDoctorData($userData)
             : null;
 
-        $appointments = $this->toObjects($this->currentDoctorDocuments(self::APPOINTMENT_COLLECTION));
+        $search = trim((string) $request->query('search', ''));
+        $date = trim((string) $request->query('date', ''));
 
+        $allAppointments = $this->currentDoctorDocuments(self::APPOINTMENT_COLLECTION);
+        $filteredAppointments = $allAppointments;
+
+        if ($search !== '' || $date !== '') {
+            $filteredAppointments = array_values(array_filter($allAppointments, function (array $appointment) use ($search, $date) {
+                $matchesName = $search === '' || (
+                    isset($appointment['patient_name']) &&
+                    str_contains(strtolower($appointment['patient_name']), strtolower($search))
+                );
+
+                $matchesDate = $date === '' || (
+                    isset($appointment['appointment_date']) &&
+                    str_starts_with((string) $appointment['appointment_date'], $date)
+                );
+
+                return $matchesName && $matchesDate;
+            }));
+        }
+
+        $appointments = $this->toObjects($filteredAppointments);
         $jadwalSaya = $this->toObjects($this->currentDoctorDocuments(self::SCHEDULE_COLLECTION));
 
-        $totalPasien = count($appointments);
-        $jadwalHariIni = collect($appointments)->filter(fn ($a) =>
+        $totalPasien = count($allAppointments);
+        $jadwalHariIni = collect($allAppointments)->filter(fn ($a) =>
             isset($a->appointment_date) &&
             str_starts_with($a->appointment_date, now()->toDateString())
         )->count();
