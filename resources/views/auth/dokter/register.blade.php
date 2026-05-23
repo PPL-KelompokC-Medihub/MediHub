@@ -17,7 +17,7 @@
             <input type="hidden" name="role" value="dokter">
 
             <label class="mediq-label" for="name">Nama Lengkap</label>
-            <input id="name" name="name" type="text" value="{{ old('name') }}" class="mediq-input" placeholder="John Doe"
+            <input id="name" name="name" type="text" dusk="register-name" value="{{ old('name') }}" class="mediq-input" placeholder="John Doe"
                 required autofocus>
 
             <div class="mediq-field-block">
@@ -27,14 +27,14 @@
 
             <div class="mediq-field">
                 <label class="mediq-label" for="email">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" class="mediq-input"
+                <input id="email" name="email" type="email" dusk="register-email" value="{{ old('email') }}" class="mediq-input"
                     placeholder="medihub@gmail.com" required>
             </div>
 
             <div class="mediq-field">
                 <label class="mediq-label" for="password">Kata Sandi</label>
                 <div class="mediq-input-wrap">
-                    <input id="password" name="password" type="password" class="mediq-input" placeholder="Buat kata sandi"
+                    <input id="password" name="password" type="password" dusk="register-password" class="mediq-input" placeholder="Buat kata sandi"
                         required>
                     <button type="button" class="mediq-eye-btn" id="toggle-password" aria-label="Tampilkan kata sandi">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -62,7 +62,7 @@
             <div class="mediq-field">
                 <label class="mediq-label" for="password_confirmation">Konfirmasi Kata Sandi</label>
                 <div class="mediq-input-wrap">
-                    <input id="password_confirmation" name="password_confirmation" type="password" class="mediq-input"
+                    <input id="password_confirmation" name="password_confirmation" type="password" dusk="register-password-confirmation" class="mediq-input"
                         placeholder="Masukkan kata sandi" required>
                     <button type="button" class="mediq-eye-btn" id="toggle-confirm"
                         aria-label="Tampilkan konfirmasi kata sandi">
@@ -82,7 +82,7 @@
 
             <p id="firebase-auth-error" class="mediq-error" hidden></p>
 
-            <button type="submit" id="sign-up-submit" class="mediq-primary-btn mediq-signup-submit">
+            <button type="submit" dusk="register-button" id="sign-up-submit" class="mediq-primary-btn mediq-signup-submit">
                 <span class="btn-text">Buat Akun</span>
                 <span class="btn-loading" hidden>Memproses...</span>
             </button>

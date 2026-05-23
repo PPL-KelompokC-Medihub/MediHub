@@ -61,7 +61,7 @@
 
         <form id="doctorProfileForm" method="POST" action="{{ route('dokter.profile.personal.update') }}">
             @csrf
-            <input id="doctor_gender" name="gender" type="hidden"
+            <input id="doctor_gender" name="gender" type="hidden" 
                 value="{{ old('gender', $user['gender'] ?? 'Perempuan') }}">
 
             <section class="form-section">
@@ -70,13 +70,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="doctor_name">Nama Lengkap*</label>
-                        <input id="doctor_name" name="name" type="text" placeholder="Anita Cahyaningrum"
+                        <input id="doctor_name" name="name" type="text" dusk="doctor-name" placeholder="Anita Cahyaningrum"
                             value="{{ old('name', $user['name'] ?? '') }}">
                     </div>
                     <div class="form-group">
                         <label for="doctor_age">Umur Dokter*</label>
                         <div class="input-wrapper">
-                            <input id="doctor_age" name="age" type="number" placeholder="12"
+                            <input id="doctor_age" name="age" type="number" dusk="doctor-age" placeholder="12"
                                 value="{{ old('age', $user['age'] ?? '') }}">
                             <span class="input-unit">Tahun</span>
                         </div>
@@ -86,12 +86,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="doctor_email">Email*</label>
-                        <input id="doctor_email" name="email" type="email" placeholder="anitacahya@gmail.com"
+                        <input id="doctor_email" name="email" type="email" dusk="doctor-email" placeholder="anitacahya@gmail.com"
                             value="{{ old('email', $user['email'] ?? '') }}" readonly>
                     </div>
                     <div class="form-group">
                         <label for="doctor_phone">Nomor HP*</label>
-                        <input id="doctor_phone" name="phone" type="tel" placeholder="+62 82537681253813"
+                        <input id="doctor_phone" name="phone" type="tel" dusk="doctor-phone" placeholder="+62 82537681253813"
                             value="{{ old('phone', $user['phone'] ?? '') }}">
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                     <div class="form-group">
                         <label for="doctor_weight">Berat Badan*</label>
                         <div class="input-wrapper">
-                            <input id="doctor_weight" name="weight" type="number" placeholder="12"
+                            <input id="doctor_weight" name="weight" type="number" dusk="doctor-weight" placeholder="12"
                                 value="{{ old('weight', $user['weight'] ?? '') }}">
                             <span class="input-unit">kg</span>
                         </div>
@@ -108,7 +108,7 @@
                     <div class="form-group">
                         <label for="doctor_height">Tinggi Badan*</label>
                         <div class="input-wrapper">
-                            <input id="doctor_height" name="height" type="number" placeholder="12"
+                            <input id="doctor_height" name="height" type="number" dusk="doctor-height" placeholder="12"
                                 value="{{ old('height', $user['height'] ?? '') }}">
                             <span class="input-unit">cm</span>
                         </div>
@@ -118,13 +118,13 @@
                 <div class="form-group">
                     <label>Jenis Kelamin*</label>
                     <div class="gender-container">
-                        <button type="button"
+                        <button type="button" dusk="doctor-gender-female"
                             class="gender-option {{ old('gender', $user['gender'] ?? 'Perempuan') === 'Perempuan' ? 'selected' : '' }}"
                             data-gender="Perempuan">
                             <i class="fa-solid fa-venus gender-icon"></i>
                             <span class="gender-label">Perempuan</span>
                         </button>
-                        <button type="button"
+                        <button type="button" dusk="doctor-gender-male"
                             class="gender-option {{ old('gender', $user['gender'] ?? '') === 'Pria' ? 'selected' : '' }}"
                             data-gender="Pria">
                             <i class="fa-solid fa-mars gender-icon"></i>
@@ -143,26 +143,26 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="doctor_country">Negara*</label>
-                        <input id="doctor_country" name="country" type="text" placeholder="Indonesia"
+                        <input id="doctor_country" name="country" type="text" dusk="doctor-country" placeholder="Indonesia"
                             value="{{ old('country', $user['country'] ?? 'Indonesia') }}">
                     </div>
                     <div class="form-group">
                         <label for="doctor_city">Kota*</label>
-                        <input id="doctor_city" name="city" type="text" placeholder="Bandung"
+                        <input id="doctor_city" name="city" type="text" dusk="doctor-city" placeholder="Bandung"
                             value="{{ old('city', $user['city'] ?? '') }}">
                     </div>
                 </div>
                 <div class="form-row form-row-single">
                     <div class="form-group">
                         <label for="doctor_postal_code">Kode POS*</label>
-                        <input id="doctor_postal_code" name="postal_code" type="text" placeholder="40111"
+                        <input id="doctor_postal_code" name="postal_code" type="text" dusk="doctor-postal-code" placeholder="40111"
                             value="{{ old('postal_code', $user['postal_code'] ?? '') }}">
                     </div>
                 </div>
             </section>
 
             <div class="footer-action">
-                <button type="submit" class="btn-primary">
+                <button type="submit" dusk="doctor-save-profile" class="btn-primary">
                     {{ $profileCompleted ? 'Perbarui Data Diri Dokter' : 'Simpan & Lanjut ke Keahlian Dokter' }}
                 </button>
             </div>
