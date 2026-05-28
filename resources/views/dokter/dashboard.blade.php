@@ -224,35 +224,49 @@
     </div>
 
     {{-- Daftar Pasien --}}
-    <div>
+<div>
+    <div class="doctor-patient-header">
         <h2 class="doctor-section-title">Daftar Pasien</h2>
-        <div class="doctor-patient-table-wrap">
-            <table class="doctor-patient-table">
-                <thead>
-                    <tr>
-                        <th>Pasien</th>
-                        <th>Tanggal</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($appointments as $appointment)
-                        <tr>
-                            <td class="doctor-patient-name">{{ $appointment->patient_name ?? '-' }}</td>
-                            <td class="doctor-patient-date">{{ $appointment->appointment_date ?? '-' }}</td>
-                            <td>
-                                <span class="doctor-status-pill">Aktif</span>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="doctor-table-empty">Belum ada pasien</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
     </div>
+    <form action="{{ route('dokter.dashboard') }}" method="GET" class="doctor-patient-search-form">
+        <div class="mediq-search-wrap doctor-patient-search-wrap">
+            <svg class="mediq-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+                type="text"
+                name="search"
+                class="mediq-search-input"
+                placeholder="Cari nama pasien"
+                value="{{ request('search') }}"
+            />
+        </div>
+    </form>
+    <div class="doctor-patient-table-wrap">
+        <table class="doctor-patient-table">
+            <thead>
+                <tr>
+                    <th>Pasien</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($appointments as $appointment)
+                    <tr>
+                        <td class="doctor-patient-name">{{ $appointment->patient_name ?? '-' }}</td>
+                        <td class="doctor-patient-date">{{ $appointment->appointment_date ?? '-' }}</td>
+                        <td><span class="doctor-status-pill">Aktif</span></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="doctor-table-empty">Belum ada pasien</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection
 
 @section('rightbar')

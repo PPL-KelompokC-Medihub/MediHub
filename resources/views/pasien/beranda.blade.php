@@ -11,15 +11,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body class="bg-white font-[Poppins] text-[#111827]">
+<body class="overflow-x-hidden overflow-y-auto bg-white font-[Poppins] text-[#111827]">
     <div 
         data-patient-home
         data-doctors='@json($doctors)'
     ></div>
-    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
+    <div class="ml-[220px] flex min-h-screen">
         <x-pasien.sidebar active="beranda" />
 
-        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
+        <main class="min-w-0 flex-1 bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <a 
                     href="{{ route('pasien.profile') }}"
@@ -182,7 +182,7 @@
             <section id="layanan" class="mb-7 scroll-mt-8">
                 <h2 class="mb-4 text-lg font-semibold">Kategori Poli</h2>
 
-                <div class="flex gap-6 overflow-x-auto px-2 pt-2 pb-4">
+                <div class="flex gap-6 overflow-x-auto overflow-y-hidden px-2 pt-2 pb-4">
                     @foreach ($categories as $category)
                         <button 
                             type="button"
@@ -245,8 +245,7 @@
 
         </main>
 
-        <aside class="sticky top-0 flex h-screen flex-col border-l border-gray-200 bg-white px-7 py-8">
-
+        <aside class="sticky top-0 flex h-screen w-[390px] shrink-0 flex-col border-l border-gray-200 bg-white px-7 py-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-lg font-semibold">Jadwal Temu Mendatang</h2>
 

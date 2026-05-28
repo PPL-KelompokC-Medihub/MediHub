@@ -14,7 +14,7 @@
     : 'text-[#111827] transition-all duration-200 group-hover:text-[#58A7F7]';
 @endphp
 
-<aside class="sticky top-0 flex h-screen w-[220px] flex-col border-r border-gray-200 bg-white">
+<aside class="fixed left-0 top-0 flex h-screen w-[220px] flex-col border-r border-gray-200 bg-white">
     <div class="flex flex-1 flex-col px-6 py-10">
         <img
             src="{{ asset('images/Medihub.png') }}"
@@ -24,7 +24,7 @@
 
         <p class="mb-8 font-[Poppins] text-[18px] font-medium text-black">Menu</p>
 
-        <nax`v class="flex w-full flex-col gap-7 pl-4">
+        <nav class="flex w-full flex-col gap-7 pl-4">
             <a href="{{ route('pasien.beranda') }}" class="{{ $linkClass('beranda') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-solid fa-house {{ $iconClass('beranda') }} flex h-6 w-6 items-center justify-center"></i>

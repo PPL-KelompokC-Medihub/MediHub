@@ -19,14 +19,14 @@
 
             <div class="mediq-field">
                 <label class="mediq-label" for="email">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" class="mediq-input"
+                <input id="email" name="email" type="email" dusk="login-email" value="{{ old('email') }}" class="mediq-input"
                     placeholder="mediQ@gmail.com" required autofocus>
             </div>
 
             <div class="mediq-field">
                 <label class="mediq-label" for="password">Kata Sandi</label>
                 <div class="mediq-input-wrap">
-                    <input id="password" name="password" type="password" class="mediq-input"
+                    <input id="password" name="password" type="password" dusk="login-password" class="mediq-input"
                         placeholder="Masukkan kata sandi" required>
                     <button type="button" class="mediq-eye-btn" id="toggle-password" aria-label="Tampilkan kata sandi">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -39,12 +39,12 @@
             </div>
 
             @if ($errors->any())
-                <div class="mediq-error">{{ $errors->first() }}</div>
+                <div class="mediq-error" dusk="login-error">{{ $errors->first() }}</div>
             @endif
 
             <p id="firebase-auth-error" class="mediq-error" hidden></p>
 
-            <button type="submit" id="sign-in-submit" class="mediq-submit-btn">
+            <button type="submit" dusk="login-button" id="sign-in-submit" class="mediq-submit-btn">
                 <span class="btn-text">Masuk</span>
                 <span class="btn-loading" hidden>Memproses...</span>
             </button>
