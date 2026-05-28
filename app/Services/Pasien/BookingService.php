@@ -3,9 +3,11 @@
 namespace App\Services\Pasien;
 
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
 class BookingService
 {
@@ -17,6 +19,7 @@ class BookingService
 
     public function __construct(
         private FirestoreService $firestore,
+        protected MedihubFirestoreRepository $medihubFirestoreRepository,
     ) {}
 
     /**
@@ -117,6 +120,36 @@ class BookingService
             'status' => 'Menunggu',
             'cancellation_reason' => null,
             'update_at' => now()->toIso8601String(),
+        ]);
+        $doctor = $this->firestore->find(
+            self::DOCTOR_COLLECTION,
+            $data['doctor_id']
+        );
+        $user = $this->firestore->find(
+            self::USERS_COLLECTION,
+            $doctor['usersId']
+        );
+        $doctorName = $user['fullname']
+            ?? $doctor['email']
+            ?? 'Dokter';
+            
+        $this->medihubFirestoreRepository->createNotification([
+            'patient_id' => Auth::id(),
+
+            'title' => 'Janji Temu Berhasil Dibuat',
+
+            'message' =>
+                'Janji temu Anda dengan dr. '
+                . $doctorName
+                . ' di RS Medic Center pada '
+                . Carbon::parse($schedule['tanggal'])->translatedFormat('d F Y')
+                . ', pukul '
+                . $data['appointment_time']
+                . ' WIB. Pastikan anda hadir tepat waktu!',
+
+            'type' => 'success',
+
+            'created_at' => now()->toDateTimeString(),
         ]);
     }
 
@@ -337,5 +370,27 @@ class BookingService
             fn (array $times): array => array_values(array_unique($times)),
             $bookedTimes,
         );
+    }
+    /**
+     * Hapus / batalkan appointment pasien.
+     */
+    public function deleteAppointment(array $appointmentIds): void
+    {
+        foreach ($appointmentIds as $appointmentId) {
+            $appointmentId = (string) $appointmentId;
+
+            if ($appointmentId === '') {
+                continue;
+            }
+
+            $this->medihubFirestoreRepository->deleteAppointment($appointmentId);
+
+            $this->medihubFirestoreRepository->createNotification([
+                'patient_id' => Auth::id(),
+                'title' => 'Janji Temu Dibatalkan',
+                'message' => 'Janji temu berhasil dibatalkan. Silakan membuat jadwal baru jika diperlukan.',
+                'type' => 'cancel',
+            ]);
+        }
     }
 }
