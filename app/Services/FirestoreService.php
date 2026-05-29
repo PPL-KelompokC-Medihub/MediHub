@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use Google\Auth\Credentials\ServiceAccountCredentials;
+use Google\Auth\HttpHandler\HttpHandlerFactory;
+use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +18,8 @@ class FirestoreService
     private const FIRESTORE_SCOPE = 'https://www.googleapis.com/auth/datastore';
     private const API_BASE = 'https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents';
     private const RUN_QUERY_ENDPOINT = 'https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents:runQuery';
+    private const CONNECT_TIMEOUT = 5;
+    private const REQUEST_TIMEOUT = 15;
 
     private string $projectId;
     private string $baseUrl;
@@ -281,8 +285,13 @@ class FirestoreService
 
         $credentials = new ServiceAccountCredentials([self::FIRESTORE_SCOPE], $this->credentialsData);
 
+        $handler = HttpHandlerFactory::build(new GuzzleClient([
+            'connect_timeout' => self::CONNECT_TIMEOUT,
+            'timeout' => self::REQUEST_TIMEOUT,
+        ]));
+
         try {
-            $token = $credentials->fetchAuthToken();
+            $token = $credentials->fetchAuthToken($handler);
         } catch (Throwable $e) {
             $message = $e->getMessage();
 
@@ -374,22 +383,29 @@ class FirestoreService
 
     private function get(string $url, array $query = []): Response
     {
-        return Http::withToken($this->getAccessToken())->get($url, $query);
+        return $this->client()->get($url, $query);
     }
 
     private function post(string $url, array $payload): Response
     {
-        return Http::withToken($this->getAccessToken())->post($url, $payload);
+        return $this->client()->post($url, $payload);
     }
 
     private function patch(string $url, array $payload): Response
     {
-        return Http::withToken($this->getAccessToken())->patch($url, $payload);
+        return $this->client()->patch($url, $payload);
     }
 
     private function deleteRequest(string $url): Response
     {
-        return Http::withToken($this->getAccessToken())->delete($url);
+        return $this->client()->delete($url);
+    }
+
+    private function client(): \Illuminate\Http\Client\PendingRequest
+    {
+        return Http::withToken($this->getAccessToken())
+            ->connectTimeout(self::CONNECT_TIMEOUT)
+            ->timeout(self::REQUEST_TIMEOUT);
     }
 
     private function initializeIfNeeded(): void
