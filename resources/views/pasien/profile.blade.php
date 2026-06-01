@@ -15,11 +15,13 @@
 
 <body class="font-[Poppins] bg-white text-gray-900">
     <div data-patient-profile></div>
-    <div class="flex h-screen overflow-hidden bg-[#F8FAFC]">
-        <x-pasien.sidebar active="profil" />
 
-        <main class="min-w-0 flex-1 overflow-y-auto bg-[#F8FAFC] px-8 py-8">
-            <div class="mx-auto max-w-[980px]">
+    <x-pasien.sidebar active="profil" />
+
+    <div class="flex h-screen overflow-hidden bg-white pl-[260px]">
+        <main class="min-w-0 flex-1 overflow-y-auto bg-white px-8 py-8">
+            <div class="w-full max-w-[900px] xl:max-w-[980px]">
+
                 <header class="mb-8">
                     <div class="flex items-center gap-4">
                         <div class="relative">
@@ -77,175 +79,177 @@
                     </div>
                 </header>
 
-                <section class="rounded-2xl border border-gray-200 p-6">
-                <form action="{{ route('pasien.profile.update') }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="mb-6 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">Informasi Pribadi</h2>
+                <section class="rounded-2xl border border-gray-200 bg-white p-6">
+                    <form action="{{ route('pasien.profile.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
 
-                        <button 
-                            type="button"
-                            id="editProfileBtn"
-                            class="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-500"
-                        >
-                            Edit <i class="fa-regular fa-pen-to-square ml-1"></i>
-                        </button>
-                    </div>
+                        <div class="mb-6 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold">Informasi Pribadi</h2>
 
-                    <div class="grid grid-cols-2 gap-5">
-                        <div>
-                            <label class="mb-2 block text-sm font-medium">Nama Lengkap</label>
-                            <input 
-                                name="fullname"
-                                value="{{ $user->fullname ?? '' }}"
-                                readonly
-                                class="profile-input w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none"
+                            <button 
+                                type="button"
+                                id="editProfileBtn"
+                                class="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-500"
                             >
+                                Edit <i class="fa-regular fa-pen-to-square ml-1"></i>
+                            </button>
                         </div>
 
-                        <input type="hidden" name="email" value="{{ $user->email ?? '' }}">
-
-                        <div>
-                            <label class="mb-2 block text-sm font-medium">Umur Pasien</label>
-                            <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
+                        <div class="grid grid-cols-2 gap-x-5 gap-y-4">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium">Nama Lengkap</label>
                                 <input 
-                                    name="umur"
-                                    value="{{ $user->umur ?? $user->age ?? '' }}"
-                                    placeholder="Belum diisi"
+                                    name="fullname"
+                                    value="{{ $user->fullname ?? '' }}"
                                     readonly
-                                    class="profile-input w-full text-sm outline-none"
+                                    class="profile-input w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none"
                                 >
-                                <span class="text-sm text-gray-400">Tahun</span>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="mb-2 block text-sm font-medium">Berat Badan</label>
-                            <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
-                                <input 
-                                    name="weight"
-                                    value="{{ $user->weight ?? '' }}"
-                                    placeholder="Belum diisi"
-                                    readonly
-                                    class="profile-input w-full text-sm outline-none"
-                                >
-                                <span class="text-sm text-gray-400">kg</span>
-                            </div>
-                        </div>
+                            <input type="hidden" name="email" value="{{ $user->email ?? '' }}">
 
-                        <div>
-                            <label class="mb-2 block text-sm font-medium">Tinggi Badan</label>
-                            <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
-                                <input 
-                                    name="height"
-                                    value="{{ $user->height ?? '' }}"
-                                    placeholder="Belum diisi"
-                                    readonly
-                                    class="profile-input w-full text-sm outline-none"
-                                >
-                                <span class="text-sm text-gray-400">cm</span>
-                            </div>
-                        </div>
-
-                        <div class="col-span-2">
-                            <label class="mb-2 block text-sm font-medium">Jenis Kelamin</label>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
-                                    <input
-                                        type="radio"
-                                        name="gender"
-                                        value="Perempuan"
-                                        disabled
-                                        class="profile-input"
-                                        {{ ($user->gender ?? '') === 'Perempuan' ? 'checked' : '' }}
+                            <div>
+                                <label class="mb-2 block text-sm font-medium">Umur Pasien</label>
+                                <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
+                                    <input 
+                                        name="umur"
+                                        value="{{ $user->umur ?? $user->age ?? '' }}"
+                                        placeholder="Belum diisi"
+                                        readonly
+                                        class="profile-input w-full text-sm outline-none"
                                     >
-                                    <div>
-                                        <div class="text-lg">♀</div>
-                                        <p class="text-sm text-gray-500">Perempuan</p>
-                                    </div>
-                                </label>
-
-                                <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
-                                    <input
-                                        type="radio"
-                                        name="gender"
-                                        value="Pria"
-                                        disabled
-                                        class="profile-input"
-                                        {{ ($user->gender ?? '') === 'Pria' ? 'checked' : '' }}
-                                    >
-                                    <div>
-                                        <div class="text-lg">♂</div>
-                                        <p class="text-sm text-gray-500">Pria</p>
-                                    </div>
-                                </label>
+                                    <span class="text-sm text-gray-400">Tahun</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="col-span-2">
-                            <label class="mb-2 block text-sm font-medium">Golongan Darah</label>
+                            <div>
+                                <label class="mb-2 block text-sm font-medium">Berat Badan</label>
+                                <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
+                                    <input 
+                                        name="weight"
+                                        value="{{ $user->weight ?? '' }}"
+                                        placeholder="Belum diisi"
+                                        readonly
+                                        class="profile-input w-full text-sm outline-none"
+                                    >
+                                    <span class="text-sm text-gray-400">kg</span>
+                                </div>
+                            </div>
 
-                            <div class="flex items-center gap-5">
-                                @foreach (['A', 'B', 'AB', 'O'] as $blood)
-                                    <label class="flex items-center gap-2 text-sm">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium">Tinggi Badan</label>
+                                <div class="flex items-center rounded-xl border border-gray-200 px-4 py-3">
+                                    <input 
+                                        name="height"
+                                        value="{{ $user->height ?? '' }}"
+                                        placeholder="Belum diisi"
+                                        readonly
+                                        class="profile-input w-full text-sm outline-none"
+                                    >
+                                    <span class="text-sm text-gray-400">cm</span>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="mb-2 block text-sm font-medium">Jenis Kelamin</label>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
                                         <input
                                             type="radio"
-                                            name="blood_type"
-                                            value="{{ $blood }}"
+                                            name="gender"
+                                            value="Perempuan"
                                             disabled
                                             class="profile-input"
-                                            {{ ($user->blood_type ?? '') === $blood ? 'checked' : '' }}
+                                            {{ ($user->gender ?? '') === 'Perempuan' ? 'checked' : '' }}
                                         >
-                                        {{ $blood }}
+                                        <div>
+                                            <div class="text-lg">♀</div>
+                                            <p class="text-sm text-gray-500">Perempuan</p>
+                                        </div>
                                     </label>
-                                @endforeach
+
+                                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
+                                        <input
+                                            type="radio"
+                                            name="gender"
+                                            value="Pria"
+                                            disabled
+                                            class="profile-input"
+                                            {{ ($user->gender ?? '') === 'Pria' ? 'checked' : '' }}
+                                        >
+                                        <div>
+                                            <div class="text-lg">♂</div>
+                                            <p class="text-sm text-gray-500">Pria</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="mb-2 block text-sm font-medium">Golongan Darah</label>
+
+                                <div class="flex items-center gap-5">
+                                    @foreach (['A', 'B', 'AB', 'O'] as $blood)
+                                        <label class="flex items-center gap-2 text-sm">
+                                            <input
+                                                type="radio"
+                                                name="blood_type"
+                                                value="{{ $blood }}"
+                                                disabled
+                                                class="profile-input"
+                                                {{ ($user->blood_type ?? '') === $blood ? 'checked' : '' }}
+                                            >
+                                            {{ $blood }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="mb-2 block text-sm font-medium">Riwayat Alergi Obat</label>
+                                <textarea 
+                                    name="allergy_history"
+                                    readonly
+                                    placeholder="Beritahu dokter riwayat alergi anda"
+                                    class="profile-input h-24 w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none"
+                                >{{ $user->allergy_history ?? '' }}</textarea>
+
+                                <label class="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                                    <input
+                                        type="checkbox"
+                                        name="no_allergy"
+                                        value="1"
+                                        disabled
+                                        class="profile-input"
+                                        {{ ($user->no_allergy ?? false) ? 'checked' : '' }}
+                                    >
+                                    Tidak ada
+                                </label>
+
+                                <div id="saveProfileWrapper" class="mt-5 hidden justify-end gap-3">
+                                    <button 
+                                        type="button"
+                                        id="cancelProfileBtn"
+                                        class="rounded-xl border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100"
+                                    >
+                                        Batal
+                                    </button>
+
+                                    <button 
+                                        type="submit"
+                                        class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-600"
+                                    >
+                                        Simpan
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-span-2">
-                            <label class="mb-2 block text-sm font-medium">Riwayat Alergi Obat</label>
-                            <textarea 
-                                name="allergy_history"
-                                readonly
-                                placeholder="Beritahu dokter riwayat alergi anda"
-                                class="profile-input h-24 w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none"
-                            >{{ $user->allergy_history ?? '' }}</textarea>
-                            <label class="mt-3 flex items-center gap-2 text-sm text-gray-600">
-                                <input
-                                    type="checkbox"
-                                    name="no_allergy"
-                                    value="1"
-                                    disabled
-                                    class="profile-input"
-                                    {{ ($user->no_allergy ?? false) ? 'checked' : '' }}
-                                >
-                                Tidak ada
-                            </label>
-                            <div id="saveProfileWrapper" class="mt-5 hidden justify-end gap-3">
-        
-                                <button 
-                                    type="button"
-                                    id="cancelProfileBtn"
-                                    class="rounded-xl border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100"
-                                >
-                                    Batal
-                                </button>
-
-                                <button 
-                                    type="submit"
-                                    class="rounded-xl bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-600"
-                                >
-                                    Simpan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
                 </section>
 
-                <section class="mt-5 rounded-2xl border border-gray-200 p-6">
+                <section class="mt-5 rounded-2xl border border-gray-200 bg-white p-6">
                     <form action="{{ route('pasien.profile.update') }}" method="POST">
                         @csrf
                         @method('PUT')
@@ -265,7 +269,7 @@
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-5">
+                        <div class="grid grid-cols-2 gap-x-5 gap-y-4">
                             <div>
                                 <label class="mb-2 block text-sm font-medium">Negara</label>
 
@@ -331,7 +335,7 @@
                         <i class="fa-regular fa-user rounded-lg border border-gray-200 p-2 text-sm"></i>
                         <div>
                             <p class="text-sm font-medium">Pusat Akun</p>
-                            <p class="text-xs text-gray-400 leading-snug">
+                            <p class="text-xs leading-snug text-gray-400">
                                 Kata sandi, keamanan, dan detail pribadi.
                             </p>
                         </div>
@@ -465,6 +469,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>
