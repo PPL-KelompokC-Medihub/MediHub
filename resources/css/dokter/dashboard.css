@@ -463,6 +463,14 @@
     color: var(--muted);
 }
 
+.doctor-patient-complaint {
+    max-width: 220px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .doctor-status-pill {
     background: #eef4ff;
     color: var(--primary-strong);
@@ -470,6 +478,21 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
+}
+
+.doctor-status-selesai {
+    background: #eaf8f0;
+    color: #16804a;
+}
+
+.doctor-status-dibatalkan {
+    background: #feecec;
+    color: #c53232;
+}
+
+.doctor-status-diperiksa {
+    background: #fff5dd;
+    color: #a76500;
 }
 
 .doctor-table-empty {
@@ -524,6 +547,48 @@
     transform: translateY(-50%);
     color: #b8bcc8;
     flex-shrink: 0;
+}
+
+.doctor-patient-date-filter {
+    height: 48px;
+    border-radius: 24px;
+    border: 1px solid #d0d5e0;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+}
+
+.doctor-patient-date-filter:focus {
+    border-color: var(--primary);
+}
+
+.doctor-patient-search-button,
+.doctor-patient-reset-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border-radius: 24px;
+    padding: 0 18px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.doctor-patient-search-button {
+    border: 0;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+.doctor-patient-reset-link {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--muted);
 }
 
 /* ── RIGHTBAR ── */

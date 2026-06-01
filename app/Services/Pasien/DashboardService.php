@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Auth;
 class DashboardService
 {
     private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
+
     private const DOCTOR_COLLECTION = 'Dokter';
+
     private const DOCTOR_SPECIALIZATION_COLLECTION = 'Dokter_spesialisasi';
+
     private const USERS_COLLECTION = 'Users';
+
     private const PATIENT_COLLECTION = 'Pasien';
 
     public function __construct(
@@ -53,7 +57,7 @@ class DashboardService
         $profilePict = $patient['profile_pict'] ?? null;
 
         $patient['profile_pict'] = $profilePict
-            ? asset('storage/' . $profilePict)
+            ? asset('storage/'.$profilePict)
             : asset('images/default-avatar.png');
 
         return $patient;
@@ -90,8 +94,8 @@ class DashboardService
         ));
 
         usort($appointments, fn (array $a, array $b): int => strcmp(
-            trim((string) ($a['appointment_date'] ?? '') . ' ' . (string) ($a['appointment_time'] ?? '')),
-            trim((string) ($b['appointment_date'] ?? '') . ' ' . (string) ($b['appointment_time'] ?? '')),
+            trim((string) ($a['appointment_date'] ?? '').' '.(string) ($a['appointment_time'] ?? '')),
+            trim((string) ($b['appointment_date'] ?? '').' '.(string) ($b['appointment_time'] ?? '')),
         ));
 
         return array_map(function (array $appointment) use ($doctorSummaries): array {
@@ -103,11 +107,11 @@ class DashboardService
 
             return [
                 'hari' => $this->appointmentDayLabel($date),
-                'jenis' => $doctor['specialization'] . ' - ' . $doctor['name'],
+                'jenis' => $doctor['specialization'].' - '.$doctor['name'],
                 'rs' => 'RS Medic Center - Bandung',
                 'antrian' => (string) ($appointment['queue_number'] ?? '-'),
                 'tanggal' => $this->appointmentDateLabel($date),
-                'jam' => trim($timeStart . ($timeEnd !== '' ? ' - ' . $timeEnd : '')),
+                'jam' => trim($timeStart.($timeEnd !== '' ? ' - '.$timeEnd : '')),
             ];
         }, $appointments);
     }
@@ -141,7 +145,7 @@ class DashboardService
 
             if ($doctorId !== '') {
                 $summaries[$doctorId] = [
-                    'name' => 'dr. ' . ($user['fullname'] ?? $doctor['email'] ?? 'Dokter'),
+                    'name' => 'dr. '.($user['fullname'] ?? $doctor['email'] ?? 'Dokter'),
                     'specialization' => $specializations[$doctorId] ?? 'Jadwal Temu',
                 ];
             }
@@ -202,15 +206,17 @@ class DashboardService
         $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
         $scheduleTime = trim((string) ($appointment['schedule_time_range'] ?? ''));
 
-        $status = strtolower((string) ($appointment['status'] ?? ''));
-        $displayStatus = match (true) {
-            $status === 'selesai' => 'Selesai',
-            in_array($status, ['dibatalkan', 'batal'], true) => 'Dibatalkan',
-            default => ucfirst((string) ($appointment['status'] ?? 'Menunggu')),
+        $statusKey = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+        $displayStatus = match ($statusKey) {
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
+            default => trim((string) ($appointment['status'] ?? '')) !== ''
+                ? ucfirst((string) ($appointment['status'] ?? ''))
+                : 'Menunggu',
         };
 
         $formattedTime = $timeStart !== ''
-            ? trim($timeStart . ($timeEnd !== '' ? ' - ' . $timeEnd : ''))
+            ? trim($timeStart.($timeEnd !== '' ? ' - '.$timeEnd : ''))
             : $scheduleTime;
 
         return [
@@ -222,9 +228,14 @@ class DashboardService
             'jam' => $formattedTime === '' ? '-' : $formattedTime,
             'antrian' => (string) ($appointment['queue_number'] ?? '-'),
             'status' => $displayStatus,
+            'status_key' => $statusKey,
             'hari' => $this->appointmentDayLabel($date),
             'date_sort' => $date,
             'time_sort' => $timeStart,
+            'keluhan' => $this->firstFilled($appointment, ['complaint', 'keluhan']),
+            'diagnosa' => $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
+            'catatan_medis' => $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
+            'resep_obat' => $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']),
         ];
     }
 
@@ -236,10 +247,52 @@ class DashboardService
         $normalized = strtolower(trim($status));
 
         return match (true) {
-            $normalized === 'selesai' => 'selesai',
-            in_array($normalized, ['dibatalkan', 'batal'], true) => 'dibatalkan',
+            in_array($normalized, ['selesai', 'done', 'completed'], true) => 'selesai',
+            in_array($normalized, ['dibatalkan', 'batal', 'canceled', 'cancelled'], true) => 'dibatalkan',
             default => 'pending',
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $appointment
+     */
+    private function isHistoricalAppointment(array $appointment): bool
+    {
+        $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+
+        if (in_array($status, ['selesai', 'dibatalkan'], true)) {
+            return true;
+        }
+
+        $date = trim((string) ($appointment['appointment_date'] ?? ''));
+        if ($date === '') {
+            return false;
+        }
+
+        $time = trim((string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? ''));
+
+        try {
+            return Carbon::parse(trim($date.' '.$time))->isPast();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $appointment
+     * @param  array<int, string>  $fields
+     */
+    private function firstFilled(array $appointment, array $fields): ?string
+    {
+        foreach ($fields as $field) {
+            $value = trim((string) ($appointment[$field] ?? ''));
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -265,23 +318,22 @@ class DashboardService
         foreach ($appointments as $appointment) {
             $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries);
 
-            if ($this->normalizeStatusForGrouping((string) ($appointment['status'] ?? '')) === 'dibatalkan') {
+            if ($this->isHistoricalAppointment($appointment)) {
                 $history[] = $formatted;
-                continue;
-            }
 
-            if (strtolower((string) ($appointment['status'] ?? '')) === 'selesai') {
-                $history[] = $formatted;
                 continue;
             }
 
             $upcoming[] = $formatted;
         }
 
-        usort($history, fn (array $left, array $right): int => strcmp((string) ($right['date_sort'] ?? ''), (string) ($left['date_sort'] ?? '')));
+        usort($history, fn (array $left, array $right): int => strcmp(
+            trim((string) ($right['date_sort'] ?? '').' '.(string) ($right['time_sort'] ?? '')),
+            trim((string) ($left['date_sort'] ?? '').' '.(string) ($left['time_sort'] ?? '')),
+        ));
         usort($upcoming, fn (array $left, array $right): int => strcmp(
-            trim((string) ($left['date_sort'] ?? '') . ' ' . (string) ($left['time_sort'] ?? '')),
-            trim((string) ($right['date_sort'] ?? '') . ' ' . (string) ($right['time_sort'] ?? '')),
+            trim((string) ($left['date_sort'] ?? '').' '.(string) ($left['time_sort'] ?? '')),
+            trim((string) ($right['date_sort'] ?? '').' '.(string) ($right['time_sort'] ?? '')),
         ));
 
         return [
@@ -436,13 +488,13 @@ class DashboardService
 
             $doctors[] = [
                 'id' => $doctorId,
-                'nama' => 'dr. ' . ($user['fullname'] ?? $user['name'] ?? 'Tidak Diketahui'),
+                'nama' => 'dr. '.($user['fullname'] ?? $user['name'] ?? 'Tidak Diketahui'),
                 'spesialis' => $specialist['service'] ?? 'Tidak Diketahui',
                 'spesialis_key' => strtolower($specialist['service'] ?? 'Tidak Diketahui'),
                 'rating' => '5.0',
                 'pasien' => '450+ Total Pasien',
-                'foto' => isset($documents[$doctorId]['profile_pict']) 
-                    ? asset('storage/' . $documents[$doctorId]['profile_pict'])
+                'foto' => isset($documents[$doctorId]['profile_pict'])
+                    ? asset('storage/'.$documents[$doctorId]['profile_pict'])
                     : $doctorImages[count($doctors) % count($doctorImages)],
             ];
         }

@@ -108,9 +108,22 @@
                 @if (count($riwayatJadwal) > 0)
                     <div class="grid grid-cols-2 gap-5" data-history-grid>
                         @foreach ($riwayatJadwal as $appointment)
+                            @php
+                                $statusKey = $appointment['status_key'] ?? strtolower($appointment['status']);
+                                $statusClasses = match ($statusKey) {
+                                    'selesai' => 'bg-green-100 text-green-700',
+                                    'dibatalkan' => 'bg-red-100 text-red-700',
+                                    default => 'bg-yellow-100 text-yellow-700',
+                                };
+                                $statusIcon = match ($statusKey) {
+                                    'selesai' => 'fa-check-circle',
+                                    'dibatalkan' => 'fa-circle-xmark',
+                                    default => 'fa-clock',
+                                };
+                            @endphp
                             <div 
                                 class="appointment-card overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px]"
-                                data-status="{{ strtolower($appointment['status']) }}"
+                                data-status="{{ $statusKey }}"
                             >
                                 <div class="flex flex-col p-6">
                                     <!-- Top Section -->
@@ -125,17 +138,10 @@
                                             </p>
                                         </div>
 
-                                        @if (strtolower($appointment['status']) === 'selesai')
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                                <i class="fa-solid fa-check-circle text-xs"></i>
-                                                {{ $appointment['status'] }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                                                <i class="fa-solid fa-circle-xmark text-xs"></i>
-                                                {{ $appointment['status'] }}
-                                            </span>
-                                        @endif
+                                        <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold {{ $statusClasses }}">
+                                            <i class="fa-solid {{ $statusIcon }} text-xs"></i>
+                                            {{ $appointment['status'] }}
+                                        </span>
                                     </div>
 
                                     <!-- Doctor Name -->
@@ -164,6 +170,43 @@
                                             <p class="text-sm font-medium text-gray-900">{{ $appointment['jam'] }}</p>
                                         </div>
                                     </div>
+
+                                    @if (($appointment['keluhan'] ?? null) || ($appointment['diagnosa'] ?? null) || ($appointment['catatan_medis'] ?? null) || ($appointment['resep_obat'] ?? null) || $statusKey === 'selesai')
+                                        <div class="mt-5 space-y-3 rounded-xl bg-gray-50 p-4">
+                                            @if ($appointment['keluhan'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-medium text-gray-500">Keluhan</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['keluhan'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['diagnosa'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-medium text-gray-500">Hasil Diagnosa</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['diagnosa'] }}</p>
+                                                </div>
+                                            @elseif ($statusKey === 'selesai')
+                                                <div>
+                                                    <p class="mb-1 text-xs font-medium text-gray-500">Hasil Diagnosa</p>
+                                                    <p class="text-sm leading-relaxed text-gray-500">Belum ada hasil diagnosa yang tersimpan.</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['catatan_medis'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-medium text-gray-500">Catatan Medis</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['catatan_medis'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['resep_obat'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-medium text-gray-500">Resep Obat</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['resep_obat'] }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -307,10 +350,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             const filterTabs = document.querySelectorAll('.filter-tab');
             const appointmentCards = document.querySelectorAll('[data-history-grid] .appointment-card');
+            const searchInput = document.getElementById('searchHistory');
+            let activeFilter = 'semua';
+
+            const applyFilters = () => {
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+                appointmentCards.forEach(card => {
+                    const status = card.dataset.status;
+                    const text = card.textContent.toLowerCase();
+                    const matchesStatus = activeFilter === 'semua' || status === activeFilter;
+                    const matchesSearch = searchTerm === '' || text.includes(searchTerm);
+
+                    if (matchesStatus && matchesSearch) {
+                        card.style.display = 'block';
+                        setTimeout(() => card.style.opacity = '1', 0);
+                    } else {
+                        card.style.opacity = '0';
+                        setTimeout(() => card.style.display = 'none', 200);
+                    }
+                });
+            };
 
             filterTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    const filter = this.dataset.filter;
+                    activeFilter = this.dataset.filter;
 
                     // Update active tab
                     filterTabs.forEach(t => t.classList.remove('active'));
@@ -324,30 +388,12 @@
                         }
                     });
 
-                    // Filter appointments
-                    appointmentCards.forEach(card => {
-                        const status = card.dataset.status;
-                        if (filter === 'semua' || status === filter) {
-                            card.style.display = 'block';
-                            setTimeout(() => card.style.opacity = '1', 0);
-                        } else {
-                            card.style.opacity = '0';
-                            setTimeout(() => card.style.display = 'none', 200);
-                        }
-                    });
+                    applyFilters();
                 });
             });
 
-            // Search functionality
-            const searchInput = document.getElementById('searchHistory');
             if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    appointmentCards.forEach(card => {
-                        const text = card.textContent.toLowerCase();
-                        card.style.display = text.includes(searchTerm) ? 'block' : 'none';
-                    });
-                });
+                searchInput.addEventListener('input', applyFilters);
             }
         });
     </script>
