@@ -10,13 +10,13 @@ MediHub adalah platform aplikasi layanan kesehatan modern (HealthTech) yang dira
 
 | Nama Lengkap | Peran | Tanggung Jawab |
 | :--- | :--- | :--- |
-| **Mellafesa Rofida** | PM & Developer | **PBI-04**: CRUD Data Diri Dokter + Upload Dokumen (Dokter)<br>**PBI-06**: Dashboard Dokter<br>**PBI-07**: CRUD Jadwal Praktik Dokter (Dokter)<br>**PBI-26**: Dokumentasi teknis & user manual |
-| **Naufal Rafi** | Developer | **PBI-05**: CRUD Data Diri Pasien (Pasien)<br>**PBI-08**: Homepage Pasien (Banner Promo, Kategori Poli, Jadwal Mendatang)<br>**PBI-12**: Profil Pasien (Pasien) |
+| **Mellafesa Rofida** | PM & Developer | **PBI-10**: Daftar Dokter dan Jadwal untuk Pasien (Pasien)<br>**PBI-06**: Dashboard Dokter<br>**PBI-07**: CRUD Jadwal Praktik Dokter (Dokter)<br>**PBI-28**: Unit Testing PBI 19-24 |
+| **Naufal Rafi** | Developer | **PBI-05**: CRUD Data Diri Pasien (Pasien)<br>**PBI-08**: Homepage Pasien (Banner Promo, Kategori Poli, Jadwal Mendatang)<br>**PBI-12**: Profil Pasien (Pasien)<br> **PBI-26**: Unit Testing PBI 8-13|
 | **Naswa Gyna** | Developer | **PBI-13**: Profil Dokter (Dokter)<br>**PBI-17**: Update Status Pasien oleh Dokter (Dokter)<br>**PBI-23**: Create Ulasan & Rating Layanan Dokter (Pasien) |
 | **Wildan Zaaqi** | Developer | **PBI-01**: Landing Page<br>**PBI-14**: Pembatalan Booking (Pasien)<br>**PBI-15**: Notifikasi Status Janji Temu (Pasien)<br>**PBI-16**: Jadwal Mendatang & Tracking Real-time Status Temu (Pasien) |
-| **Daniel Indra Kusuma** | Developer | **PBI-02**: Register & Login (Dokter)<br>**PBI-09**: Daftar Layanan (Poli) & Fasilitas Rumah Sakit (Pasien)<br>**PBI-10**: Daftar Dokter dan Jadwal untuk Pasien (Pasien)<br>**PBI-11**: Pilih Jadwal & Booking Temu Dokter (+ Autofill Data Pasien) |
+| **Daniel Indra Kusuma** | Developer | **PBI-02**: Register & Login (Dokter)<br>**PBI-09**: Daftar Layanan (Poli) & Fasilitas Rumah Sakit (Pasien)<br> **PBI-04**: CRUD Data Diri Dokter + Upload Dokumen (Dokter)<br>**PBI-11**: Pilih Jadwal & Booking Temu Dokter (+ Autofill Data Pasien)<br>**PBI-27**: Unit Testing PBI 14-18 |
 | **Ghifari Derriel Aryasatya** | Developer | **PBI-03**: Register & Login (Pasien)<br>**PBI-18**: Catatan Medis & Resep Obat (Dokter)<br>**PBI-19**: Hasil Diagnosa & Catatan Medis (Pasien)<br>**PBI-20**: Riwayat Jadwal Temu (Dokter) |
-| **Fedayeen Fairyzia** | QA & Developer | **PBI-21**: Fitur Search Pasien oleh Dokter (Dokter)<br>**PBI-22**: Riwayat Jadwal Temu Pasien (Pasien)<br>**PBI-24**: Update & Delete Ulasan & Rating Layanan Dokter (Pasien)<br>**PBI-25**: Unit Testing Seluruh Fitur |
+| **Fedayeen Fairyzia** | QA & Developer | **PBI-21**: Fitur Search Pasien oleh Dokter (Dokter)<br>**PBI-22**: Riwayat Jadwal Temu Pasien (Pasien)<br>**PBI-24**: Update & Delete Ulasan & Rating Layanan Dokter (Pasien)<br>**PBI-25**: Unit Testing PBI 2-7 |
 
 ## Fitur Utama
 
