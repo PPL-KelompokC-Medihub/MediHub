@@ -20,4 +20,9 @@ class DashboardController extends Controller
     {
         return view('pasien.layanan', $this->dashboardService->servicePageData());
     }
+
+    public function riwayat()
+    {
+        return view('pasien.riwayat', $this->dashboardService->historyPageData());
+    }
 }

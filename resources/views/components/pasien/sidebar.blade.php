@@ -24,7 +24,7 @@
 
         <p class="mb-8 font-[Poppins] text-[18px] font-medium text-black">Menu</p>
 
-        <nax`v class="flex w-full flex-col gap-7 pl-4">
+        <nav class="flex w-full flex-col gap-7 pl-4">
             <a href="{{ route('pasien.beranda') }}" class="{{ $linkClass('beranda') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-solid fa-house {{ $iconClass('beranda') }} flex h-6 w-6 items-center justify-center"></i>
@@ -39,7 +39,7 @@
                 </div>
             </a>
 
-            <a href="#" class="{{ $linkClass('riwayat') }}">
+            <a href="{{ route('pasien.riwayat') }}" class="{{ $linkClass('riwayat') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-regular fa-clock {{ $iconClass('riwayat') }} flex h-6 w-6 items-center justify-center"></i>
                     <span class="{{ $textClass('riwayat') }}">Riwayat</span>

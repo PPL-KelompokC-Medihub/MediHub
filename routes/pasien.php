@@ -27,6 +27,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.beranda');
     Route::get('/pasien/layanan', [DashboardController::class, 'layanan'])
         ->name('pasien.layanan');
+    Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
+        ->name('pasien.riwayat');
 
     // Profil pasien (PBI-12 / PBI-05)
     Route::get('/pasien/profile', [ProfileController::class, 'index'])
@@ -43,6 +45,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.create');
     Route::post('/pasien/booking', [BookingController::class, 'store'])
         ->name('pasien.booking.store');
+    Route::patch('/pasien/booking/{id}/batalkan', [BookingController::class, 'cancel'])
+        ->name('pasien.booking.cancel');
 });
 
 // --- Halaman publik untuk pasien (katalog dokter & fasilitas RS) ---

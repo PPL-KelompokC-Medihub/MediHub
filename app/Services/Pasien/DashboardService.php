@@ -177,6 +177,121 @@ class DashboardService
     }
 
     /**
+     * Check if appointment belongs to currently logged-in patient
+     */
+    private function belongsToCurrentPatient(array $appointment, string $patientId, string $patientEmail): bool
+    {
+        return in_array($patientId, [
+            (string) ($appointment['patient_id'] ?? ''),
+            (string) ($appointment['user_uid'] ?? ''),
+        ], true) || (
+            $patientEmail !== ''
+            && $patientEmail === (string) ($appointment['patient_email'] ?? '')
+        );
+    }
+
+    /**
+     * Format single appointment for history display
+     */
+    private function formatHistoryAppointment(array $appointment, array $doctorSummaries): array
+    {
+        $date = (string) ($appointment['appointment_date'] ?? '');
+        $doctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
+        $doctor = $doctorSummaries[$doctorId] ?? ['name' => 'Dokter', 'specialization' => 'Jadwal Temu'];
+        $timeStart = (string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? '');
+        $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
+        $scheduleTime = trim((string) ($appointment['schedule_time_range'] ?? ''));
+
+        $status = strtolower((string) ($appointment['status'] ?? ''));
+        $displayStatus = match (true) {
+            $status === 'selesai' => 'Selesai',
+            in_array($status, ['dibatalkan', 'batal'], true) => 'Dibatalkan',
+            default => ucfirst((string) ($appointment['status'] ?? 'Menunggu')),
+        };
+
+        $formattedTime = $timeStart !== ''
+            ? trim($timeStart . ($timeEnd !== '' ? ' - ' . $timeEnd : ''))
+            : $scheduleTime;
+
+        return [
+            'id' => (string) ($appointment['id'] ?? ''),
+            'jenis' => $doctor['specialization'] ?? 'Jadwal Temu',
+            'rs' => 'RS Medic Center',
+            'dokter' => $doctor['name'] ?? 'Dokter',
+            'tanggal' => $date === '' ? '-' : Carbon::parse($date)->translatedFormat('d F Y'),
+            'jam' => $formattedTime === '' ? '-' : $formattedTime,
+            'antrian' => (string) ($appointment['queue_number'] ?? '-'),
+            'status' => $displayStatus,
+            'hari' => $this->appointmentDayLabel($date),
+            'date_sort' => $date,
+            'time_sort' => $timeStart,
+        ];
+    }
+
+    /**
+     * Normalize status for grouping into history/upcoming
+     */
+    private function normalizeStatusForGrouping(string $status): string
+    {
+        $normalized = strtolower(trim($status));
+
+        return match (true) {
+            $normalized === 'selesai' => 'selesai',
+            in_array($normalized, ['dibatalkan', 'batal'], true) => 'dibatalkan',
+            default => 'pending',
+        };
+    }
+
+    /**
+     * Get history page data with appointments grouped into history and upcoming
+     *
+     * @return array<string, mixed>
+     */
+    public function historyPageData(): array
+    {
+        $patient = $this->patient();
+        $patientId = (string) Auth::id();
+        $patientEmail = (string) (Auth::user()?->email ?? '');
+        $doctorSummaries = $this->doctorSummariesById();
+
+        $appointments = array_values(array_filter(
+            $this->firestore->all(self::APPOINTMENT_COLLECTION),
+            fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
+        ));
+
+        $history = [];
+        $upcoming = [];
+
+        foreach ($appointments as $appointment) {
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries);
+
+            if ($this->normalizeStatusForGrouping((string) ($appointment['status'] ?? '')) === 'dibatalkan') {
+                $history[] = $formatted;
+                continue;
+            }
+
+            if (strtolower((string) ($appointment['status'] ?? '')) === 'selesai') {
+                $history[] = $formatted;
+                continue;
+            }
+
+            $upcoming[] = $formatted;
+        }
+
+        usort($history, fn (array $left, array $right): int => strcmp((string) ($right['date_sort'] ?? ''), (string) ($left['date_sort'] ?? '')));
+        usort($upcoming, fn (array $left, array $right): int => strcmp(
+            trim((string) ($left['date_sort'] ?? '') . ' ' . (string) ($left['time_sort'] ?? '')),
+            trim((string) ($right['date_sort'] ?? '') . ' ' . (string) ($right['time_sort'] ?? '')),
+        ));
+
+        return [
+            'patient' => $patient,
+            'riwayatJadwal' => $history,
+            'jadwalMendatang' => $upcoming,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function servicePageData(): array
