@@ -3,6 +3,7 @@
 namespace App\Services\Pasien;
 
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,6 +21,7 @@ class DashboardService
 
     public function __construct(
         private FirestoreService $firestore,
+        protected MedihubFirestoreRepository $medihubFirestoreRepository,
     ) {}
 
     /**
@@ -32,8 +34,9 @@ class DashboardService
         $facilities = $this->facilities();
         $appointments = $this->appointments();
         $patient = $this->patient();
+        $notifications = $this->notifications();
 
-        return compact('categories', 'doctors', 'facilities', 'appointments', 'patient');
+        return compact('categories', 'doctors', 'facilities', 'appointments', 'patient', 'notifications');
     }
 
     private function patient(): array
@@ -106,14 +109,50 @@ class DashboardService
             $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
 
             return [
+
+                'appointment_id' => $appointment['id'],
+
                 'hari' => $this->appointmentDayLabel($date),
                 'jenis' => $doctor['specialization'].' - '.$doctor['name'],
                 'rs' => 'RS Medic Center - Bandung',
+
                 'antrian' => (string) ($appointment['queue_number'] ?? '-'),
+
                 'tanggal' => $this->appointmentDateLabel($date),
                 'jam' => trim($timeStart.($timeEnd !== '' ? ' - '.$timeEnd : '')),
             ];
         }, $appointments);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function notifications(): array
+    {
+        $patientId = (string) Auth::id();
+
+        $notifications = array_values(array_filter(
+            $this->firestore->all('Notifications'),
+            function (array $notification) use ($patientId): bool {
+                return (string) ($notification['patient_id'] ?? '') === $patientId;
+            }
+        ));
+
+        usort($notifications, function ($a, $b) {
+            return strcmp(
+                (string) ($b['created_at'] ?? ''),
+                (string) ($a['created_at'] ?? '')
+            );
+        });
+
+        return array_map(function (array $notification): array {
+            return [
+                'title' => $notification['title'] ?? 'Notifikasi',
+                'message' => $notification['message'] ?? '',
+                'date' => $notification['created_at'] ?? now()->toDateString(),
+                'type' => $notification['type'] ?? 'info',
+            ];
+        }, $notifications);
     }
 
     /**

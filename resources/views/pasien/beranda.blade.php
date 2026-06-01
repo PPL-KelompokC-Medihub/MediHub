@@ -11,15 +11,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body class="bg-white font-[Poppins] text-[#111827]">
+<body class="overflow-x-hidden overflow-y-auto bg-white font-[Poppins] text-[#111827]">
     <div 
         data-patient-home
         data-doctors='@json($doctors)'
     ></div>
-    <div class="grid h-screen grid-cols-[220px_1fr_380px] overflow-hidden">
+    <div class="ml-[220px] flex min-h-screen">
         <x-pasien.sidebar active="beranda" />
 
-        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
+        <main class="min-w-0 flex-1 bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <a 
                     href="{{ route('pasien.profile') }}"
@@ -53,8 +53,15 @@
                         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     </div>
 
-                    <button class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500">
+                    <button 
+                        id="notificationButton"
+                        class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500 relative"
+                    >
                         <i class="fa-regular fa-bell"></i>
+
+                        @if(count($appointments) > 0)
+                            <span class="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                        @endif
                     </button>
                 </div>
             </header>
@@ -175,7 +182,7 @@
             <section id="layanan" class="mb-7 scroll-mt-8">
                 <h2 class="mb-4 text-lg font-semibold">Kategori Poli</h2>
 
-                <div class="flex gap-6 overflow-x-auto px-2 pt-2 pb-4">
+                <div class="flex gap-6 overflow-x-auto overflow-y-hidden px-2 pt-2 pb-4">
                     @foreach ($categories as $category)
                         <button 
                             type="button"
@@ -238,93 +245,149 @@
 
         </main>
 
-        <aside class="sticky top-0 flex h-screen flex-col border-l border-gray-200 bg-white px-7 py-8">
+        <aside class="sticky top-0 flex h-screen w-[390px] shrink-0 flex-col border-l border-gray-200 bg-white px-7 py-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-lg font-semibold">Jadwal Temu Mendatang</h2>
-                <a href="#" class="text-sm text-blue-500">Batalkan</a>
+
+                <button 
+                    id="toggleCancelMode"
+                    type="button"
+                    class="text-sm text-blue-500 transition hover:text-blue-700"
+                >
+                    Batalkan
+                </button>
             </div>
 
-            <div class="flex flex-col gap-5">
-                @forelse ($appointments as $appointment)
-                    <div>
-                        <p class="mb-2 text-sm text-gray-400">{{ $appointment['hari'] }}</p>
+            <form 
+                id="cancelAppointmentForm"
+                action="{{ route('pasien.booking.destroy') }}"
+                method="POST"
+                class="flex flex-col h-full"
+            >
+                @csrf
+                @method('DELETE')
 
-                        <div class="rounded-xl bg-white p-5 shadow-md">
-                            <div class="mb-5 flex gap-3">
-                                <i class="fa-solid fa-user-doctor text-2xl text-blue-600"></i>
+                <div class="flex flex-col gap-5">
 
-                                <div>
-                                    <h3 class="text-sm font-semibold text-blue-600">
-                                        {{ $appointment['jenis'] }}
-                                    </h3>
-                                    <p class="text-xs text-gray-500">{{ $appointment['rs'] }}</p>
+                    @forelse ($appointments as $appointment)
+
+                        <div>
+                            <p class="mb-2 text-sm text-gray-400">
+                                {{ $appointment['hari'] }}
+                            </p>
+
+                            <div class="relative rounded-xl bg-white p-5 shadow-md">
+
+                                <!-- CHECKBOX -->
+                                <label class="cancel-checkbox absolute right-4 top-4 cursor-pointer hidden">
+                                    <input 
+                                        type="checkbox"
+                                        name="appointments[]"
+                                        value="{{ $appointment['appointment_id'] ?? $appointment['id'] }}"
+                                        class="h-6 w-6 accent-red-500"
+                                    >
+                                </label>
+
+                                <div class="mb-5 flex gap-3">
+                                    <i class="fa-solid fa-user-doctor text-2xl text-blue-600"></i>
+
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-blue-600">
+                                            {{ $appointment['jenis'] }}
+                                        </h3>
+
+                                        <p class="text-xs text-gray-500">
+                                            {{ $appointment['rs'] }}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="grid grid-cols-[1fr_1.35fr] gap-4">
-                                <div>
-                                    <p class="text-xs text-gray-500">Antrian</p>
-                                    <h2 class="text-3xl font-semibold">{{ $appointment['antrian'] }}</h2>
-                                </div>
+                                <div class="grid grid-cols-[1fr_1.35fr] gap-4">
 
-                                <div class="border-l border-gray-200 pl-4">
-                                    <p class="mb-1 text-xs text-gray-500">
-                                        <i class="fa-regular fa-calendar mr-2"></i>
-                                        {{ $appointment['tanggal'] }}
-                                    </p>
+                                    <div>
+                                        <p class="text-xs text-gray-500">
+                                            Antrian
+                                        </p>
 
-                                    <p class="text-xs text-gray-500">
-                                        <i class="fa-regular fa-clock mr-2"></i>
-                                        {{ $appointment['jam'] }}
-                                    </p>
+                                        <h2 class="text-3xl font-semibold">
+                                            {{ $appointment['antrian'] }}
+                                        </h2>
+                                    </div>
+
+                                    <div class="border-l border-gray-200 pl-4">
+
+                                        <p class="mb-1 text-xs text-gray-500">
+                                            <i class="fa-regular fa-calendar mr-2"></i>
+                                            {{ $appointment['tanggal'] }}
+                                        </p>
+
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fa-regular fa-clock mr-2"></i>
+                                            {{ $appointment['jam'] }}
+                                        </p>
+
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="mt-10 flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
-                        <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-500">
-                            <i class="fa-regular fa-calendar-xmark text-2xl"></i>
+
+                    @empty
+
+                        <div class="mt-10 flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+
+                            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+                                <i class="fa-regular fa-calendar-xmark text-2xl"></i>
+                            </div>
+
+                            <h3 class="mb-1 text-sm font-semibold text-gray-700">
+                                Belum ada jadwal temu
+                            </h3>
+
+                            <p class="text-xs leading-relaxed text-gray-400">
+                                Kamu belum memiliki jadwal temu mendatang.
+                            </p>
+
                         </div>
 
-                        <h3 class="mb-1 text-sm font-semibold text-gray-700">
-                            Belum ada jadwal temu
-                        </h3>
+                    @endforelse
 
-                        <p class="text-xs leading-relaxed text-gray-400">
-                            Kamu belum memiliki jadwal temu mendatang.
-                        </p>
-                    </div>
-                @endforelse
-            </div>
+                </div>
 
-            <a href="{{ route('pasien.booking.create') }}" 
-            class="group relative mt-auto flex items-center justify-between overflow-hidden rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(96,165,250,0.45)]">
+                <button
+                    id="submitCancelButton"
+                    type="button"
+                    class="group relative mt-auto flex items-center justify-between overflow-hidden rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(96,165,250,0.45)]"
+                >
 
-                <span class="relative z-10 text-white">
-                    Buat Jadwal Temu
-                </span>
+                    <span class="relative z-10 text-white">
+                        Buat Jadwal Temu
+                    </span>
 
-                <i class="fa-solid fa-circle-plus relative z-10 text-white text-[18px]"></i>
+                    <i class="fa-solid fa-circle-plus relative z-10 text-white text-[18px]"></i>
 
-                <!-- glow -->
-                <span
-                    class="pointer-events-none absolute left-[10%] top-[8%]
-                    h-[42%] w-[80%]
-                    rounded-full bg-white/20 blur-md">
-                </span>
+                    <!-- glow -->
+                    <span
+                        class="pointer-events-none absolute left-[10%] top-[8%]
+                        h-[42%] w-[80%]
+                        rounded-full bg-white/20 blur-md">
+                    </span>
 
-                <!-- shine -->
-                <span
-                    class="pointer-events-none absolute left-[-120%] top-[-40%]
-                    h-[220%] w-[35%]
-                    rotate-[20deg]
-                    bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)]
-                    blur-md
-                    transition-all duration-1000
-                    group-hover:left-[160%]">
-                </span>
-            </a>
+                    <!-- shine -->
+                    <span
+                        class="pointer-events-none absolute left-[-120%] top-[-40%]
+                        h-[220%] w-[35%]
+                        rotate-[20deg]
+                        bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)]
+                        blur-md
+                        transition-all duration-1000
+                        group-hover:left-[160%]">
+                    </span>
+
+                </button>
+
+            </form>
+
         </aside>
     </div>
 
@@ -374,6 +437,157 @@
             </p>
         </div>
     </div>
+ </div>
+ <!-- OVERLAY -->
+<div 
+    id="notificationOverlay"
+    class="fixed inset-0 z-[9998] hidden bg-black/20"
+></div>
+
+<!-- PANEL NOTIFIKASI -->
+<div
+    id="notificationPanel"
+    class="fixed right-8 top-24 z-[9999] hidden w-[360px] rounded-2xl bg-white p-6 shadow-2xl"
+>
+
+    <div class="mb-5 flex items-center justify-between">
+        <h2 class="text-xl font-semibold">
+            Pusat Notifikasi
+        </h2>
+
+        <button 
+            id="closeNotification"
+            class="text-gray-400 hover:text-gray-600"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="space-y-5">
+
+        @forelse ($notifications as $notification)
+
+            <div class="flex gap-3 py-4">
+
+                {{-- ICON --}}
+                <div class="mt-1 text-gray-400">
+                    <i class="fa-regular fa-file-lines text-[18px]"></i>
+                </div>
+
+                {{-- CONTENT --}}
+                <div class="flex-1 border-b border-gray-200 pb-4">
+
+                    {{-- HEADER --}}
+                    <div class="mb-2 flex items-start justify-between gap-3">
+
+                        <h3 class="text-[16px] font-semibold leading-5 text-[#1E1E1E]">
+                            {{ $notification['title'] }}
+                        </h3>
+
+                        <span class="whitespace-nowrap text-[13px] text-gray-400">
+                            @if(\Carbon\Carbon::parse($notification['date'])->isToday())
+                                Hari ini
+                            @else
+                                {{ \Carbon\Carbon::parse($notification['date'])->translatedFormat('d F') }}
+                            @endif
+                        </span>
+
+                    </div>
+
+                    {{-- MESSAGE --}}
+                    <p class="text-[15px] leading-[22px] text-[#7A7A7A]">
+                        {{ $notification['message'] }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div class="py-10 text-center text-sm text-gray-400">
+                Belum ada notifikasi
+            </div>
+
+        @endforelse
+
+
+    <script>
+        const notificationButton = document.getElementById('notificationButton');
+        const notificationPanel = document.getElementById('notificationPanel');
+        const notificationOverlay = document.getElementById('notificationOverlay');
+        const closeNotification = document.getElementById('closeNotification');
+
+        notificationButton.addEventListener('click', () => {
+
+            notificationPanel.classList.remove('hidden');
+            notificationOverlay.classList.remove('hidden');
+
+        });
+
+        closeNotification.addEventListener('click', closeNotificationPanel);
+        notificationOverlay.addEventListener('click', closeNotificationPanel);
+
+        function closeNotificationPanel() {
+
+            notificationPanel.classList.add('hidden');
+            notificationOverlay.classList.add('hidden');
+
+        }
+
+        const toggleButton = document.getElementById('toggleCancelMode');
+        const cancelButton = document.getElementById('submitCancelButton');
+
+        let cancelMode = false;
+
+        // BUTTON BAWAH
+        cancelButton.addEventListener('click', () => {
+
+            // MODE NORMAL → KE HALAMAN BOOKING
+            if (!cancelMode) {
+
+                window.location.href = "{{ route('pasien.booking.create') }}";
+                return;
+            }
+
+            // MODE PEMBATALAN → SUBMIT FORM DELETE
+            document.getElementById('cancelAppointmentForm').submit();
+        });
+
+        // TOGGLE MODE BATALKAN
+        toggleButton.addEventListener('click', () => {
+
+            cancelMode = !cancelMode;
+
+            const checkboxes = document.querySelectorAll('.cancel-checkbox');
+
+            checkboxes.forEach(el => {
+                el.classList.toggle('hidden');
+            });
+
+            if (cancelMode) {
+
+                toggleButton.innerText = 'Kembali';
+
+                cancelButton.classList.remove('bg-blue-400');
+                cancelButton.classList.add('bg-red-500');
+
+                cancelButton.querySelector('span').innerText = 'Batalkan Jadwal Temu';
+
+            } else {
+
+                toggleButton.innerText = 'Batalkan';
+
+                cancelButton.classList.remove('bg-red-500');
+                cancelButton.classList.add('bg-blue-400');
+
+                cancelButton.querySelector('span').innerText = 'Buat Jadwal Temu';
+
+            }
+
+        });
+
+    </script>
 
 </body>
 </html>

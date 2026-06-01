@@ -39,14 +39,29 @@
                     </a>
                 </div>
             </div>
-            <a href="{{ route('register-dokter') }}" class="btn-signup landing-signup-button">
-                <span>Daftar Gratis</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </a>
+           <div class="signup-dropdown">
+
+    <div class="btn-signup landing-signup-button signup-dropbtn">
+        <span>Daftar Gratis</span>
+
+        <svg width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </div>
+
+    <div class="signup-dropdown-content">
+
+        <a href="{{ route('register-dokter') }}">
+            Dokter
+        </a>
+
+        <a href="{{ route('register-pasien') }}">
+            Pasien
+        </a>
+
+    </div>
         </nav>
     </header>
 
