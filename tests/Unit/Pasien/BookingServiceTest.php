@@ -4,6 +4,7 @@ namespace Tests\Unit\Pasien;
 
 use App\Models\FirestoreUser;
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
 use App\Services\Pasien\BookingService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,8 @@ class BookingServiceTest extends TestCase
 {
     private FirestoreService $firestore;
 
+    private MedihubFirestoreRepository $repository;
+
     private BookingService $service;
 
     protected function setUp(): void
@@ -29,7 +32,11 @@ class BookingServiceTest extends TestCase
         parent::setUp();
 
         $this->firestore = Mockery::mock(FirestoreService::class);
-        $this->service = new BookingService($this->firestore);
+        $this->repository = Mockery::mock(MedihubFirestoreRepository::class);
+        // createNotification dipanggil di alur booking sukses (PBI-15);
+        // default-kan agar tidak mengganggu assertion test lain.
+        $this->repository->shouldReceive('createNotification')->andReturnNull()->byDefault();
+        $this->service = new BookingService($this->firestore, $this->repository);
     }
 
     protected function tearDown(): void
@@ -260,6 +267,10 @@ class BookingServiceTest extends TestCase
             ->andReturn(['id' => 'dok-a', 'usersId' => 'user-a']);
 
         $this->firestore->shouldReceive('find')
+            ->with('Users', 'user-a')
+            ->andReturn(['fullname' => 'Andi']);
+
+        $this->firestore->shouldReceive('find')
             ->with('JadwalDokter', 'sch-1')
             ->andReturn([
                 'id' => 'sch-1',
@@ -306,6 +317,10 @@ class BookingServiceTest extends TestCase
         $this->firestore->shouldReceive('find')
             ->with('Dokter', 'dok-a')
             ->andReturn(['id' => 'dok-a', 'usersId' => 'user-a']);
+
+        $this->firestore->shouldReceive('find')
+            ->with('Users', 'user-a')
+            ->andReturn(['fullname' => 'Andi']);
 
         $this->firestore->shouldReceive('find')
             ->with('JadwalDokter', 'sch-1')
