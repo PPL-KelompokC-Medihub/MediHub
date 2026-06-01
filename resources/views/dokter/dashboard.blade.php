@@ -111,7 +111,7 @@
                 </div>
             </div>
             <div class="doctor-stat-card-4">
-                <p class="doctor-stat-value">{{ $totalPasien }}</p>
+                <p class="doctor-stat-value">{{ $sesiSelesaiBulanIni }}</p>
                 <p class="doctor-stat-label">Sesi Selesai Bulan Ini</p>
                 <p class="doctor-stat-location">RS Medic Center - Bandung</p>
                 <div class="doctor-stat-icon">
@@ -238,9 +238,20 @@
                 name="search"
                 class="mediq-search-input"
                 placeholder="Cari nama pasien"
-                value="{{ request('search') }}"
+                value="{{ $search }}"
             />
         </div>
+        <input
+            type="date"
+            name="date"
+            value="{{ $date }}"
+            class="doctor-patient-date-filter"
+            aria-label="Filter tanggal jadwal pasien"
+        />
+        <button type="submit" class="doctor-patient-search-button">Cari</button>
+        @if($search !== '' || $date !== '')
+            <a href="{{ route('dokter.dashboard') }}" class="doctor-patient-reset-link">Reset</a>
+        @endif
     </form>
     <div class="doctor-patient-table-wrap">
         <table class="doctor-patient-table">
@@ -248,6 +259,8 @@
                 <tr>
                     <th>Pasien</th>
                     <th>Tanggal</th>
+                    <th>Jam</th>
+                    <th>Keluhan</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -255,12 +268,18 @@
                 @forelse($appointments as $appointment)
                     <tr>
                         <td class="doctor-patient-name">{{ $appointment->patient_name ?? '-' }}</td>
-                        <td class="doctor-patient-date">{{ $appointment->appointment_date ?? '-' }}</td>
-                        <td><span class="doctor-status-pill">Aktif</span></td>
+                        <td class="doctor-patient-date">{{ $appointment->display_date ?? '-' }}</td>
+                        <td class="doctor-patient-date">{{ $appointment->display_time ?? '-' }}</td>
+                        <td class="doctor-patient-complaint">{{ $appointment->display_complaint ?? '-' }}</td>
+                        <td>
+                            <span class="doctor-status-pill doctor-status-{{ $appointment->status_key ?? 'menunggu' }}">
+                                {{ $appointment->display_status ?? 'Menunggu' }}
+                            </span>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="doctor-table-empty">Belum ada pasien</td>
+                        <td colspan="5" class="doctor-table-empty">Belum ada pasien</td>
                     </tr>
                 @endforelse
             </tbody>

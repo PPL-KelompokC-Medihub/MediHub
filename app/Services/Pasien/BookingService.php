@@ -154,6 +154,43 @@ class BookingService
     }
 
     /**
+     * Cancel appointment by ID
+     */
+    public function cancel(string $appointmentId, ?string $reason = null): void
+    {
+        $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
+
+        if (! $appointment) {
+            throw ValidationException::withMessages([
+                'appointment_id' => 'Jadwal temu tidak ditemukan.',
+            ]);
+        }
+
+        $userId = (string) Auth::id();
+        $userEmail = (string) (Auth::user()?->email ?? '');
+
+        $belongsToCurrentPatient = in_array($userId, [
+            (string) ($appointment['patient_id'] ?? ''),
+            (string) ($appointment['user_uid'] ?? ''),
+        ], true) || (
+            $userEmail !== ''
+            && $userEmail === (string) ($appointment['patient_email'] ?? '')
+        );
+
+        if (! $belongsToCurrentPatient) {
+            throw ValidationException::withMessages([
+                'appointment_id' => 'Anda tidak memiliki akses untuk membatalkan jadwal temu ini.',
+            ]);
+        }
+
+        $this->firestore->update(self::APPOINTMENT_COLLECTION, $appointmentId, [
+            'status' => 'Dibatalkan',
+            'cancellation_reason' => $reason !== null && $reason !== '' ? $reason : ($appointment['cancellation_reason'] ?? null),
+            'update_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function resolvePatientData(): array

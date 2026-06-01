@@ -39,7 +39,7 @@
                 </div>
             </a>
 
-            <a href="#" class="{{ $linkClass('riwayat') }}">
+            <a href="{{ route('pasien.riwayat') }}" class="{{ $linkClass('riwayat') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-regular fa-clock {{ $iconClass('riwayat') }} flex h-6 w-6 items-center justify-center"></i>
                     <span class="{{ $textClass('riwayat') }}">Riwayat</span>
