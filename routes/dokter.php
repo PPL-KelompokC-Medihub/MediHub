@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Dokter\AppointmentStatusController;
 use App\Http\Controllers\Dokter\DashboardController;
 use App\Http\Controllers\Dokter\ProfileController;
 use App\Http\Controllers\Dokter\ScheduleController;
@@ -69,4 +70,8 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
         ->name('dokter.jadwal.update');
     Route::delete('/dokter/jadwal/{id}', [ScheduleController::class, 'destroy'])
         ->name('dokter.jadwal.destroy');
+
+    // Update status pasien (KFD-07 / PBI-17)
+    Route::patch('/dokter/appointment/{id}/status', [AppointmentStatusController::class, 'update'])
+        ->name('dokter.appointment.update-status');
 });

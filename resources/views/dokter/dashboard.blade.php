@@ -262,30 +262,51 @@
                     <th>Jam</th>
                     <th>Keluhan</th>
                     <th>Status</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($appointments as $appointment)
-                    <tr>
+                    <tr id="appointment-row-{{ $appointment->id }}">
                         <td class="doctor-patient-name">{{ $appointment->patient_name ?? '-' }}</td>
                         <td class="doctor-patient-date">{{ $appointment->display_date ?? '-' }}</td>
                         <td class="doctor-patient-date">{{ $appointment->display_time ?? '-' }}</td>
                         <td class="doctor-patient-complaint">{{ $appointment->display_complaint ?? '-' }}</td>
                         <td>
-                            <span class="doctor-status-pill doctor-status-{{ $appointment->status_key ?? 'menunggu' }}">
+                            <span
+                                id="status-pill-{{ $appointment->id }}"
+                                class="doctor-status-pill doctor-status-{{ $appointment->status_key ?? 'menunggu' }}"
+                            >
                                 {{ $appointment->display_status ?? 'Menunggu' }}
                             </span>
+                        </td>
+                        <td>
+                            @if(($appointment->status_key ?? 'menunggu') !== 'dibatalkan')
+                                <select
+                                    class="doctor-status-select"
+                                    data-appointment-id="{{ $appointment->id }}"
+                                    data-update-url="{{ route('dokter.appointment.update-status', $appointment->id) }}"
+                                    onchange="updatePatientStatus(this)"
+                                >
+                                    <option value="menunggu" {{ ($appointment->status_key ?? 'menunggu') === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                    <option value="diperiksa" {{ ($appointment->status_key ?? '') === 'diperiksa' ? 'selected' : '' }}>Diperiksa</option>
+                                    <option value="selesai" {{ ($appointment->status_key ?? '') === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                </select>
+                            @else
+                                <span class="doctor-status-cancelled-label">—</span>
+                            @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="doctor-table-empty">Belum ada pasien</td>
+                        <td colspan="6" class="doctor-table-empty">Belum ada pasien</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
+
 @endsection
 
 @section('rightbar')
