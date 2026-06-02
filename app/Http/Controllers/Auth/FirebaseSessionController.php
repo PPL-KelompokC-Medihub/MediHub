@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Domain\Dokter\DokterProfile;
 use App\Http\Controllers\Controller;
 use App\Models\FirestoreUser;
+use App\Models\User;
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,13 @@ class FirebaseSessionController extends Controller
 
     public function login(Request $request): JsonResponse|RedirectResponse
     {
+        Log::info('FirebaseSessionController.login called', [
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'body' => $request->json()->all(),
+            'headers_csrf' => $request->header('X-CSRF-TOKEN'),
+        ]);
+
         $validated = $request->validate([
             'id_token' => ['nullable', 'string', 'required_without_all:email,password'],
             'email' => ['nullable', 'email', 'required_without:id_token'],
@@ -47,6 +55,14 @@ class FirebaseSessionController extends Controller
             'email.required_without' => 'Email harus diisi.',
             'password.required_without' => 'Kata sandi harus diisi.',
         ]);
+
+        // Try local database authentication as fallback for development/testing
+        if (isset($validated['email']) && isset($validated['password']) && ! $validated['id_token']) {
+            $localAuth = $this->attemptLocalAuth($request, $validated);
+            if ($localAuth) {
+                return $localAuth;
+            }
+        }
 
         try {
             $idToken = $this->resolveIdTokenForLogin($validated);
@@ -361,5 +377,41 @@ class FirebaseSessionController extends Controller
         }
 
         return route('dokter.dashboard');
+    }
+
+    /**
+     * Attempt local database authentication (for development/testing without Firebase)
+     */
+    private function attemptLocalAuth(Request $request, array $validated): JsonResponse|RedirectResponse|null
+    {
+        $email = $validated['email'] ?? null;
+        $password = $validated['password'] ?? null;
+
+        if (! $email || ! $password) {
+            return null;
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (! $user || ! password_verify($password, $user->password)) {
+            return null;
+        }
+
+        // Local auth success
+        Auth::login($user, false);
+        $request->session()->regenerate();
+        $request->session()->put('medihub_user_role', $user->role);
+        $request->session()->save();
+
+        $redirectUrl = $user->role === 'dokter' ? route('dokter.dashboard') : route('pasien.dashboard');
+
+        if (! $request->expectsJson() && ! $request->wantsJson()) {
+            return redirect()->intended($redirectUrl);
+        }
+
+        return response()->json([
+            'message' => 'Login berhasil.',
+            'redirect' => $redirectUrl,
+        ]);
     }
 }

@@ -1,0 +1,59 @@
+/* Riwayat Jadwal Temu Styles */
+
+.filter-tab {
+  transition: all 0.2s ease;
+}
+
+.filter-tab.active {
+  color: #111827;
+  border-bottom-color: #3B82F6;
+}
+
+.filter-tab:not(.active) {
+  color: #4B5563;
+  border-bottom-color: transparent;
+}
+
+.appointment-card {
+  transition: all 0.3s ease;
+}
+
+.cancel-form {
+  width: 100%;
+}
+
+/* Scrollbar styling for right panel */
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Main content scrollbar */
+main::-webkit-scrollbar {
+  width: 6px;
+}
+
+main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+main::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
