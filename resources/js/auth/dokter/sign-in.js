@@ -37,8 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
             bladeError.hidden = true;
         }
 
+        // If Firebase API key is not configured, try local database auth (fallback for development)
         if (!firebaseApiKey) {
-            showError('Konfigurasi Firebase API key belum tersedia.');
+            setSubmitting(true);
+            try {
+                const sessionResult = await createBackendSession(sessionUrl, null, {
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value,
+                });
+                window.location.assign(sessionResult.redirect || '/dokter/dashboard');
+            } catch (error) {
+                showError(mapErrorMessage(error));
+            } finally {
+                setSubmitting(false);
+            }
             return;
         }
 
@@ -126,8 +138,23 @@ async function signInWithFirebase(email, password, apiKey) {
     return json;
 }
 
-async function createBackendSession(url, idToken) {
+async function createBackendSession(url, idToken, localAuthData) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const body = {
+        role: 'dokter',
+    };
+
+    // Add id_token if provided (Firebase auth)
+    if (idToken) {
+        body.id_token = idToken;
+    }
+
+    // Add local auth data if provided (fallback for development without Firebase)
+    if (localAuthData) {
+        body.email = localAuthData.email;
+        body.password = localAuthData.password;
+    }
+
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -135,10 +162,7 @@ async function createBackendSession(url, idToken) {
             Accept: 'application/json',
             'X-CSRF-TOKEN': csrfToken,
         },
-        body: JSON.stringify({
-            id_token: idToken,
-            role: 'dokter',
-        }),
+        body: JSON.stringify(body),
     });
 
     const json = await response.json();
