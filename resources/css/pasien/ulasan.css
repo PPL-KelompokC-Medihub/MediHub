@@ -1,0 +1,200 @@
+/* ── ULASAN MODAL OVERLAY ── */
+.ulasan-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.ulasan-overlay.is-open {
+    display: flex;
+}
+
+/* ── DIALOG ── */
+.ulasan-dialog {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    width: min(460px, 92vw);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+    animation: slideUpIn 0.25s ease-out;
+}
+
+@keyframes slideUpIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.ulasan-dialog-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 20px;
+}
+
+/* ── DOCTOR SELECTOR ── */
+.ulasan-doctor-select {
+    width: 100%;
+    border: 1px solid #d0d5e0;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+
+.ulasan-doctor-select:focus {
+    border-color: #6aa4ef;
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.12);
+}
+
+/* ── STAR RATING ── */
+.ulasan-stars-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.ulasan-stars {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.ulasan-star {
+    font-size: 28px;
+    cursor: pointer;
+    color: #d1d5db;
+    transition: color 0.15s, transform 0.15s;
+    user-select: none;
+    line-height: 1;
+}
+
+.ulasan-star:hover,
+.ulasan-star.active {
+    color: #f59e0b;
+    transform: scale(1.15);
+}
+
+/* ── TEXTAREA ── */
+.ulasan-textarea {
+    width: 100%;
+    border: 1px solid #d0d5e0;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #111827;
+    resize: vertical;
+    min-height: 110px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.ulasan-textarea:focus {
+    border-color: #6aa4ef;
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.12);
+}
+
+.ulasan-char-count {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: right;
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* ── ACTIONS ── */
+.ulasan-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.ulasan-btn-cancel {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ulasan-btn-cancel:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+
+.ulasan-btn-submit {
+    flex: 2;
+    border: none;
+    background: #6aa4ef;
+    color: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ulasan-btn-submit:hover {
+    background: #5a94df;
+}
+
+.ulasan-btn-submit:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* ── ERROR TEXT ── */
+.ulasan-error {
+    font-size: 13px;
+    color: #dc2626;
+    margin-bottom: 12px;
+    display: none;
+}
+
+.ulasan-error.show {
+    display: block;
+}
+
+/* ── TOAST ── */
+.ulasan-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: #16804a;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+
+.ulasan-toast.show  { opacity: 1; transform: translateY(0); }
+.ulasan-toast.error { background: #dc2626; }
