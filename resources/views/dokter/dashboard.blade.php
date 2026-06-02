@@ -3,7 +3,7 @@
 @section('title', 'Dashboard - MediHub')
 
 @push('head')
-    @vite(['resources/css/dokter/dashboard.css', 'resources/js/dokter/jadwal.js'])
+    @vite(['resources/css/dokter/dashboard.css', 'resources/js/dokter/jadwal.js', 'resources/js/dokter/appointment-status.js'])
 @endpush
 
 @section('content')
