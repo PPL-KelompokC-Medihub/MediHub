@@ -15,6 +15,8 @@ export default defineConfig({
                 'resources/js/auth/pasien/sign-up.js',
                 'resources/css/pasien/beranda.css',
                 'resources/js/pasien/beranda.js',
+                'resources/css/pasien/riwayat.css',
+                'resources/js/pasien/riwayat.js',
                 'resources/js/pasien/profile.js',
                 'resources/js/pasien/booking.js',
                 'resources/css/dokter/dashboard.css',

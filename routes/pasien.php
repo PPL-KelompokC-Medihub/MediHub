@@ -45,6 +45,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.create');
     Route::post('/pasien/booking', [BookingController::class, 'store'])
         ->name('pasien.booking.store');
+    Route::delete('/pasien/booking', [BookingController::class, 'destroy'])
+        ->name('pasien.booking.destroy');
     Route::patch('/pasien/booking/{id}/batalkan', [BookingController::class, 'cancel'])
         ->name('pasien.booking.cancel');
 });

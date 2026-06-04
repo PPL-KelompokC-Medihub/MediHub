@@ -10,12 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * Dashboard utama dokter setelah login.
- *
- * Menampilkan ringkasan: total pasien, jadwal hari ini, jadwal yang
- * sudah dibuat, dan daftar booking pasien yang masuk.
- */
 class DashboardController extends Controller
 {
     use MapsFirestoreData;
