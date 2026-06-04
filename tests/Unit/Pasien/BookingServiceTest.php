@@ -359,6 +359,69 @@ class BookingServiceTest extends TestCase
         Storage::disk('public')->assertExists($captured['medical_doc']);
     }
 
+    public function test_delete_appointment_cancels_current_patient_appointment_and_notifies(): void
+    {
+        $this->actingAsPatient();
+        $updatedPayload = null;
+        $notificationPayload = null;
+
+        $this->firestore->shouldReceive('find')
+            ->with('BuatJadwalTemu', 'appt-1')
+            ->andReturn([
+                'id' => 'appt-1',
+                'patient_id' => 'patient-1',
+                'patient_email' => 'budi@example.com',
+            ]);
+
+        $this->firestore->shouldReceive('update')
+            ->once()
+            ->with('BuatJadwalTemu', 'appt-1', Mockery::on(function (array $payload) use (&$updatedPayload): bool {
+                $updatedPayload = $payload;
+
+                return ($payload['status'] ?? null) === 'Dibatalkan'
+                    && array_key_exists('update_at', $payload);
+            }));
+
+        $this->repository->shouldReceive('deleteAppointment')->never();
+        $this->repository->shouldReceive('createNotification')
+            ->once()
+            ->with(Mockery::on(function (array $payload) use (&$notificationPayload): bool {
+                $notificationPayload = $payload;
+
+                return $payload['patient_id'] === 'patient-1'
+                    && $payload['type'] === 'cancel';
+            }));
+
+        $this->service->deleteAppointment(['appt-1']);
+
+        $this->assertSame('Dibatalkan', $updatedPayload['status']);
+        $this->assertSame('cancel', $notificationPayload['type']);
+    }
+
+    public function test_delete_appointment_rejects_other_patient_appointment(): void
+    {
+        $this->actingAsPatient();
+
+        $this->firestore->shouldReceive('find')
+            ->with('BuatJadwalTemu', 'appt-2')
+            ->andReturn([
+                'id' => 'appt-2',
+                'patient_id' => 'other-patient',
+                'patient_email' => 'other@example.com',
+            ]);
+
+        $this->repository->shouldReceive('deleteAppointment')->never();
+
+        $this->expectException(ValidationException::class);
+
+        try {
+            $this->service->deleteAppointment(['appt-2']);
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('appointment_id', $e->errors());
+            throw $e;
+        }
+    }
+
     /**
      * @param array<string, mixed> $overrides
      * @return array<string, mixed>

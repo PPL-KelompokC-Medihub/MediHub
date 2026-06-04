@@ -3,7 +3,6 @@
 namespace App\Services\Pasien;
 
 use App\Services\FirestoreService;
-use App\Services\MedihubFirestoreRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +20,6 @@ class DashboardService
 
     public function __construct(
         private FirestoreService $firestore,
-        protected MedihubFirestoreRepository $medihubFirestoreRepository,
     ) {}
 
     /**

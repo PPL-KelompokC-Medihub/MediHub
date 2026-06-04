@@ -14,20 +14,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * 3-step onboarding profil dokter.
- *
- * Sesuai PBI-04 / KFD-03 — dokter wajib mengisi data pribadi, keahlian,
- * lalu mengunggah dokumen (STR, SIP, KTP, ijazah, foto profil) dan
- * sertifikasi sebelum bisa mengakses dashboard.
- *
- * Step 1: showPersonal/updatePersonal           -> data pribadi
- * Step 2: showExpertise/updateExpertise         -> keahlian & spesialisasi
- * Step 3: showCertification/updateCertification -> dokumen + sertifikasi
- *
- * Setelah ketiga step selesai, middleware
- * `EnsureDokterProfileCompleted` akan mengizinkan akses dashboard.
- */
 class ProfileController extends Controller
 {
     public const AVAILABLE_SERVICES = [
