@@ -361,6 +361,17 @@ textarea.mediq-input {
     color: #444;
 }
 
+.mediq-signin-page .mediq-submit-btn {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(88, 167, 247, 0.24);
+}
+
+.mediq-signin-page .mediq-submit-btn:hover {
+    background: var(--primary-strong);
+    color: #fff;
+}
+
 .mediq-submit-offset {
     margin-top: 14px;
 }
