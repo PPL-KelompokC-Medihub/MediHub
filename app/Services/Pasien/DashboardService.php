@@ -236,7 +236,7 @@ class DashboardService
     /**
      * Format single appointment for history display
      */
-    private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null): array
+    private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null, array $doctorUserUidMap = []): array
     {
         $date = (string) ($appointment['appointment_date'] ?? '');
         $doctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
@@ -263,8 +263,11 @@ class DashboardService
         $dbResep = null;
 
         if ($medicalNotes) {
-            $matchingNote = $medicalNotes->first(function ($note) use ($doctorId, $date) {
-                return (string) $note->doctor_id === $doctorId && $note->created_at->toDateString() === $date;
+            $doctorUserUid = $doctorUserUidMap[$doctorId] ?? '';
+            $matchingNote = $medicalNotes->first(function ($note) use ($doctorId, $doctorUserUid, $date) {
+                $noteDocId = (string) $note->doctor_id;
+                $isDoctorMatch = $noteDocId === $doctorId || ($doctorUserUid !== '' && $noteDocId === $doctorUserUid);
+                return $isDoctorMatch && $note->created_at->toDateString() === $date;
             });
 
             if ($matchingNote) {
@@ -371,11 +374,20 @@ class DashboardService
             ->with('prescriptions')
             ->get();
 
+        $doctorUserUidMap = [];
+        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
+            $docId = (string) ($doc['id'] ?? '');
+            $userUid = (string) ($doc['usersId'] ?? '');
+            if ($docId !== '' && $userUid !== '') {
+                $doctorUserUidMap[$docId] = $userUid;
+            }
+        }
+
         $history = [];
         $upcoming = [];
 
         foreach ($appointments as $appointment) {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes);
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap);
 
             if ($this->isHistoricalAppointment($appointment)) {
                 $history[] = $formatted;
@@ -430,10 +442,19 @@ class DashboardService
             ->with('prescriptions')
             ->get();
 
+        $doctorUserUidMap = [];
+        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
+            $docId = (string) ($doc['id'] ?? '');
+            $userUid = (string) ($doc['usersId'] ?? '');
+            if ($docId !== '' && $userUid !== '') {
+                $doctorUserUidMap[$docId] = $userUid;
+            }
+        }
+
         $now = Carbon::now();
 
-        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $medicalNotes, $now): array {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes);
+        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $medicalNotes, $doctorUserUidMap, $now): array {
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap);
 
             // Determine period key for front-end filtering
             $dateStr = trim((string) ($appointment['appointment_date'] ?? ''));

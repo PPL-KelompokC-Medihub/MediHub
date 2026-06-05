@@ -161,7 +161,7 @@ class PasienDashboardServiceTest extends TestCase
 
         $note = \App\Models\MedicalNote::create([
             'patient_id' => 'patient-1',
-            'doctor_id' => 'doctor-1',
+            'doctor_id' => 'doctor-user-1',
             'notes' => 'Didiagnosis influenza dari database.',
         ]);
         $note->created_at = Carbon::parse('2026-05-20 14:00:00');
@@ -170,7 +170,7 @@ class PasienDashboardServiceTest extends TestCase
         \App\Models\Prescription::create([
             'medical_note_id' => $note->id,
             'patient_id' => 'patient-1',
-            'doctor_id' => 'doctor-1',
+            'doctor_id' => 'doctor-user-1',
             'medications' => 'Amoxillin 500mg',
         ]);
 

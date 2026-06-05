@@ -403,7 +403,7 @@ class FirebaseSessionController extends Controller
         $request->session()->put('medihub_user_role', $user->role);
         $request->session()->save();
 
-        $redirectUrl = $user->role === 'dokter' ? route('dokter.dashboard') : route('pasien.dashboard');
+        $redirectUrl = $user->role === 'dokter' ? route('dokter.dashboard') : route('pasien.beranda');
 
         if (! $request->expectsJson() && ! $request->wantsJson()) {
             return redirect()->intended($redirectUrl);
