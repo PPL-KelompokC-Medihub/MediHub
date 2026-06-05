@@ -134,11 +134,11 @@
             <div class="form-group" style="margin-bottom: 20px;">
                 <label for="patient_id">ID Pasien (opsional)</label>
                 <div class="input-wrapper">
-                    <input 
-                        type="text" 
-                        name="patient_id" 
-                        id="patient_id" 
-                        placeholder="ID Pasien akan terisi otomatis jika dipilih dari dashboard" 
+                    <input
+                        type="text"
+                        name="patient_id"
+                        id="patient_id"
+                        placeholder="ID Pasien akan terisi otomatis jika dipilih dari dashboard"
                         value="{{ old('patient_id', request('patient_id')) }}"
                     >
                 </div>
@@ -146,10 +146,10 @@
 
             <div class="form-group">
                 <label for="notes">Catatan & Diagnosa Medis</label>
-                <textarea 
-                    name="notes" 
-                    id="notes" 
-                    placeholder="Tulis keluhan, diagnosis, tindakan, dan catatan medis lainnya..." 
+                <textarea
+                    name="notes"
+                    id="notes"
+                    placeholder="Tulis keluhan, diagnosis, tindakan, dan catatan medis lainnya..."
                     required
                 >{{ old('notes') }}</textarea>
             </div>

@@ -50,7 +50,7 @@ class ProfilepasienTest extends DuskTestCase
                 ->clickAtXPath("//*[normalize-space()='Simpan']")
                 ->pause(2000)
 
-                
+
                 ->assertPathIs('/pasien/profile')
 
                 ->assertInputValue('input[name="umur"]', '20')

@@ -1,7 +1,7 @@
 @extends('layouts.auth')
 
 @section('title', 'Login Dokter - MediHub')
-@section('auth_page_class', 'mediq-signin-page')
+@section('auth_page_class', 'mediq-signin-page mediq-doctor-login-page')
 
 @section('content')
     <div class="mediq-auth-body">
@@ -37,25 +37,18 @@
                 </div>
             </div>
 
-            <div class="mediq-form-row-between">
-                <label class="mediq-remember">
-                    <input type="checkbox" name="remember" disabled> Ingat saya
-                </label>
-                <span class="mediq-forgot-link is-disabled">Segera tersedia</span>
-            </div>
-
             @if ($errors->any())
-                <div class="mediq-error">{{ $errors->first() }}</div>
+                <div class="mediq-error" dusk="login-error">{{ $errors->first() }}</div>
             @endif
 
             <p id="firebase-auth-error" class="mediq-error" hidden></p>
 
-            <button type="submit" id="sign-in-submit" dusk="login-button" class="mediq-primary-btn mediq-submit-offset">
+            <button type="submit" dusk="login-button" id="sign-in-submit" class="mediq-submit-btn">
                 <span class="btn-text">Masuk</span>
                 <span class="btn-loading" hidden>Memproses...</span>
             </button>
 
-            <p class="mediq-divider">Atau masuk dengan</p>
+            <p class="mediq-divider">Atau lanjutkan dengan</p>
 
             <div class="mediq-social-row">
                 <button type="button" id="google-sign-in-btn" class="mediq-social-btn">

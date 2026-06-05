@@ -247,12 +247,14 @@ class FirebaseSessionController extends Controller
 
         $existingRole = $this->normalizeRole($existing['role'] ?? null);
         if ($normalizedRole !== null && $existingRole !== null && $existingRole !== $normalizedRole) {
-            Log::info('Updating Firebase user role from selected auth page.', [
+            Log::warning('Firebase user attempted login from the wrong role page.', [
                 'user_id' => $existing['id'] ?? $uid,
                 'email' => $email,
-                'from_role' => $existingRole,
-                'to_role' => $normalizedRole,
+                'existing_role' => $existingRole,
+                'requested_role' => $normalizedRole,
             ]);
+
+            throw new RuntimeException('Jenis akun tidak sesuai. Silakan login melalui halaman yang benar.');
         }
 
         $payload = [
@@ -262,7 +264,7 @@ class FirebaseSessionController extends Controller
             'update_at' => now()->toIso8601String(),
         ];
 
-        if ($normalizedRole !== null) {
+        if ($existingRole === null && $normalizedRole !== null) {
             $payload['role'] = $normalizedRole;
         }
 

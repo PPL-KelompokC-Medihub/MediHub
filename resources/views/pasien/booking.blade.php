@@ -162,39 +162,49 @@
                     </div>
                 </main>
 
-                <aside class="sticky top-0 self-start border-l border-gray-200 bg-white px-7 py-10">
-                    <h2 class="mb-6 text-lg font-semibold">Ulasan Pasien</h2>
+                <aside class="sticky top-0 h-screen overflow-hidden border-l border-gray-200 bg-white px-7 py-8">
+                    <div class="flex h-full min-h-0 flex-col">
+                        <div class="mb-6 shrink-0">
+                            <h2 class="text-lg font-semibold">Ulasan Pasien</h2>
+                        </div>
 
-                    <div class="pr-1">
-                        @foreach ([
-                            ['name' => 'Rina', 'rating' => '5.0', 'text' => 'Pelayanan cepat dan terorganisir. Saya tidak perlu menunggu lama di ruang tunggu karena antrian sudah bisa daftar lewat aplikasi.', 'avatar' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop'],
-                            ['name' => 'Melati', 'rating' => '4.0', 'text' => 'IGD buka 24 jam dan respon perawatnya sigap sekali. Hanya saja area parkir agak penuh di jam sibuk.', 'avatar' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=120&auto=format&fit=crop'],
-                            ['name' => 'Ahmad', 'rating' => '4.0', 'text' => 'Secara keseluruhan puas, apalagi dengan adanya sistem antrian online jadi lebih efisien.', 'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=120&auto=format&fit=crop'],
-                            ['name' => 'Yanto', 'rating' => '5.0', 'text' => 'Anak saya dirawat di ruang anak, suasananya dibuat ceria dan ramah anak.', 'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop'],
-                            ['name' => 'Sergey', 'rating' => '5.0', 'text' => 'Dokternya ramah dan menjelaskan kondisi saya dengan jelas.', 'avatar' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=120&auto=format&fit=crop'],
-                        ] as $review)
-                            <article class="mb-5 border-b border-gray-100 pb-5">
-                                <div class="mb-3 flex items-start gap-3">
-                                    <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover">
-                                    <div>
-                                        <h3 class="text-sm font-medium">{{ $review['name'] }}</h3>
-                                        <p class="text-sm text-gray-500"><i class="fa-solid fa-star text-yellow-400"></i> {{ $review['rating'] }}</p>
+                        <div class="min-h-0 flex-1 overflow-y-auto pr-1">
+                            @forelse ($reviews as $review)
+                                <article class="mb-6 border-b border-gray-100 pb-6 last:mb-0 last:border-b-0">
+                                    <div class="mb-3 flex items-start gap-3">
+                                        <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover ring-2 ring-gray-50">
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="truncate text-sm font-medium">{{ $review['name'] }}</h3>
+                                            <p class="mt-1 text-sm text-gray-500"><i class="fa-solid fa-star text-yellow-400"></i> {{ $review['rating'] }}</p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <p class="mb-4 text-sm leading-snug text-gray-900">{{ $review['text'] }}</p>
+                                    <p class="mb-4 text-justify text-sm leading-snug text-gray-900">{{ $review['text'] }}</p>
 
-                                <div class="flex items-center justify-between text-xs text-gray-500">
-                                    <span>17 Agustus | 19:07 PM</span>
-                                    <span><i class="fa-regular fa-heart mr-1"></i>5</span>
+                                    <div class="flex items-center justify-between text-xs text-gray-500">
+                                        <span>{{ $review['date'] }}</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i>{{ $review['likes'] }}</span>
+                                    </div>
+                                </article>
+                            @empty
+                                <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center">
+                                    <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+                                        <i class="fa-regular fa-comment-dots"></i>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-700">Belum ada ulasan</p>
+                                    <p class="mt-1 text-xs leading-relaxed text-gray-400">
+                                        Ulasan akan muncul setelah pasien mengirimkan pengalaman layanan.
+                                    </p>
                                 </div>
-                            </article>
-                        @endforeach
+                            @endforelse
+                        </div>
+
+                        <div class="shrink-0 bg-white pt-5">
+                            <a href="{{ route('pasien.layanan') }}" class="block w-full rounded-xl bg-blue-400 px-5 py-4 text-center text-sm font-medium text-white shadow-md transition hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100">
+                                Buat Ulasan
+                            </a>
+                        </div>
                     </div>
-
-                    <button class="mt-5 w-full rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium text-white shadow-md">
-                        Buat Ulasan
-                    </button>
                 </aside>
             </div>
 

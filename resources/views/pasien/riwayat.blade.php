@@ -17,11 +17,11 @@
 
         <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
-                <a 
+                <a
                     href="{{ route('pasien.profile') }}"
                     class="group flex items-center gap-4 transition-all duration-200 hover:-translate-y-[2px]"
                 >
-                    <img 
+                    <img
                         src="{{ $patient['profile_pict'] }}"
                         class="h-14 w-14 rounded-full object-cover transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-300"
                         alt="Avatar"
@@ -40,9 +40,9 @@
 
                 <div class="flex items-center gap-3">
                     <div class="flex w-[330px] items-center rounded-xl border border-gray-200 bg-white px-4 py-3">
-                        <input 
+                        <input
                             id="searchHistory"
-                            type="text" 
+                            type="text"
                             placeholder="Cari jadwal temu..."
                             class="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
                         >
@@ -84,19 +84,19 @@
 
                 <!-- Filter Tabs -->
                 <div class="mb-6 flex gap-3 border-b border-gray-200 pb-4">
-                    <button 
+                    <button
                         data-filter="semua"
                         class="filter-tab px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent transition-all duration-200 hover:text-gray-900 hover:border-gray-300 active"
                     >
                         Semua
                     </button>
-                    <button 
+                    <button
                         data-filter="selesai"
                         class="filter-tab px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent transition-all duration-200 hover:text-gray-900 hover:border-gray-300"
                     >
                         Selesai
                     </button>
-                    <button 
+                    <button
                         data-filter="dibatalkan"
                         class="filter-tab px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent transition-all duration-200 hover:text-gray-900 hover:border-gray-300"
                     >
@@ -121,7 +121,7 @@
                                     default => 'fa-clock',
                                 };
                             @endphp
-                            <div 
+                            <div
                                 class="appointment-card overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px]"
                                 data-status="{{ $statusKey }}"
                             >
@@ -225,7 +225,7 @@
                             Jadwal temu yang sudah selesai atau dibatalkan akan muncul di sini.
                         </p>
 
-                        <a 
+                        <a
                             href="{{ route('pasien.booking.create') }}"
                             class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                         >
@@ -279,15 +279,15 @@
                             </div>
 
                             <!-- Cancel Button -->
-                            <form 
-                                method="POST" 
+                            <form
+                                method="POST"
                                 action="{{ route('pasien.booking.cancel', ['id' => $appointment['id']]) }}"
                                 class="cancel-form"
                             >
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="cancellation_reason" value="Dibatalkan oleh pasien">
-                                <button 
+                                <button
                                     type="submit"
                                     class="w-full text-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-medium transition-all duration-200 hover:bg-red-100 border border-red-200"
                                     onclick="return confirm('Apakah Anda yakin ingin membatalkan jadwal temu ini?')"
@@ -316,7 +316,7 @@
             </div>
 
             <!-- Create Appointment Button -->
-            <a href="{{ route('pasien.booking.create') }}" 
+            <a href="{{ route('pasien.booking.create') }}"
             class="group relative mt-6 flex items-center justify-between overflow-hidden rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(96,165,250,0.45)]">
 
                 <span class="relative z-10 text-white">

@@ -16,6 +16,7 @@ class BookingService
     private const DOCTOR_SCHEDULE_COLLECTION = 'JadwalDokter';
     private const PATIENT_COLLECTION = 'Pasien';
     private const USERS_COLLECTION = 'Users';
+    private const REVIEW_COLLECTION = 'Ulasan';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -45,6 +46,7 @@ class BookingService
             'doctors' => $doctors,
             'schedules' => $schedules,
             'selectedDoctorId' => $selectedDoctorId,
+            'reviews' => $this->reviews(),
         ];
     }
 
@@ -209,6 +211,62 @@ class BookingService
             'blood_type' => $patient['blood_type'] ?? '',
             'allergy_history' => $patient['allergy_history'] ?? '',
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function reviews(): array
+    {
+        $reviews = $this->firestore->all(self::REVIEW_COLLECTION);
+
+        if ($reviews === []) {
+            return [];
+        }
+
+        $reviews = array_values(array_filter($reviews, function (array $review): bool {
+            return trim((string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? '')) !== '';
+        }));
+
+        $users = collect($this->firestore->all(self::USERS_COLLECTION))
+            ->keyBy(fn (array $user): string => (string) ($user['id'] ?? ''));
+        $patients = collect();
+
+        foreach ($this->firestore->all(self::PATIENT_COLLECTION) as $patient) {
+            foreach (['id', 'user_id'] as $key) {
+                $patientKey = (string) ($patient[$key] ?? '');
+
+                if ($patientKey !== '') {
+                    $patients->put($patientKey, $patient);
+                }
+            }
+        }
+
+        usort($reviews, fn (array $a, array $b): int => strcmp(
+            (string) ($b['created_at'] ?? $b['updated_at'] ?? $b['update_at'] ?? ''),
+            (string) ($a['created_at'] ?? $a['updated_at'] ?? $a['update_at'] ?? ''),
+        ));
+
+        return array_map(function (array $review) use ($users, $patients): array {
+            $patientId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
+            $user = $users->get($patientId, []);
+            $patient = $patients->get($patientId, []);
+            $profilePict = $patient['profile_pict'] ?? null;
+            $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
+
+            return [
+                'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
+                'rating' => number_format((float) ($review['rating'] ?? 0), 1),
+                'date' => $createdAt !== ''
+                    ? Carbon::parse($createdAt)->translatedFormat('d F | H:i')
+                    : '-',
+                'text' => (string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? ''),
+                'likes' => (int) ($review['likes'] ?? 0),
+                'avatar' => $profilePict
+                    ? asset('storage/' . $profilePict)
+                    : asset('images/default-avatar.svg'),
+            ];
+        }, $reviews);
     }
 
     /**

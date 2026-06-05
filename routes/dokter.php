@@ -91,3 +91,4 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
         ->name('dokter.prescriptions.create');
     Route::post('/dokter/prescriptions', [PrescriptionController::class, 'store'])
         ->name('dokter.prescriptions.store');
+});

@@ -11,7 +11,7 @@ if ($user) {
     echo "Email: " . $user->email . "\n";
     echo "Role: " . $user->role . "\n";
     echo "Password hash: " . substr($user->password, 0, 20) . "...\n";
-    
+
     if (password_verify('password123', $user->password)) {
         echo "✓ Password verification PASSED!\n";
     } else {

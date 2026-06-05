@@ -28,6 +28,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.beranda');
     Route::get('/pasien/layanan', [DashboardController::class, 'layanan'])
         ->name('pasien.layanan');
+    Route::post('/pasien/layanan/ulasan', [DashboardController::class, 'storeReview'])
+        ->name('pasien.layanan.ulasan.store');
     Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
         ->name('pasien.riwayat');
     Route::get('/pasien/diagnosa', [DashboardController::class, 'diagnosa'])

@@ -2,8 +2,8 @@
 
 @php
     $linkClass = fn (string $key) => $active === $key
-        ? 'group flex h-8 w-full items-center justify-start text-[15px] font-medium text-[#58A7F7] transition-all duration-200 hover:-translate-y-[2px]'
-        : 'group flex h-8 w-full items-center justify-start text-[15px] font-normal text-[#111827] transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]';
+        ? 'group flex h-8 w-full items-center justify-start text-[16px] font-medium text-[#58A7F7] transition-all duration-200 hover:-translate-y-[2px]'
+        : 'group flex h-8 w-full items-center justify-start text-[16px] font-normal text-[#7D7D7D] transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]';
 
     $iconClass = fn (string $key) => $active === $key
         ? 'text-[18px] text-[#58A7F7] transition-all duration-200'
@@ -11,20 +11,20 @@
 
     $textClass = fn (string $key) => $active === $key
     ? 'text-[#58A7F7] transition-all duration-200'
-    : 'text-[#111827] transition-all duration-200 group-hover:text-[#58A7F7]';
+    : 'text-[#7D7D7D] transition-all duration-200 group-hover:text-[#58A7F7]';
 @endphp
 
 <aside class="fixed left-0 top-0 flex h-screen w-[220px] flex-col border-r border-gray-200 bg-white">
-    <div class="flex flex-1 flex-col px-6 py-10">
+    <div class="flex flex-1 flex-col px-7 py-11">
         <img
             src="{{ asset('images/Medihub.png') }}"
             alt="Logo MediHub"
-            class="mb-16 h-auto w-[128px] object-contain"
+            class="mb-14 h-auto w-[150px] object-contain"
         >
 
         <p class="mb-8 font-[Poppins] text-[18px] font-medium text-black">Menu</p>
 
-        <nav class="flex w-full flex-col gap-7 pl-4">
+        <nav class="flex w-full flex-col gap-8 pl-3">
             <a href="{{ route('pasien.beranda') }}" class="{{ $linkClass('beranda') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-solid fa-house {{ $iconClass('beranda') }} flex h-6 w-6 items-center justify-center"></i>
@@ -62,12 +62,12 @@
         </nav>
     </div>
 
-    <div class="border-t border-gray-100 px-6 py-6">
+    <div class="border-t border-gray-100 px-7 py-7">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button
                 type="submit"
-                class="group flex h-10 w-full items-center gap-3 rounded-lg border border-gray-200 px-4 text-sm text-gray-500 transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"
+                class="group flex h-12 w-full items-center gap-3 rounded-lg border border-gray-200 px-4 text-[15px] text-[#7D7D7D] transition-all duration-200 hover:-translate-y-[2px] hover:text-[#58A7F7]"
             >
                 <i class="fa-solid fa-arrow-right-from-bracket transition-colors duration-200 group-hover:text-[#58A7F7]"></i>
                 

@@ -141,11 +141,11 @@
                 <div class="form-group">
                     <label for="medical_note_id">ID Catatan Medis (opsional)</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            name="medical_note_id" 
-                            id="medical_note_id" 
-                            placeholder="Terisi otomatis jika dari Catatan Medis" 
+                        <input
+                            type="text"
+                            name="medical_note_id"
+                            id="medical_note_id"
+                            placeholder="Terisi otomatis jika dari Catatan Medis"
                             value="{{ old('medical_note_id', request('medical_note_id')) }}"
                         >
                     </div>
@@ -154,11 +154,11 @@
                 <div class="form-group">
                     <label for="patient_id">ID Pasien (opsional)</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            name="patient_id" 
-                            id="patient_id" 
-                            placeholder="Terisi otomatis jika dari dashboard" 
+                        <input
+                            type="text"
+                            name="patient_id"
+                            id="patient_id"
+                            placeholder="Terisi otomatis jika dari dashboard"
                             value="{{ old('patient_id', request('patient_id')) }}"
                         >
                     </div>
@@ -167,19 +167,19 @@
 
             <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                 <label for="medications">Obat-obatan</label>
-                <textarea 
-                    name="medications" 
-                    id="medications" 
-                    placeholder="Tulis nama obat, dosis, dan jumlah (misal: Paracetamol 500mg - 10 tablet)..." 
+                <textarea
+                    name="medications"
+                    id="medications"
+                    placeholder="Tulis nama obat, dosis, dan jumlah (misal: Paracetamol 500mg - 10 tablet)..."
                     required
                 >{{ old('medications') }}</textarea>
             </div>
 
             <div class="form-group">
                 <label for="instructions">Aturan Pakai & Instruksi (opsional)</label>
-                <textarea 
-                    name="instructions" 
-                    id="instructions" 
+                <textarea
+                    name="instructions"
+                    id="instructions"
                     placeholder="Tulis instruksi penggunaan (misal: Diminum 3 kali sehari setelah makan)..."
                 >{{ old('instructions') }}</textarea>
             </div>
