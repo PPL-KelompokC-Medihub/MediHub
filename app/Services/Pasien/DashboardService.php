@@ -236,7 +236,7 @@ class DashboardService
     /**
      * Format single appointment for history display
      */
-    private function formatHistoryAppointment(array $appointment, array $doctorSummaries): array
+    private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null): array
     {
         $date = (string) ($appointment['appointment_date'] ?? '');
         $doctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
@@ -258,6 +258,22 @@ class DashboardService
             ? trim($timeStart.($timeEnd !== '' ? ' - '.$timeEnd : ''))
             : $scheduleTime;
 
+        $dbDiagnosa = null;
+        $dbCatatan = null;
+        $dbResep = null;
+
+        if ($medicalNotes) {
+            $matchingNote = $medicalNotes->first(function ($note) use ($doctorId, $date) {
+                return (string) $note->doctor_id === $doctorId && $note->created_at->toDateString() === $date;
+            });
+
+            if ($matchingNote) {
+                $dbDiagnosa = $matchingNote->notes;
+                $dbCatatan = $matchingNote->notes;
+                $dbResep = $matchingNote->prescriptions->pluck('medications')->implode(', ');
+            }
+        }
+
         return [
             'id' => (string) ($appointment['id'] ?? ''),
             'jenis' => $doctor['specialization'] ?? 'Jadwal Temu',
@@ -272,9 +288,9 @@ class DashboardService
             'date_sort' => $date,
             'time_sort' => $timeStart,
             'keluhan' => $this->firstFilled($appointment, ['complaint', 'keluhan']),
-            'diagnosa' => $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
-            'catatan_medis' => $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
-            'resep_obat' => $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']),
+            'diagnosa' => $dbDiagnosa ?? $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
+            'catatan_medis' => $dbCatatan ?? $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
+            'resep_obat' => $dbResep ?? $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']),
         ];
     }
 
@@ -351,11 +367,15 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
+        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
+            ->with('prescriptions')
+            ->get();
+
         $history = [];
         $upcoming = [];
 
         foreach ($appointments as $appointment) {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries);
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes);
 
             if ($this->isHistoricalAppointment($appointment)) {
                 $history[] = $formatted;
@@ -406,10 +426,14 @@ class DashboardService
             return $status === 'selesai';
         });
 
+        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
+            ->with('prescriptions')
+            ->get();
+
         $now = Carbon::now();
 
-        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $now): array {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries);
+        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $medicalNotes, $now): array {
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes);
 
             // Determine period key for front-end filtering
             $dateStr = trim((string) ($appointment['appointment_date'] ?? ''));
