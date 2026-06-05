@@ -10,12 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * Dashboard utama dokter setelah login.
- *
- * Menampilkan ringkasan: total pasien, jadwal hari ini, jadwal yang
- * sudah dibuat, dan daftar booking pasien yang masuk.
- */
 class DashboardController extends Controller
 {
     use MapsFirestoreData;
@@ -86,6 +80,71 @@ class DashboardController extends Controller
             'totalPasien',
             'jadwalHariIni',
             'sesiSelesaiBulanIni',
+            'search',
+            'date',
+        ));
+    }
+
+    public function riwayat(Request $request): View
+    {
+        $userId = (string) Auth::id();
+
+        $userData = $this->doctorRepository->findUser($userId);
+        $dokter = $userData
+            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
+            : null;
+
+        $search = trim((string) $request->query('search', ''));
+        $date = trim((string) $request->query('date', ''));
+
+        $allAppointments = $this->sortAppointments(
+            $this->currentDoctorDocuments(self::APPOINTMENT_COLLECTION),
+        );
+
+        $historicalAppointments = array_values(array_filter(
+            $allAppointments,
+            function (array $appointment): bool {
+                $statusKey = $this->appointmentStatusKey($appointment);
+                if (in_array($statusKey, ['dibatalkan', 'selesai'], true)) {
+                    return true;
+                }
+
+                $dateStr = trim((string) ($appointment['appointment_date'] ?? ''));
+                if ($dateStr !== '') {
+                    try {
+                        $timeStr = trim((string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? ''));
+                        $dateTimeStr = $timeStr !== '' ? $dateStr . ' ' . $timeStr : $dateStr;
+                        return \Carbon\Carbon::parse($dateTimeStr)->isPast();
+                    } catch (\Throwable) {
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+        ));
+
+        $filteredAppointments = $this->filterAppointments($historicalAppointments, $search, $date);
+
+        $appointments = $this->toObjects(array_map(
+            fn (array $appointment): array => array_merge($appointment, [
+                'display_status' => $this->appointmentStatusLabel($appointment),
+                'status_key' => $this->appointmentStatusKey($appointment),
+                'display_date' => $this->appointmentDateLabel($appointment),
+                'display_time' => $this->appointmentTimeLabel($appointment),
+                'display_complaint' => $this->appointmentComplaint($appointment),
+            ]),
+            $filteredAppointments,
+        ));
+
+        $medicalNotes = \App\Models\MedicalNote::where('doctor_id', $userId)
+            ->with('prescriptions')
+            ->get();
+
+        return view('dokter.riwayat', compact(
+            'dokter',
+            'appointments',
+            'medicalNotes',
             'search',
             'date',
         ));

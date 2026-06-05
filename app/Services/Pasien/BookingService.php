@@ -420,7 +420,7 @@ class BookingService
                 continue;
             }
 
-            $this->medihubFirestoreRepository->deleteAppointment($appointmentId);
+            $this->cancel($appointmentId);
 
             $this->medihubFirestoreRepository->createNotification([
                 'patient_id' => Auth::id(),

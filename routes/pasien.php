@@ -30,6 +30,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.layanan');
     Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
         ->name('pasien.riwayat');
+    Route::get('/pasien/diagnosa', [DashboardController::class, 'diagnosa'])
+        ->name('pasien.diagnosa');
 
     // Profil pasien (PBI-12 / PBI-05)
     Route::get('/pasien/profile', [ProfileController::class, 'index'])
@@ -46,6 +48,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.create');
     Route::post('/pasien/booking', [BookingController::class, 'store'])
         ->name('pasien.booking.store');
+    Route::delete('/pasien/booking', [BookingController::class, 'destroy'])
+        ->name('pasien.booking.destroy');
     Route::patch('/pasien/booking/{id}/batalkan', [BookingController::class, 'cancel'])
         ->name('pasien.booking.cancel');
 
