@@ -57,4 +57,14 @@ class DashboardController extends Controller
             ->route('pasien.layanan')
             ->with('success', 'Ulasan berhasil dikirim.');
     }
+
+    public function riwayat()
+    {
+        return view('pasien.riwayat', $this->dashboardService->historyPageData());
+    }
+
+    public function diagnosa()
+    {
+        return view('pasien.diagnosa', $this->dashboardService->diagnosisPageData());
+    }
 }

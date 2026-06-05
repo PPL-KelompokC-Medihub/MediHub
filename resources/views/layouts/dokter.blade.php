@@ -37,11 +37,16 @@
     <title>@yield('title', 'MediHub')</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .mediq-shell-grid.no-rightbar {
+            grid-template-columns: 1fr;
+        }
+    </style>
     @stack('head')
 </head>
 <body>
 <div class="mediq-app-shell">
-    <div class="mediq-shell-grid">
+    <div class="mediq-shell-grid @sectionMissing('rightbar') no-rightbar @endif">
         <x-dokter.sidebar :active="$active" />
 
         <main class="mediq-main">

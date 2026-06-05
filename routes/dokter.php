@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Dokter\AppointmentStatusController;
 use App\Http\Controllers\Dokter\DashboardController;
 use App\Http\Controllers\Dokter\ProfileController;
 use App\Http\Controllers\Dokter\ScheduleController;
+use App\Http\Controllers\Doctor\MedicalNoteController;
+use App\Http\Controllers\Doctor\PrescriptionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,6 +55,10 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
     Route::get('/dokter/dashboard', [DashboardController::class, 'index'])
         ->name('dokter.dashboard');
 
+    // Halaman riwayat jadwal temu dokter
+    Route::get('/dokter/riwayat', [DashboardController::class, 'riwayat'])
+        ->name('dokter.riwayat');
+
     // PBI-13: Halaman Profil Dokter (read-only view)
     Route::get('/dokter/profil', [ProfileController::class, 'show'])
         ->name('dokter.profil.show');
@@ -69,4 +76,19 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
         ->name('dokter.jadwal.update');
     Route::delete('/dokter/jadwal/{id}', [ScheduleController::class, 'destroy'])
         ->name('dokter.jadwal.destroy');
+
+// Update status pasien (KFD-07 / PBI-17)
+    Route::patch('/dokter/appointment/{id}/status', [AppointmentStatusController::class, 'update'])
+        ->name('dokter.appointment.update-status');
+
+    // Medical notes & prescriptions
+    Route::get('/dokter/medical-notes/create', [MedicalNoteController::class, 'create'])
+        ->name('dokter.medical_notes.create');
+    Route::post('/dokter/medical-notes', [MedicalNoteController::class, 'store'])
+        ->name('dokter.medical_notes.store');
+
+    Route::get('/dokter/prescriptions/create', [PrescriptionController::class, 'create'])
+        ->name('dokter.prescriptions.create');
+    Route::post('/dokter/prescriptions', [PrescriptionController::class, 'store'])
+        ->name('dokter.prescriptions.store');
 });

@@ -9,15 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * CRUD jadwal praktik dokter.
- *
- * Pasien akan memilih jadwal yang dibuat di sini saat booking. Data
- * disimpan di collection Firestore "JadwalDokter" dengan field:
- * dokterid, tanggal, jam_mulai, jam_selesai.
- *
- * Sumber: PBI-07 / KFD-04.
- */
 class ScheduleController extends Controller
 {
     use MapsFirestoreData;

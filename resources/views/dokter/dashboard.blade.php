@@ -3,7 +3,7 @@
 @section('title', 'Dashboard - MediHub')
 
 @push('head')
-    @vite(['resources/css/dokter/dashboard.css', 'resources/js/dokter/jadwal.js'])
+    @vite(['resources/css/dokter/dashboard.css', 'resources/js/dokter/jadwal.js', 'resources/js/dokter/appointment-status.js'])
 @endpush
 
 @section('content')
@@ -111,7 +111,7 @@
                 </div>
             </div>
             <div class="doctor-stat-card-4">
-                <p class="doctor-stat-value">{{ $totalPasien }}</p>
+                <p class="doctor-stat-value">{{ $sesiSelesaiBulanIni }}</p>
                 <p class="doctor-stat-label">Sesi Selesai Bulan Ini</p>
                 <p class="doctor-stat-location">RS Medic Center - Bandung</p>
                 <div class="doctor-stat-icon">
@@ -238,9 +238,20 @@
                 name="search"
                 class="mediq-search-input"
                 placeholder="Cari nama pasien"
-                value="{{ request('search') }}"
+                value="{{ $search }}"
             />
         </div>
+        <input
+            type="date"
+            name="date"
+            value="{{ $date }}"
+            class="doctor-patient-date-filter"
+            aria-label="Filter tanggal jadwal pasien"
+        />
+        <button type="submit" class="doctor-patient-search-button">Cari</button>
+        @if($search !== '' || $date !== '')
+            <a href="{{ route('dokter.dashboard') }}" class="doctor-patient-reset-link">Reset</a>
+        @endif
     </form>
     <div class="doctor-patient-table-wrap">
         <table class="doctor-patient-table">
@@ -248,25 +259,75 @@
                 <tr>
                     <th>Pasien</th>
                     <th>Tanggal</th>
+                    <th>Jam</th>
+                    <th>Keluhan</th>
                     <th>Status</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($appointments as $appointment)
-                    <tr>
+                    <tr id="appointment-row-{{ $appointment->id }}">
                         <td class="doctor-patient-name">{{ $appointment->patient_name ?? '-' }}</td>
-                        <td class="doctor-patient-date">{{ $appointment->appointment_date ?? '-' }}</td>
-                        <td><span class="doctor-status-pill">Aktif</span></td>
+                        <td class="doctor-patient-date">{{ $appointment->display_date ?? '-' }}</td>
+                        <td class="doctor-patient-date">{{ $appointment->display_time ?? '-' }}</td>
+                        <td class="doctor-patient-complaint">{{ $appointment->display_complaint ?? '-' }}</td>
+                        <td>
+                            <span
+                                id="status-pill-{{ $appointment->id }}"
+                                class="doctor-status-pill doctor-status-{{ $appointment->status_key ?? 'menunggu' }}"
+                            >
+                                {{ $appointment->display_status ?? 'Menunggu' }}
+                            </span>
+                        </td>
+                        <td>
+<td>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                {{-- Dropdown Status dari Naswa --}}
+                                @if(($appointment->status_key ?? 'menunggu') !== 'dibatalkan')
+                                    <select
+                                        class="doctor-status-select"
+                                        data-appointment-id="{{ $appointment->id }}"
+                                        data-update-url="{{ route('dokter.appointment.update-status', $appointment->id) }}"
+                                        onchange="updatePatientStatus(this)"
+                                    >
+                                        <option value="menunggu" {{ ($appointment->status_key ?? 'menunggu') === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="diperiksa" {{ ($appointment->status_key ?? '') === 'diperiksa' ? 'selected' : '' }}>Diperiksa</option>
+                                        <option value="selesai" {{ ($appointment->status_key ?? '') === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                    </select>
+                                @else
+                                    <span class="doctor-status-cancelled-label">—</span>
+                                @endif
+
+                                {{-- Tombol Aksi dari Main --}}
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ route('dokter.medical_notes.create', ['patient_id' => $appointment->patient_id ?? $appointment->user_uid ?? '']) }}" class="doctor-edit-button" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        Catat Medis
+                                    </a>
+                                    <a href="{{ route('dokter.prescriptions.create', ['patient_id' => $appointment->patient_id ?? $appointment->user_uid ?? '']) }}" class="doctor-edit-button" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background-color: #f1f5f9; color: #475569; border-color: #cbd5e1;">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        Tulis Resep
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="doctor-table-empty">Belum ada pasien</td>
+                        <td colspan="6" class="doctor-table-empty">Belum ada pasien</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
+
 @endsection
 
 @section('rightbar')

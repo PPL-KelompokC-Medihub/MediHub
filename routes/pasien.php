@@ -3,6 +3,7 @@
 use App\Http\Controllers\Pasien\BookingController;
 use App\Http\Controllers\Pasien\DashboardController;
 use App\Http\Controllers\Pasien\ProfileController;
+use App\Http\Controllers\Pasien\UlasanController;
 use App\Http\Controllers\Public\DokterPublicController;
 use App\Http\Controllers\Public\FacilityController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,10 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.layanan');
     Route::post('/pasien/layanan/ulasan', [DashboardController::class, 'storeReview'])
         ->name('pasien.layanan.ulasan.store');
+    Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
+        ->name('pasien.riwayat');
+    Route::get('/pasien/diagnosa', [DashboardController::class, 'diagnosa'])
+        ->name('pasien.diagnosa');
 
     // Profil pasien (PBI-12 / PBI-05)
     Route::get('/pasien/profile', [ProfileController::class, 'index'])
@@ -45,8 +50,16 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.create');
     Route::post('/pasien/booking', [BookingController::class, 'store'])
         ->name('pasien.booking.store');
-    Route::delete('/pasien/booking/delete', [BookingController::class, 'destroy'])
+    Route::delete('/pasien/booking', [BookingController::class, 'destroy'])
         ->name('pasien.booking.destroy');
+    Route::patch('/pasien/booking/{id}/batalkan', [BookingController::class, 'cancel'])
+        ->name('pasien.booking.cancel');
+
+    // Ulasan pasien (PBI-23 — Create & Read)
+    Route::post('/pasien/ulasan', [UlasanController::class, 'store'])
+        ->name('pasien.ulasan.store');
+    Route::get('/pasien/ulasan/{doctorId}', [UlasanController::class, 'index'])
+        ->name('pasien.ulasan.index');
 });
 
 // --- Halaman publik untuk pasien (katalog dokter & fasilitas RS) ---

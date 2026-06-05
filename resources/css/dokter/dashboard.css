@@ -463,6 +463,14 @@
     color: var(--muted);
 }
 
+.doctor-patient-complaint {
+    max-width: 220px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .doctor-status-pill {
     background: #eef4ff;
     color: var(--primary-strong);
@@ -470,6 +478,21 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
+}
+
+.doctor-status-selesai {
+    background: #eaf8f0;
+    color: #16804a;
+}
+
+.doctor-status-dibatalkan {
+    background: #feecec;
+    color: #c53232;
+}
+
+.doctor-status-diperiksa {
+    background: #fff5dd;
+    color: #a76500;
 }
 
 .doctor-table-empty {
@@ -524,6 +547,48 @@
     transform: translateY(-50%);
     color: #b8bcc8;
     flex-shrink: 0;
+}
+
+.doctor-patient-date-filter {
+    height: 48px;
+    border-radius: 24px;
+    border: 1px solid #d0d5e0;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+}
+
+.doctor-patient-date-filter:focus {
+    border-color: var(--primary);
+}
+
+.doctor-patient-search-button,
+.doctor-patient-reset-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border-radius: 24px;
+    padding: 0 18px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.doctor-patient-search-button {
+    border: 0;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+.doctor-patient-reset-link {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--muted);
 }
 
 /* ── RIGHTBAR ── */
@@ -657,4 +722,67 @@
 
 .doctor-delete-confirm:hover {
     background: #5a94df;
+}
+
+/* ── STATUS SELECT (PBI-17) ── */
+.doctor-status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #d0d5e0;
+    border-radius: 8px;
+    padding: 6px 28px 6px 10px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 120px;
+}
+
+.doctor-status-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(106, 164, 239, 0.12);
+}
+
+.doctor-status-select:hover {
+    border-color: var(--primary);
+}
+
+.doctor-status-cancelled-label {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* Toast notification for status update */
+.doctor-status-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: #16804a;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+
+.doctor-status-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.doctor-status-toast.error {
+    background: #c53232;
 }
