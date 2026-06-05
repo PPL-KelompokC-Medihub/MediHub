@@ -37,8 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
             bladeError.hidden = true;
         }
 
+        // If Firebase API key is not configured, try local database auth (fallback for development)
         if (!firebaseApiKey) {
-            showError('Konfigurasi Firebase API key belum tersedia.');
+            setSubmitting(true);
+            try {
+                const sessionResult = await createBackendSession(sessionUrl, null, {
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value,
+                });
+                window.location.assign(sessionResult.redirect || '/pasien/beranda');
+            } catch (error) {
+                showError(mapErrorMessage(error));
+            } finally {
+                setSubmitting(false);
+            }
             return;
         }
 
@@ -51,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 firebaseApiKey,
             );
 
-            await createBackendSession(sessionUrl, signInResult.idToken);
-            window.location.assign('/pasien/beranda');
+            const sessionResult = await createBackendSession(sessionUrl, signInResult.idToken);
+            window.location.assign(sessionResult.redirect || '/pasien/beranda');
         } catch (error) {
             showError(mapErrorMessage(error));
         } finally {
@@ -126,8 +138,21 @@ async function signInWithFirebase(email, password, apiKey) {
     return json;
 }
 
-async function createBackendSession(url, idToken) {
+async function createBackendSession(url, idToken, localAuthData) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const body = {
+        role: 'pasien',
+    };
+
+    if (idToken) {
+        body.id_token = idToken;
+    }
+
+    if (localAuthData) {
+        body.email = localAuthData.email;
+        body.password = localAuthData.password;
+    }
+
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -135,10 +160,7 @@ async function createBackendSession(url, idToken) {
             Accept: 'application/json',
             'X-CSRF-TOKEN': csrfToken,
         },
-        body: JSON.stringify({
-            id_token: idToken,
-            role: 'pasien',
-        }),
+        body: JSON.stringify(body),
     });
 
     const json = await response.json();

@@ -54,6 +54,10 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
     Route::get('/dokter/dashboard', [DashboardController::class, 'index'])
         ->name('dokter.dashboard');
 
+    // Halaman riwayat jadwal temu dokter
+    Route::get('/dokter/riwayat', [DashboardController::class, 'riwayat'])
+        ->name('dokter.riwayat');
+
     // PBI-13: Halaman Profil Dokter (read-only view)
     Route::get('/dokter/profil', [ProfileController::class, 'show'])
         ->name('dokter.profil.show');

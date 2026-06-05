@@ -29,6 +29,8 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.layanan');
     Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
         ->name('pasien.riwayat');
+    Route::get('/pasien/diagnosa', [DashboardController::class, 'diagnosa'])
+        ->name('pasien.diagnosa');
 
     // Profil pasien (PBI-12 / PBI-05)
     Route::get('/pasien/profile', [ProfileController::class, 'index'])

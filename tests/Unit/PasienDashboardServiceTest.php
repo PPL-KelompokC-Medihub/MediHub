@@ -6,12 +6,15 @@ use App\Models\FirestoreUser;
 use App\Services\FirestoreService;
 use App\Services\Pasien\DashboardService;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Mockery;
 use Tests\TestCase;
 
 class PasienDashboardServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -138,6 +141,45 @@ class PasienDashboardServiceTest extends TestCase
         ]);
         $firestore->shouldReceive('all')->with('BuatJadwalTemu')->andReturn($appointments);
 
-        return new DashboardService($firestore);
+        return new DashboardService($firestore, new \App\Services\MedihubFirestoreRepository($firestore));
+    }
+
+    public function test_history_page_data_merges_mysql_medical_notes_and_prescriptions(): void
+    {
+        Carbon::setTestNow('2026-06-01 10:00:00');
+
+        $service = $this->serviceWithAppointments([
+            [
+                'id' => 'history-db-match',
+                'patient_id' => 'patient-1',
+                'patient_email' => 'nadia@example.test',
+                'doctor_id' => 'doctor-1',
+                'appointment_date' => '2026-05-20',
+                'status' => 'Selesai',
+            ],
+        ]);
+
+        $note = \App\Models\MedicalNote::create([
+            'patient_id' => 'patient-1',
+            'doctor_id' => 'doctor-user-1',
+            'notes' => 'Didiagnosis influenza dari database.',
+        ]);
+        $note->created_at = Carbon::parse('2026-05-20 14:00:00');
+        $note->save();
+
+        \App\Models\Prescription::create([
+            'medical_note_id' => $note->id,
+            'patient_id' => 'patient-1',
+            'doctor_id' => 'doctor-user-1',
+            'medications' => 'Amoxillin 500mg',
+        ]);
+
+        $data = $service->historyPageData();
+
+        $this->assertCount(1, $data['riwayatJadwal']);
+        $this->assertSame('history-db-match', $data['riwayatJadwal'][0]['id']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['riwayatJadwal'][0]['diagnosa']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['riwayatJadwal'][0]['catatan_medis']);
+        $this->assertSame('Amoxillin 500mg', $data['riwayatJadwal'][0]['resep_obat']);
     }
 }
