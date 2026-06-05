@@ -13,21 +13,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 
-@php
-    $profileChecks = [
-        filled($user->fullname ?? null),
-        filled($user->umur ?? $user->age ?? null),
-        filled($user->weight ?? null),
-        filled($user->height ?? null),
-        filled($user->gender ?? null),
-        filled($user->blood_type ?? null),
-        filled($user->country ?? null),
-        filled($user->city ?? null),
-        filled($user->code_pos ?? null),
-    ];
-    $profileCompletion = (int) round((collect($profileChecks)->filter()->count() / count($profileChecks)) * 100);
-@endphp
-
 <body class="font-[Poppins] bg-white text-gray-900">
     <div data-patient-profile></div>
     <div class="ml-[220px] flex h-screen overflow-hidden bg-[#F8FAFC]">
@@ -89,25 +74,6 @@
                                     Bandung, Indonesia
                                 </span>
                             </div>
-                        </div>
-
-                        <div class="ml-auto hidden w-[220px] rounded-2xl border border-blue-100 bg-white p-4 shadow-sm lg:block">
-                            <div class="mb-3 flex items-center justify-between text-sm">
-                                <span class="font-medium text-gray-700">Kelengkapan Profil</span>
-                                <span id="profileCompletionText" class="font-semibold text-blue-500">{{ $profileCompletion }}%</span>
-                            </div>
-
-                            <div class="h-2 overflow-hidden rounded-full bg-blue-50">
-                                <div
-                                    id="profileCompletionBar"
-                                    class="h-full rounded-full bg-blue-500 transition-all duration-500"
-                                    style="width: {{ $profileCompletion }}%"
-                                ></div>
-                            </div>
-
-                            <p id="profileCompletionHint" class="mt-3 text-xs leading-relaxed text-gray-400">
-                                Lengkapi data agar booking dan konsultasi lebih cepat.
-                            </p>
                         </div>
                     </div>
                 </header>
@@ -406,28 +372,96 @@
         </main>
 
         <aside class="h-screen w-[320px] shrink-0 overflow-y-auto border-l border-gray-200 bg-white px-6 py-8">
-            <h2 class="mb-5 text-base font-semibold">Akun</h2>
+            <h2 class="mb-5 text-base font-semibold">Pengaturan Akun</h2>
 
-            <div class="flex flex-col gap-5 rounded-2xl border border-gray-200 p-5 text-sm">
+            <div class="mb-7 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
                 <button 
                     type="button"
-                    data-modal-open="deleteAccountModal"
-                    class="group flex items-center gap-3 text-red-500 transition-all duration-200 hover:-translate-y-[2px] hover:text-red-600"
+                    class="flex w-full items-center justify-between gap-3 text-left"
                 >
-                    <i class="fa-regular fa-trash-can w-4 transition-all duration-200 group-hover:text-red-600"></i>
-                    <span>Hapus Akun</span>
-                </button>
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-user rounded-lg border border-gray-300 p-2 text-sm text-gray-600"></i>
 
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button 
-                        type="submit"
-                        class="group flex items-center gap-3 text-gray-700 transition-all duration-200 hover:-translate-y-[2px] hover:text-red-500"
-                    >
-                        <i class="fa-solid fa-arrow-right-from-bracket w-4 transition-all duration-200 group-hover:text-red-500"></i>
-                        <span>Keluar</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Pusat Akun</p>
+                            <p class="text-xs leading-relaxed text-gray-400">
+                                Kata sandi, keamanan, dan detail pribadi.
+                            </p>
+                        </div>
+                    </div>
+
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <p class="mb-4 text-xs font-medium text-gray-400">Informasi & Layanan</p>
+
+                <div class="flex flex-col gap-5 text-sm text-gray-700">
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-solid fa-person w-5 text-gray-500"></i>
+                        <span>Aksesibilitas</span>
                     </button>
-                </form>
+
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-regular fa-bell w-5 text-gray-500"></i>
+                        <span>Notifikasi</span>
+                    </button>
+
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-solid fa-globe w-5 text-gray-500"></i>
+                        <span>Bahasa & Tampilan</span>
+                    </button>
+
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-solid fa-shield-halved w-5 text-gray-500"></i>
+                        <span>Privasi</span>
+                    </button>
+
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-regular fa-circle-question w-5 text-gray-500"></i>
+                        <span>Bantuan</span>
+                    </button>
+
+                    <button type="button" class="flex items-center gap-3 text-left transition-all duration-200 hover:text-blue-500">
+                        <i class="fa-solid fa-key w-5 text-gray-500"></i>
+                        <span>Izin Aplikasi & Website</span>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <p class="mb-4 text-xs font-medium text-gray-400">Login</p>
+
+                <div class="flex flex-col gap-5 text-sm">
+                    <button 
+                        type="button"
+                        class="flex items-center gap-3 text-blue-500 transition-all duration-200 hover:-translate-y-[1px] hover:text-blue-600"
+                    >
+                        <i class="fa-solid fa-plus w-5"></i>
+                        <span>Tambah Akun</span>
+                    </button>
+
+                    <button 
+                        type="button"
+                        data-modal-open="deleteAccountModal"
+                        class="flex items-center gap-3 text-red-500 transition-all duration-200 hover:-translate-y-[1px] hover:text-red-600"
+                    >
+                        <i class="fa-regular fa-trash-can w-5"></i>
+                        <span>Hapus Akun</span>
+                    </button>
+
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button 
+                            type="submit"
+                            class="flex items-center gap-3 text-gray-700 transition-all duration-200 hover:-translate-y-[1px] hover:text-red-500"
+                        >
+                            <i class="fa-solid fa-arrow-right-from-bracket w-5"></i>
+                            <span>Keluar</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </aside>
     </div>
