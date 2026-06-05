@@ -1,0 +1,252 @@
+/* ============================================
+   Hasil Diagnosa & Catatan Medis — Pasien
+   ============================================ */
+
+/* Filter tabs */
+.filter-tab-diagnosa {
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.filter-tab-diagnosa::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #60A5FA, #3B82F6);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.filter-tab-diagnosa.active {
+    color: #1E40AF;
+    font-weight: 600;
+}
+
+.filter-tab-diagnosa.active::after {
+    width: 100%;
+}
+
+.filter-tab-diagnosa:not(.active):hover::after {
+    width: 60%;
+}
+
+/* Stat cards */
+.stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card .stat-icon {
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.12);
+}
+
+/* Diagnosis cards */
+.diagnosis-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+
+.diagnosis-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-color: #DBEAFE;
+}
+
+.diagnosis-card .expand-icon {
+    transition: transform 0.3s ease;
+}
+
+.diagnosis-card.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Expanded detail section */
+.diagnosis-detail {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease,
+                padding 0.3s ease;
+}
+
+.diagnosis-detail.show {
+    max-height: 800px;
+    opacity: 1;
+}
+
+/* Detail modal overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Detail modal */
+.modal-diagnosa {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 9999;
+    transform: translate(-50%, -50%) scale(0.92);
+    width: 640px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-diagnosa.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-diagnosa::-webkit-scrollbar {
+    width: 5px;
+}
+
+.modal-diagnosa::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-diagnosa::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 3px;
+}
+
+/* Tag badge */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.tag-badge:hover {
+    transform: scale(1.04);
+}
+
+/* Separator dot */
+.sep-dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #D1D5DB;
+    margin: 0 8px;
+}
+
+/* Pulse animation for empty state */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.float-anim {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Fade-in animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.fade-in-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-in-up:nth-child(2) { animation-delay: 0.10s; }
+.fade-in-up:nth-child(3) { animation-delay: 0.15s; }
+.fade-in-up:nth-child(4) { animation-delay: 0.20s; }
+.fade-in-up:nth-child(5) { animation-delay: 0.25s; }
+.fade-in-up:nth-child(6) { animation-delay: 0.30s; }
+
+/* Scrollbar — main */
+main::-webkit-scrollbar { width: 6px; }
+main::-webkit-scrollbar-track { background: transparent; }
+main::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+main::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* Scrollbar — aside */
+aside::-webkit-scrollbar { width: 6px; }
+aside::-webkit-scrollbar-track { background: transparent; }
+aside::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+aside::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* Timeline line */
+.timeline-item {
+    position: relative;
+    padding-left: 28px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 24px;
+    bottom: -16px;
+    width: 2px;
+    background: linear-gradient(to bottom, #DBEAFE, transparent);
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #60A5FA;
+    z-index: 1;
+}
+
+/* Print styles */
+@media print {
+    .no-print { display: none !important; }
+    .diagnosis-card { break-inside: avoid; }
+}

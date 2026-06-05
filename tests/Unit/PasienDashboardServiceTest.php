@@ -138,6 +138,6 @@ class PasienDashboardServiceTest extends TestCase
         ]);
         $firestore->shouldReceive('all')->with('BuatJadwalTemu')->andReturn($appointments);
 
-        return new DashboardService($firestore);
+        return new DashboardService($firestore, new \App\Services\MedihubFirestoreRepository($firestore));
     }
 }

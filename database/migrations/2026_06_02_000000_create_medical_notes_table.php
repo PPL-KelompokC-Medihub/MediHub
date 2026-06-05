@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('medical_notes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id')->nullable();
-            $table->unsignedBigInteger('doctor_id')->nullable();
+            $table->string('patient_id')->nullable();
+            $table->string('doctor_id')->nullable();
             $table->text('notes');
             $table->timestamps();
         });

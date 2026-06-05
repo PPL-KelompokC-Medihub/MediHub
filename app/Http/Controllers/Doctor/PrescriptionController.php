@@ -17,7 +17,7 @@ class PrescriptionController extends Controller
     {
         $data = $request->validate([
             'medical_note_id' => 'nullable|integer',
-            'patient_id' => 'nullable|integer',
+            'patient_id' => 'nullable|string',
             'medications' => 'required|string',
             'instructions' => 'nullable|string',
         ]);
@@ -26,6 +26,6 @@ class PrescriptionController extends Controller
 
         Prescription::create($data);
 
-        return redirect()->back()->with('success', 'Resep tersimpan.');
+        return redirect()->route('dokter.dashboard')->with('success', 'Resep obat berhasil disimpan.');
     }
 }

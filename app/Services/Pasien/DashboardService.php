@@ -383,6 +383,86 @@ class DashboardService
     }
 
     /**
+     * Get diagnosis page data for patient — Hasil Diagnosa & Catatan Medis
+     *
+     * @return array<string, mixed>
+     */
+    public function diagnosisPageData(): array
+    {
+        $patient = $this->patient();
+        $patientId = (string) Auth::id();
+        $patientEmail = (string) (Auth::user()?->email ?? '');
+        $doctorSummaries = $this->doctorSummariesById();
+
+        $appointments = array_values(array_filter(
+            $this->firestore->all(self::APPOINTMENT_COLLECTION),
+            fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
+        ));
+
+        // Only completed appointments (status = selesai)
+        $completed = array_filter($appointments, function (array $appointment): bool {
+            $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+
+            return $status === 'selesai';
+        });
+
+        $now = Carbon::now();
+
+        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $now): array {
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries);
+
+            // Determine period key for front-end filtering
+            $dateStr = trim((string) ($appointment['appointment_date'] ?? ''));
+            $periodKey = 'lainnya';
+
+            if ($dateStr !== '') {
+                try {
+                    $appointmentDate = Carbon::parse($dateStr);
+                    $diffMonths = $appointmentDate->diffInMonths($now);
+
+                    if ($appointmentDate->isSameMonth($now) && $appointmentDate->isSameYear($now)) {
+                        $periodKey = 'bulan-ini';
+                    } elseif ($diffMonths <= 3) {
+                        $periodKey = '3-bulan';
+                    } elseif ($diffMonths <= 6) {
+                        $periodKey = '6-bulan';
+                    }
+                } catch (\Throwable) {
+                    // keep default
+                }
+            }
+
+            $formatted['period_key'] = $periodKey;
+
+            return $formatted;
+        }, array_values($completed));
+
+        // Sort by date descending (newest first)
+        usort($diagnosisList, fn (array $left, array $right): int => strcmp(
+            trim((string) ($right['date_sort'] ?? '').' '.(string) ($right['time_sort'] ?? '')),
+            trim((string) ($left['date_sort'] ?? '').' '.(string) ($left['time_sort'] ?? '')),
+        ));
+
+        // Stats
+        $totalDiagnosa = count(array_filter($diagnosisList, fn (array $item): bool => ! empty($item['diagnosa'])));
+        $totalResep = count(array_filter($diagnosisList, fn (array $item): bool => ! empty($item['resep_obat'])));
+
+        // Recent 5 for sidebar timeline
+        $recentDiagnosis = array_slice($diagnosisList, 0, 5);
+
+        return [
+            'patient' => $patient,
+            'diagnosisList' => $diagnosisList,
+            'recentDiagnosis' => $recentDiagnosis,
+            'stats' => [
+                'total_diagnosa' => $totalDiagnosa,
+                'kunjungan_selesai' => count($diagnosisList),
+                'total_resep' => $totalResep,
+            ],
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function servicePageData(): array
