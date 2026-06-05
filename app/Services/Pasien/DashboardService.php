@@ -14,6 +14,7 @@ class DashboardService
     private const DOCTOR_SPECIALIZATION_COLLECTION = 'Dokter_spesialisasi';
     private const USERS_COLLECTION = 'Users';
     private const PATIENT_COLLECTION = 'Pasien';
+    private const REVIEW_COLLECTION = 'Ulasan';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -49,7 +50,7 @@ class DashboardService
         if (! $patient) {
             return [
                 'fullname' => Auth::user()?->name ?? 'Pasien',
-                'profile_pict' => asset('images/default-avatar.png'),
+                'profile_pict' => asset('images/default-avatar.svg'),
             ];
         }
 
@@ -57,7 +58,7 @@ class DashboardService
 
         $patient['profile_pict'] = $profilePict
             ? asset('storage/' . $profilePict)
-            : asset('images/default-avatar.png');
+            : asset('images/default-avatar.svg');
 
         return $patient;
     }
@@ -232,7 +233,9 @@ class DashboardService
                 'emergency_hour' => '24 JAM',
                 'phone' => '(022) 5678 999',
                 'address' => 'Jl. Merdeka No. 123, Bandung, Jawa Barat',
-                'description' => 'Rumah sakit umum modern dengan pelayanan kesehatan komprehensif yang berfokus pada kenyamanan pasien. Dengan fasilitas lengkap dan didukung oleh dokter spesialis berpengalaman di berbagai bidang serta tenaga medis profesional.',
+                'description' => 'modern dengan pelayanan kesehatan komprehensif yang berfokus pada kenyamanan pasien.',
+                'description_support' => 'dan didukung oleh dokter spesialis berpengalaman di berbagai bidang serta tenaga medis profesional.',
+                'vision' => 'Visi kami adalah menjadi mitra terpercaya dalam menjaga kesehatan keluarga dengan layanan yang cepat dan aman.',
             ],
             'featuredFacilities' => [
                 [
@@ -457,39 +460,54 @@ class DashboardService
      */
     private function reviews(): array
     {
-        return [
-            [
-                'name' => 'Rina',
-                'rating' => '5.0',
-                'date' => '17 Agustus | 19:07 PM',
-                'text' => 'Pelayanan cepat dan terorganisir. Saya tidak perlu menunggu lama di ruang tunggu karena antrian sudah bisa daftar lewat aplikasi.',
-                'likes' => 5,
-                'avatar' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop',
-            ],
-            [
-                'name' => 'Melati',
-                'rating' => '4.0',
-                'date' => '17 Agustus | 18:07 PM',
-                'text' => 'IGD buka 24 jam dan respon perawatnya sigap sekali. Hanya saja area parkir agak penuh di jam sibuk.',
-                'likes' => 5,
-                'avatar' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=120&auto=format&fit=crop',
-            ],
-            [
-                'name' => 'Ahmad',
-                'rating' => '4.0',
-                'date' => '17 Agustus | 19:07 PM',
-                'text' => 'Secara keseluruhan puas, apalagi dengan adanya sistem antrian online jadi lebih efisien.',
-                'likes' => 5,
-                'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=120&auto=format&fit=crop',
-            ],
-            [
-                'name' => 'Yanto',
-                'rating' => '5.0',
-                'date' => '17 Agustus | 19:07 PM',
-                'text' => 'Anak saya dirawat di ruang anak, suasananya dibuat ceria dan ramah anak.',
-                'likes' => 5,
-                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop',
-            ],
-        ];
+        $reviews = $this->firestore->all(self::REVIEW_COLLECTION);
+
+        if ($reviews === []) {
+            return [];
+        }
+
+        $reviews = array_values(array_filter($reviews, function (array $review): bool {
+            return trim((string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? '')) !== '';
+        }));
+
+        $users = collect($this->firestore->all(self::USERS_COLLECTION))
+            ->keyBy(fn (array $user): string => (string) ($user['id'] ?? ''));
+        $patients = collect();
+
+        foreach ($this->firestore->all(self::PATIENT_COLLECTION) as $patient) {
+            foreach (['id', 'user_id'] as $key) {
+                $patientKey = (string) ($patient[$key] ?? '');
+
+                if ($patientKey !== '') {
+                    $patients->put($patientKey, $patient);
+                }
+            }
+        }
+
+        usort($reviews, fn (array $a, array $b): int => strcmp(
+            (string) ($b['created_at'] ?? $b['updated_at'] ?? $b['update_at'] ?? ''),
+            (string) ($a['created_at'] ?? $a['updated_at'] ?? $a['update_at'] ?? ''),
+        ));
+
+        return array_map(function (array $review) use ($users, $patients): array {
+            $patientId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
+            $user = $users->get($patientId, []);
+            $patient = $patients->get($patientId, []);
+            $profilePict = $patient['profile_pict'] ?? null;
+            $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
+
+            return [
+                'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
+                'rating' => number_format((float) ($review['rating'] ?? 0), 1),
+                'date' => $createdAt !== ''
+                    ? Carbon::parse($createdAt)->translatedFormat('d F | H:i')
+                    : '-',
+                'text' => (string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? ''),
+                'likes' => (int) ($review['likes'] ?? 0),
+                'avatar' => $profilePict
+                    ? asset('storage/' . $profilePict)
+                    : asset('images/default-avatar.svg'),
+            ];
+        }, $reviews);
     }
 }

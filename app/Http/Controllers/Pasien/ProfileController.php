@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -90,7 +91,9 @@ class ProfileController extends Controller
             'country' => $validated['country'] ?? $existing['country'] ?? 'Indonesia',
             'city' => $validated['city'] ?? $existing['city'] ?? 'Bandung',
             'code_pos' => $validated['code_pos'] ?? $existing['code_pos'] ?? '',
-            'no_allergy' => $request->has('no_allergy'),
+            'no_allergy' => $request->has('allergy_history')
+                ? $request->has('no_allergy')
+                : ($existing['no_allergy'] ?? false),
             'created_at' => $existing['created_at'] ?? now()->toIso8601String(),
             'updated_at' => now()->toIso8601String(),
         ]);
@@ -126,11 +129,15 @@ class ProfileController extends Controller
 
         $request->validate([
             'profile_pict' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cropped_image' => ['nullable', 'string'],
         ]);
 
         $uid = $authUser->id;
+        $path = $this->storeCroppedProfilePicture($request->input('cropped_image'));
 
-        $path = $request->file('profile_pict')->store('profile-pictures', 'public');
+        if (! $path) {
+            $path = $request->file('profile_pict')->store('profile-pictures', 'public');
+        }
 
         $this->firestore->update('Pasien', $uid, [
             'profile_pict' => $path,
@@ -140,6 +147,33 @@ class ProfileController extends Controller
         return redirect()
             ->route('pasien.profile')
             ->with('success', 'Foto profil berhasil diperbarui.');
+    }
+
+    private function storeCroppedProfilePicture(?string $croppedImage): ?string
+    {
+        if (! is_string($croppedImage) || $croppedImage === '') {
+            return null;
+        }
+
+        if (! preg_match('/^data:image\/(png|jpe?g|webp);base64,(.+)$/', $croppedImage, $matches)) {
+            return null;
+        }
+
+        $extension = match ($matches[1]) {
+            'jpeg', 'jpg' => 'jpg',
+            'webp' => 'webp',
+            default => 'png',
+        };
+
+        $image = base64_decode($matches[2], true);
+        if ($image === false) {
+            return null;
+        }
+
+        $path = 'profile-pictures/' . uniqid('profile_', true) . '.' . $extension;
+        Storage::disk('public')->put($path, $image);
+
+        return $path;
     }
 
     public function destroyAccount(Request $request)
