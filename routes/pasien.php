@@ -3,6 +3,7 @@
 use App\Http\Controllers\Pasien\BookingController;
 use App\Http\Controllers\Pasien\DashboardController;
 use App\Http\Controllers\Pasien\ProfileController;
+use App\Http\Controllers\Pasien\UlasanController;
 use App\Http\Controllers\Public\DokterPublicController;
 use App\Http\Controllers\Public\FacilityController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,12 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.booking.destroy');
     Route::patch('/pasien/booking/{id}/batalkan', [BookingController::class, 'cancel'])
         ->name('pasien.booking.cancel');
+
+    // Ulasan pasien (PBI-23 — Create & Read)
+    Route::post('/pasien/ulasan', [UlasanController::class, 'store'])
+        ->name('pasien.ulasan.store');
+    Route::get('/pasien/ulasan/{doctorId}', [UlasanController::class, 'index'])
+        ->name('pasien.ulasan.index');
 });
 
 // --- Halaman publik untuk pasien (katalog dokter & fasilitas RS) ---
