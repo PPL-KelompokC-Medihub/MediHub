@@ -369,9 +369,13 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
-        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
-            ->with('prescriptions')
-            ->get();
+        try {
+            $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
+                ->with('prescriptions')
+                ->get();
+        } catch (\Throwable $e) {
+            $medicalNotes = collect();
+        }
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -437,9 +441,13 @@ class DashboardService
             return $status === 'selesai';
         });
 
-        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
-            ->with('prescriptions')
-            ->get();
+        try {
+            $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
+                ->with('prescriptions')
+                ->get();
+        } catch (\Throwable $e) {
+            $medicalNotes = collect();
+        }
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -783,6 +791,8 @@ class DashboardService
             $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
 
             return [
+                'id' => $review['id'] ?? null,
+                'patient_id' => $patientId,
                 'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
                 'rating' => number_format((float) ($review['rating'] ?? 0), 1),
                 'date' => $createdAt !== ''

@@ -58,6 +58,59 @@ class DashboardController extends Controller
             ->with('success', 'Ulasan berhasil dikirim.');
     }
 
+    public function updateReview(Request $request, string $id): RedirectResponse
+    {
+        $review = $this->firestore->find('Ulasan', $id);
+
+        if (! $review) {
+            return redirect()->back()->withErrors(['ulasan' => 'Ulasan tidak ditemukan.']);
+        }
+
+        $reviewOwnerId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
+        if ($reviewOwnerId !== (string) Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah ulasan ini.');
+        }
+
+        $validated = $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'text' => ['required', 'string', 'min:8', 'max:1000'],
+        ], [
+            'rating.required' => 'Rating wajib dipilih.',
+            'text.required' => 'Ulasan wajib diisi.',
+            'text.min' => 'Ulasan terlalu singkat.',
+        ]);
+
+        $this->firestore->update('Ulasan', $id, [
+            'rating' => (int) $validated['rating'],
+            'text' => $validated['text'],
+            'updated_at' => now()->toIso8601String(),
+        ]);
+
+        return redirect()
+            ->route('pasien.layanan')
+            ->with('success', 'Ulasan berhasil diperbarui.');
+    }
+
+    public function destroyReview(string $id): RedirectResponse
+    {
+        $review = $this->firestore->find('Ulasan', $id);
+
+        if (! $review) {
+            return redirect()->back()->withErrors(['ulasan' => 'Ulasan tidak ditemukan.']);
+        }
+
+        $reviewOwnerId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
+        if ($reviewOwnerId !== (string) Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus ulasan ini.');
+        }
+
+        $this->firestore->delete('Ulasan', $id);
+
+        return redirect()
+            ->route('pasien.layanan')
+            ->with('success', 'Ulasan berhasil dihapus.');
+    }
+
     public function riwayat()
     {
         return view('pasien.riwayat', $this->dashboardService->historyPageData());
