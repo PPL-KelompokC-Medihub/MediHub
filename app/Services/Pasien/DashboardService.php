@@ -2,9 +2,12 @@
 
 namespace App\Services\Pasien;
 
+use App\Models\MedicalNote;
 use App\Services\FirestoreService;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DashboardService
 {
@@ -369,9 +372,7 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
-        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
-            ->with('prescriptions')
-            ->get();
+        $medicalNotes = $this->medicalNotesForPatient($patientId);
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -437,9 +438,7 @@ class DashboardService
             return $status === 'selesai';
         });
 
-        $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
-            ->with('prescriptions')
-            ->get();
+        $medicalNotes = $this->medicalNotesForPatient($patientId);
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -578,6 +577,40 @@ class DashboardService
             ],
             'reviews' => $this->reviews(),
         ]);
+    }
+
+    private function medicalNotesForPatient(string $patientId): Collection
+    {
+        if (! $this->canUseSqlMedicalRecords()) {
+            return collect();
+        }
+
+        try {
+            return MedicalNote::where('patient_id', $patientId)
+                ->with('prescriptions')
+                ->get();
+        } catch (\Throwable $exception) {
+            Log::warning('Skipping SQL medical notes for patient dashboard.', [
+                'patient_id' => $patientId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return collect();
+        }
+    }
+
+    private function canUseSqlMedicalRecords(): bool
+    {
+        $connection = config('database.default');
+
+        if ($connection !== 'sqlite') {
+            return is_string($connection) && $connection !== '';
+        }
+
+        $database = config('database.connections.sqlite.database');
+
+        return $database === ':memory:'
+            || (is_string($database) && $database !== '' && file_exists($database));
     }
 
     /**
