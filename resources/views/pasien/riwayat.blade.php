@@ -12,9 +12,9 @@
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
-    <div class="grid h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
-        <x-pasien.sidebar active="riwayat" />
+    <x-pasien.sidebar active="riwayat" />
 
+    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
         <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <a
@@ -106,9 +106,9 @@
                 </div>
 
                 <!-- Appointment History Grid -->
-                @if (count($riwayatJadwal) > 0)
+                @if (count($historyBookings) > 0)
                     <div class="grid grid-cols-2 gap-5" data-history-grid>
-                        @foreach ($riwayatJadwal as $appointment)
+                        @foreach ($historyBookings as $appointment)
                             @php
                                 $statusKey = $appointment['status_key'] ?? strtolower($appointment['status']);
                                 $statusClasses = match ($statusKey) {
@@ -242,7 +242,7 @@
             </div>
 
             <div class="flex flex-col gap-5 overflow-y-auto flex-1 pr-2">
-                @forelse ($jadwalMendatang as $appointment)
+                @forelse ($upcomingBookings as $appointment)
                     <div class="group">
                         <p class="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">{{ $appointment['hari'] }}</p>
 

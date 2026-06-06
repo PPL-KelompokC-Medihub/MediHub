@@ -369,14 +369,6 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
-        try {
-            $medicalNotes = \App\Models\MedicalNote::where('patient_id', $patientId)
-                ->with('prescriptions')
-                ->get();
-        } catch (\Throwable $e) {
-            $medicalNotes = collect();
-        }
-
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
             $docId = (string) ($doc['id'] ?? '');
@@ -390,15 +382,14 @@ class DashboardService
         $upcoming = [];
 
         foreach ($appointments as $appointment) {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap);
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, null, $doctorUserUidMap);
 
-            if ($this->isHistoricalAppointment($appointment)) {
+            $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+            if ($status === 'selesai') {
                 $history[] = $formatted;
-
-                continue;
+            } else {
+                $upcoming[] = $formatted;
             }
-
-            $upcoming[] = $formatted;
         }
 
         usort($history, fn (array $left, array $right): int => strcmp(
@@ -412,8 +403,8 @@ class DashboardService
 
         return [
             'patient' => $patient,
-            'riwayatJadwal' => $history,
-            'jadwalMendatang' => $upcoming,
+            'historyBookings' => $history,
+            'upcomingBookings' => $upcoming,
         ];
     }
 
