@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
+use App\Models\MedicalNote;
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -137,9 +140,7 @@ class DashboardController extends Controller
             $filteredAppointments,
         ));
 
-        $medicalNotes = \App\Models\MedicalNote::where('doctor_id', $userId)
-            ->with('prescriptions')
-            ->get();
+        $medicalNotes = $this->medicalNotesForDoctor($userId);
 
         return view('dokter.riwayat', compact(
             'dokter',
@@ -287,6 +288,40 @@ class DashboardController extends Controller
         ));
 
         return $appointments;
+    }
+
+    private function medicalNotesForDoctor(string $doctorId): Collection
+    {
+        if (! $this->canUseSqlMedicalRecords()) {
+            return collect();
+        }
+
+        try {
+            return MedicalNote::where('doctor_id', $doctorId)
+                ->with('prescriptions')
+                ->get();
+        } catch (\Throwable $exception) {
+            Log::warning('Skipping SQL medical notes for doctor dashboard.', [
+                'doctor_id' => $doctorId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return collect();
+        }
+    }
+
+    private function canUseSqlMedicalRecords(): bool
+    {
+        $connection = config('database.default');
+
+        if ($connection !== 'sqlite') {
+            return is_string($connection) && $connection !== '';
+        }
+
+        $database = config('database.connections.sqlite.database');
+
+        return $database === ':memory:'
+            || (is_string($database) && $database !== '' && file_exists($database));
     }
 
     private function currentDoctorId(): string
