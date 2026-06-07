@@ -6,7 +6,6 @@ use App\Http\Controllers\Dokter\DashboardController;
 use App\Http\Controllers\Dokter\ProfileController;
 use App\Http\Controllers\Dokter\ScheduleController;
 use App\Http\Controllers\Doctor\MedicalNoteController;
-use App\Http\Controllers\Doctor\PrescriptionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,14 +80,11 @@ Route::middleware(['auth', 'role:dokter', 'dokter.profile.completed'])->group(fu
     Route::patch('/dokter/appointment/{id}/status', [AppointmentStatusController::class, 'update'])
         ->name('dokter.appointment.update-status');
 
-    // Medical notes & prescriptions
-    Route::get('/dokter/medical-notes/create', [MedicalNoteController::class, 'create'])
-        ->name('dokter.medical_notes.create');
-    Route::post('/dokter/medical-notes', [MedicalNoteController::class, 'store'])
-        ->name('dokter.medical_notes.store');
-
-    Route::get('/dokter/prescriptions/create', [PrescriptionController::class, 'create'])
-        ->name('dokter.prescriptions.create');
-    Route::post('/dokter/prescriptions', [PrescriptionController::class, 'store'])
-        ->name('dokter.prescriptions.store');
+    // Catatan Medis & Resep Obat terintegrasi (PBI-18)
+    Route::get('/dokter/catatan-medis/{appointmentId}/create', [MedicalNoteController::class, 'create'])
+        ->name('dokter.catatan_medis.create');
+    Route::post('/dokter/catatan-medis', [MedicalNoteController::class, 'store'])
+        ->name('dokter.catatan_medis.store');
+    Route::get('/dokter/catatan-medis/{appointmentId}', [MedicalNoteController::class, 'show'])
+        ->name('dokter.catatan_medis.show');
 });

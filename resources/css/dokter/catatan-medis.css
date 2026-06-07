@@ -1,0 +1,646 @@
+/* ═══════════════════════════════════════════════
+   Catatan Medis & Resep Obat — Dokter
+   Premium 3-panel layout matching design reference
+   ═══════════════════════════════════════════════ */
+
+/* ── PAGE LAYOUT ── */
+.cm-page {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 60px);
+}
+
+.cm-page.has-rightbar {
+    grid-template-columns: 340px 1fr;
+}
+
+/* ── LEFT PANEL (Slide Panel) ── */
+.cm-left-panel {
+    background: #fff;
+    border-right: 1px solid #eef1f6;
+    padding: 28px 24px;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+    position: relative;
+}
+
+.cm-left-close {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 0;
+    transition: color 0.2s;
+    font-family: inherit;
+}
+
+.cm-left-close:hover {
+    color: #1e293b;
+}
+
+.cm-left-close svg {
+    flex-shrink: 0;
+}
+
+.cm-left-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.cm-left-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cm-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cm-badge-active {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.cm-badge-done {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.cm-queue-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+}
+
+.cm-queue-number {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1;
+    min-width: 48px;
+}
+
+.cm-queue-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.cm-queue-meta {
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Data Pasien Section */
+.cm-section-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.cm-patient-info {
+    margin-bottom: 24px;
+}
+
+.cm-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.cm-info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cm-info-value {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Catatan Medis Summary in Left Panel */
+.cm-left-catatan {
+    margin-top: 20px;
+}
+
+.cm-catatan-field {
+    margin-bottom: 16px;
+}
+
+.cm-catatan-field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0 0 4px;
+}
+
+.cm-catatan-field-sep {
+    width: 100%;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 4px 0 8px;
+}
+
+.cm-catatan-field-value {
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.cm-catatan-field-empty {
+    font-size: 13px;
+    color: #cbd5e1;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Doctor Avatar at bottom */
+.cm-doctor-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    margin-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.cm-doctor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.cm-doctor-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.cm-doctor-specialty {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.cm-btn-create {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #58a7f5 0%, #4a93e0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    margin-top: 16px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(88, 167, 245, 0.25);
+}
+
+.cm-btn-create:hover {
+    background: linear-gradient(135deg, #4a93e0 0%, #3b82d4 100%);
+    box-shadow: 0 6px 20px rgba(88, 167, 245, 0.35);
+    transform: translateY(-1px);
+}
+
+.cm-btn-create:active {
+    transform: translateY(0);
+}
+
+/* ── MAIN CONTENT (Center Panel) ── */
+.cm-main {
+    padding: 32px 40px;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+    background: #fafbfc;
+}
+
+.cm-main-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+}
+
+.cm-main-logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.cm-main-logo-icon {
+    width: 24px;
+    height: 24px;
+    color: #58a7f5;
+}
+
+/* Queue + Patient Section in Main */
+.cm-main-queue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.cm-main-queue-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cm-main-queue-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1;
+    margin-bottom: 20px;
+}
+
+/* Form Sections */
+.cm-form-section {
+    background: #fff;
+    border: 1px solid #e8eaef;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: box-shadow 0.2s;
+}
+
+.cm-form-section:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.cm-form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cm-form-section-title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.cm-form-section-title-icon.blue {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.cm-form-section-title-icon.green {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.cm-form-section-title-icon.amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.cm-form-section-title-icon.purple {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+/* Form Fields */
+.cm-form-group {
+    margin-bottom: 20px;
+}
+
+.cm-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.cm-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.cm-form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.cm-form-input:focus {
+    border-color: #58a7f5;
+    box-shadow: 0 0 0 3px rgba(88, 167, 245, 0.1);
+}
+
+.cm-form-input::placeholder {
+    color: #94a3b8;
+}
+
+.cm-form-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1e293b;
+    outline: none;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    background: #fff;
+    line-height: 1.6;
+}
+
+.cm-form-textarea:focus {
+    border-color: #58a7f5;
+    box-shadow: 0 0 0 3px rgba(88, 167, 245, 0.1);
+}
+
+.cm-form-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.cm-form-textarea.tall {
+    min-height: 140px;
+}
+
+/* Read-only display for show mode */
+.cm-display-value {
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e8eaef;
+}
+
+.cm-display-empty {
+    font-size: 14px;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #e2e8f0;
+}
+
+/* Submit Button */
+.cm-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 18px 32px;
+    background: linear-gradient(135deg, #58a7f5 0%, #4a93e0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: inherit;
+    margin-top: 8px;
+    box-shadow: 0 6px 20px rgba(88, 167, 245, 0.3);
+    letter-spacing: 0.01em;
+}
+
+.cm-submit-btn:hover {
+    background: linear-gradient(135deg, #4a93e0 0%, #3b82d4 100%);
+    box-shadow: 0 8px 28px rgba(88, 167, 245, 0.4);
+    transform: translateY(-2px);
+}
+
+.cm-submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 14px rgba(88, 167, 245, 0.25);
+}
+
+/* Back to Dashboard Button */
+.cm-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 24px;
+    background: #fff;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-decoration: none;
+    margin-top: 12px;
+}
+
+.cm-back-btn:hover {
+    background: #f8fafc;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+/* ── ALERTS ── */
+.cm-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    animation: cmSlideDown 0.3s ease-out;
+}
+
+.cm-alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.cm-alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+@keyframes cmSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── NUMBERED LIST STYLE ── */
+.cm-numbered-list {
+    counter-reset: cm-list;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.cm-numbered-list li {
+    counter-increment: cm-list;
+    padding: 4px 0 4px 28px;
+    position: relative;
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.cm-numbered-list li::before {
+    content: counter(cm-list) ".";
+    position: absolute;
+    left: 0;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+    .cm-page {
+        grid-template-columns: 1fr;
+    }
+
+    .cm-left-panel {
+        display: none;
+    }
+
+    .cm-main {
+        padding: 20px 16px;
+    }
+}
+
+/* ── PATIENT INFO CARD IN MAIN ── */
+.cm-patient-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #f0f7ff;
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+    margin-bottom: 10px;
+}
+
+.cm-patient-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.cm-patient-card-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin: 2px 0 0;
+}
+
+/* Resep Obat List */
+.cm-resep-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.cm-resep-bullet {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f59e0b;
+    margin-top: 7px;
+    flex-shrink: 0;
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+    .cm-left-panel {
+        display: none;
+    }
+
+    .cm-page {
+        grid-template-columns: 1fr;
+    }
+
+    .cm-submit-btn,
+    .cm-back-btn {
+        display: none;
+    }
+}

@@ -46,6 +46,7 @@ class ProfileController extends Controller
 
         return view('dokter.profil.show', [
             'user' => $userData,
+            'dokter' => (object) $userData,
             'services' => self::AVAILABLE_SERVICES,
         ]);
     }

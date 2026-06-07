@@ -3,92 +3,255 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
-use App\Models\MedicalNote;
-use App\Models\Prescription;
 use App\Services\FirestoreService;
+use App\Services\MedihubFirestoreRepository;
+use App\Support\Concerns\MapsFirestoreData;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class MedicalNoteController extends Controller
 {
-    private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
-    private const DOCTOR_COLLECTION = 'Dokter';
+    use MapsFirestoreData;
 
-    public function create(Request $request, FirestoreService $firestore)
+    private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
+    private const CATATAN_MEDIS_COLLECTION = 'CatatanMedis';
+    private const DOCTOR_COLLECTION = 'Dokter';
+    private const USERS_COLLECTION = 'Users';
+
+    public function __construct(
+        private FirestoreService $firestore,
+        private MedihubFirestoreRepository $doctorRepository,
+    ) {}
+
+    /**
+     * Form buat catatan medis — halaman terintegrasi per appointment.
+     *
+     * GET /dokter/catatan-medis/{appointmentId}/create
+     */
+    public function create(string $appointmentId): View|RedirectResponse
     {
-        $appointmentId = $request->query('appointment_id');
-        $patientId = $request->query('patient_id');
-        
-        $appointment = null;
-        if ($appointmentId) {
-            $appointmentData = $firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
-            if ($appointmentData) {
-                $appointment = (object) $appointmentData;
-                if (empty($patientId)) {
-                    $patientId = $appointment->patient_id ?? $appointment->user_uid ?? '';
-                }
-            }
+        $userId = (string) Auth::id();
+
+        // Ambil data dokter
+        $userData = $this->doctorRepository->findUser($userId);
+        $dokter = $userData
+            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
+            : null;
+
+        // Ambil data appointment
+        $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
+
+        if (! $appointment) {
+            return redirect()->route('dokter.dashboard')
+                ->with('error', 'Jadwal temu tidak ditemukan.');
         }
 
-        return view('dokter.medical_notes.create', compact('appointment', 'appointmentId', 'patientId'));
+        // Cek apakah sudah ada catatan medis untuk appointment ini
+        $existingNotes = $this->firestore->where(
+            self::CATATAN_MEDIS_COLLECTION,
+            'appointment_id',
+            '=',
+            $appointmentId,
+            1,
+        );
+
+        if (! empty($existingNotes)) {
+            // Redirect ke halaman lihat jika sudah ada
+            return redirect()->route('dokter.catatan_medis.show', $appointmentId);
+        }
+
+        $appointment = (object) $appointment;
+
+        // Ambil semua appointment dokter ini untuk sidebar
+        $allAppointments = $this->fetchDoctorAppointments();
+
+        return view('dokter.catatan-medis', [
+            'dokter' => $dokter,
+            'appointment' => $appointment,
+            'appointments' => $this->toObjects($allAppointments),
+            'catatanMedis' => null,
+            'isEdit' => false,
+        ]);
     }
 
-    public function store(Request $request, FirestoreService $firestore)
+    /**
+     * Simpan catatan medis ke Firestore.
+     *
+     * POST /dokter/catatan-medis
+     */
+    public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'appointment_id' => 'nullable|string',
+        $validated = $request->validate([
+            'appointment_id' => 'required|string',
             'patient_id' => 'nullable|string',
-            'notes' => 'required|string',
-            'medications' => 'nullable|string',
-            'instructions' => 'nullable|string',
+            'patient_name' => 'nullable|string',
+            'keluhan_utama' => 'required|string',
+            'hasil_observasi' => 'nullable|string',
+            'hasil_asesmen' => 'nullable|string',
+            'kesimpulan' => 'nullable|string',
+            'rekomendasi' => 'nullable|string',
+            'resep_obat' => 'nullable|string',
         ]);
 
-        $doctorId = Auth::id();
+        $userId = (string) Auth::id();
+        $doctorId = $this->currentDoctorId();
 
-        // Create Medical Note
-        $note = MedicalNote::create([
-            'patient_id' => $data['patient_id'] ?? '',
+        // Ambil data dokter untuk nama
+        $userData = $this->doctorRepository->findUser($userId);
+        $doctorName = $userData['name'] ?? $userData['fullname'] ?? 'Dokter';
+
+        $data = [
+            'appointment_id' => $validated['appointment_id'],
             'doctor_id' => $doctorId,
-            'notes' => $data['notes'],
-        ]);
+            'doctor_user_id' => $userId,
+            'doctor_name' => $doctorName,
+            'patient_id' => $validated['patient_id'] ?? '',
+            'patient_name' => $validated['patient_name'] ?? '',
+            'keluhan_utama' => $validated['keluhan_utama'],
+            'hasil_observasi' => $validated['hasil_observasi'] ?? '',
+            'hasil_asesmen' => $validated['hasil_asesmen'] ?? '',
+            'kesimpulan' => $validated['kesimpulan'] ?? '',
+            'rekomendasi' => $validated['rekomendasi'] ?? '',
+            'resep_obat' => $validated['resep_obat'] ?? '',
+            'created_at' => now()->toIso8601String(),
+        ];
 
-        // Create Prescription if medications are filled
-        if (!empty($data['medications'])) {
-            Prescription::create([
-                'medical_note_id' => $note->id,
-                'patient_id' => $data['patient_id'] ?? '',
-                'doctor_id' => $doctorId,
-                'medications' => $data['medications'],
-                'instructions' => $data['instructions'] ?? '',
-            ]);
-        }
+        try {
+            $this->firestore->add(self::CATATAN_MEDIS_COLLECTION, $data);
 
-        // If appointment_id is present and complete_appointment checkbox is checked
-        if (!empty($data['appointment_id']) && $request->has('complete_appointment')) {
-            $appointmentId = $data['appointment_id'];
-            $appointment = $firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
-            
+            // Update status appointment ke "selesai" jika belum
+            $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $validated['appointment_id']);
             if ($appointment) {
-                // Update appointment status to 'selesai'
-                $firestore->update(self::APPOINTMENT_COLLECTION, $appointmentId, [
-                    'status' => 'selesai'
-                ]);
-
-                // Add notification to patient
-                $patientIdVal = (string) ($appointment['patient_id'] ?? $appointment['user_uid'] ?? '');
-                if ($patientIdVal !== '') {
-                    $firestore->add('Notifications', [
-                        'patient_id' => $patientIdVal,
-                        'title'      => 'Status Jadwal Temu Diperbarui',
-                        'message'    => 'Status jadwal temu Anda telah diubah menjadi: Selesai.',
-                        'type'       => 'appointment_status',
-                        'read'       => false,
+                $currentStatus = strtolower(trim((string) ($appointment['status'] ?? '')));
+                if ($currentStatus !== 'selesai') {
+                    $this->firestore->update(self::APPOINTMENT_COLLECTION, $validated['appointment_id'], [
+                        'status' => 'selesai',
                     ]);
                 }
             }
+
+            // Kirim notifikasi ke pasien
+            $patientId = $validated['patient_id'] ?? '';
+            if ($patientId !== '') {
+                $this->doctorRepository->createNotification([
+                    'patient_id' => $patientId,
+                    'title' => 'Catatan Medis Tersedia',
+                    'message' => "dr. {$doctorName} telah mengisi catatan medis dan resep obat untuk kunjungan Anda.",
+                    'type' => 'medical_record',
+                ]);
+            }
+
+            return redirect()->route('dokter.catatan_medis.show', $validated['appointment_id'])
+                ->with('success', 'Catatan medis & resep obat berhasil disimpan.');
+        } catch (\Throwable $e) {
+            Log::error('Failed to save catatan medis', [
+                'message' => $e->getMessage(),
+                'appointment_id' => $validated['appointment_id'],
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Gagal menyimpan catatan medis: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Lihat catatan medis yang sudah dibuat.
+     *
+     * GET /dokter/catatan-medis/{appointmentId}
+     */
+    public function show(string $appointmentId): View|RedirectResponse
+    {
+        $userId = (string) Auth::id();
+
+        $userData = $this->doctorRepository->findUser($userId);
+        $dokter = $userData
+            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
+            : null;
+
+        // Ambil data appointment
+        $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
+
+        if (! $appointment) {
+            return redirect()->route('dokter.dashboard')
+                ->with('error', 'Jadwal temu tidak ditemukan.');
         }
 
-        return redirect()->route('dokter.riwayat')->with('success', 'Catatan medis dan resep obat berhasil disimpan.');
+        $appointment = (object) $appointment;
+
+        // Cari catatan medis
+        $notes = $this->firestore->where(
+            self::CATATAN_MEDIS_COLLECTION,
+            'appointment_id',
+            '=',
+            $appointmentId,
+            1,
+        );
+
+        $catatanMedis = ! empty($notes) ? (object) $notes[0] : null;
+
+        if (! $catatanMedis) {
+            return redirect()->route('dokter.catatan_medis.create', $appointmentId);
+        }
+
+        // Ambil semua appointment dokter ini untuk sidebar
+        $allAppointments = $this->fetchDoctorAppointments();
+
+        return view('dokter.catatan-medis', [
+            'dokter' => $dokter,
+            'appointment' => $appointment,
+            'appointments' => $this->toObjects($allAppointments),
+            'catatanMedis' => $catatanMedis,
+            'isEdit' => false,
+        ]);
+    }
+
+    /**
+     * Ambil semua appointment milik dokter yang login.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchDoctorAppointments(): array
+    {
+        $documents = [];
+
+        foreach ($this->currentDoctorOwnerIds() as $doctorId) {
+            foreach (['dokterid', 'doctor_id'] as $field) {
+                foreach ($this->firestore->where(self::APPOINTMENT_COLLECTION, $field, '=', $doctorId) as $doc) {
+                    $documents[$doc['id']] = $doc;
+                }
+            }
+        }
+
+        // Sort by date
+        $docs = array_values($documents);
+        usort($docs, fn(array $a, array $b): int => strcmp(
+            trim(($a['appointment_date'] ?? '') . ' ' . ($a['appointment_time_start'] ?? $a['appointment_time'] ?? '')),
+            trim(($b['appointment_date'] ?? '') . ' ' . ($b['appointment_time_start'] ?? $b['appointment_time'] ?? '')),
+        ));
+
+        return $docs;
+    }
+
+    private function currentDoctorId(): string
+    {
+        $userId = (string) Auth::id();
+        $doctor = $this->firestore->where(self::DOCTOR_COLLECTION, 'usersId', '=', $userId, 1)[0] ?? null;
+
+        return (string) ($doctor['id'] ?? $userId);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function currentDoctorOwnerIds(): array
+    {
+        return array_values(array_unique([
+            $this->currentDoctorId(),
+            (string) Auth::id(),
+        ]));
     }
 }
 
