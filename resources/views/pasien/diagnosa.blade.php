@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Diagnosa & Catatan Medis - MediHub</title>
     <meta name="description" content="Lihat hasil diagnosa dan catatan medis Anda di MediHub">
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/css/pasien/diagnosa.css', 'resources/js/pasien/diagnosa.js'])
 
@@ -13,9 +14,9 @@
 </head>
 
 <body class="bg-white font-[Poppins] text-[#111827]">
-    <div class="grid h-screen grid-cols-[220px_1fr_390px] overflow-hidden">
-        <x-pasien.sidebar active="diagnosa" />
+    <x-pasien.sidebar active="diagnosa" />
 
+    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
         {{-- ═══════════════════════════════════════════════
              MAIN CONTENT
         ═══════════════════════════════════════════════ --}}

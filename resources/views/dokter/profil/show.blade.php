@@ -13,8 +13,10 @@
 @endpush
 
 @section('content')
+    @include('dokter.header')
+
     {{-- Profile Header --}}
-    <div class="profil-header">
+    <div class="profil-header" style="margin-top: 24px;">
         @if(!blank($user['profile_pict'] ?? null))
             <img src="{{ asset('storage/' . $user['profile_pict']) }}" 
                 alt="Foto Profil" 

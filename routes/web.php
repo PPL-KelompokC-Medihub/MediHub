@@ -59,5 +59,7 @@ Route::get('/debug-photo', function () {
     dd($user);
 });
 
+Route::get('/logout', [App\Http\Controllers\Auth\AuthController::class, 'logout'])->name('logout.get');
+
 require __DIR__ . '/dokter.php';
 require __DIR__ . '/pasien.php';

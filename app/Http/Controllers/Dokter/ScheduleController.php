@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+use App\Services\MedihubFirestoreRepository;
+
 class ScheduleController extends Controller
 {
     use MapsFirestoreData;
@@ -18,6 +20,7 @@ class ScheduleController extends Controller
 
     public function __construct(
         private FirestoreService $firestore,
+        private MedihubFirestoreRepository $doctorRepository,
     ) {}
 
     public function index(): View
@@ -42,7 +45,29 @@ class ScheduleController extends Controller
             }
         }
 
-        return view('dokter.jadwal', compact('mingguIni', 'mingguDepan', 'jadwal'));
+        // Ambil data appointments untuk sidebar
+        $allAppointments = $this->sortAppointments(
+            $this->currentDoctorDocuments('BuatJadwalTemu'),
+        );
+
+        $appointments = $this->toObjects(array_map(
+            fn (array $appointment): array => array_merge($appointment, [
+                'display_status' => $this->appointmentStatusLabel($appointment),
+                'status_key' => $this->appointmentStatusKey($appointment),
+                'display_date' => $this->appointmentDateLabel($appointment),
+                'display_time' => $this->appointmentTimeLabel($appointment),
+                'display_complaint' => $this->appointmentComplaint($appointment),
+            ]),
+            $allAppointments,
+        ));
+
+        $userId = (string) Auth::id();
+        $userData = $this->doctorRepository->findUser($userId);
+        $dokter = $userData
+            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
+            : null;
+
+        return view('dokter.jadwal', compact('mingguIni', 'mingguDepan', 'jadwal', 'appointments', 'dokter'));
     }
 
     public function store(Request $request)
@@ -85,6 +110,80 @@ class ScheduleController extends Controller
         $this->firestore->delete(self::COLLECTION, $id);
 
         return response()->json(['success' => true]);
+    }
+
+    private function currentDoctorDocuments(string $collection): array
+    {
+        $documents = [];
+
+        foreach ($this->currentDoctorOwnerIds() as $doctorId) {
+            foreach (['dokterid', 'doctor_id'] as $field) {
+                foreach ($this->firestore->where($collection, $field, '=', $doctorId) as $document) {
+                    $documents[$document['id']] = $document;
+                }
+            }
+        }
+
+        return array_values($documents);
+    }
+
+    private function sortAppointments(array $appointments): array
+    {
+        usort($appointments, fn (array $left, array $right): int => strcmp(
+            trim((string) ($left['appointment_date'] ?? '').' '.(string) ($left['appointment_time_start'] ?? $left['appointment_time'] ?? '')),
+            trim((string) ($right['appointment_date'] ?? '').' '.(string) ($right['appointment_time_start'] ?? $right['appointment_time'] ?? '')),
+        ));
+
+        return $appointments;
+    }
+
+    private function appointmentStatusKey(array $appointment): string
+    {
+        $status = strtolower(trim((string) ($appointment['status'] ?? 'menunggu')));
+
+        return match ($status) {
+            'batal', 'dibatalkan', 'cancelled', 'canceled' => 'dibatalkan',
+            'selesai', 'done', 'completed' => 'selesai',
+            'diperiksa', 'sedang diperiksa', 'in progress' => 'diperiksa',
+            default => 'menunggu',
+        };
+    }
+
+    private function appointmentStatusLabel(array $appointment): string
+    {
+        return match ($this->appointmentStatusKey($appointment)) {
+            'dibatalkan' => 'Dibatalkan',
+            'selesai' => 'Selesai',
+            'diperiksa' => 'Diperiksa',
+            default => 'Menunggu',
+        };
+    }
+
+    private function appointmentTimeLabel(array $appointment): string
+    {
+        $start = trim((string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? ''));
+        $end = trim((string) ($appointment['appointment_time_end'] ?? ''));
+        $range = trim((string) ($appointment['schedule_time_range'] ?? ''));
+
+        if ($start === '') {
+            return $range !== '' ? $range : '-';
+        }
+
+        return trim($start.($end !== '' ? ' - '.$end : ''));
+    }
+
+    private function appointmentDateLabel(array $appointment): string
+    {
+        $date = trim((string) ($appointment['appointment_date'] ?? ''));
+
+        return $date !== '' ? substr($date, 0, 10) : '-';
+    }
+
+    private function appointmentComplaint(array $appointment): string
+    {
+        $complaint = trim((string) ($appointment['complaint'] ?? ''));
+
+        return $complaint !== '' ? $complaint : '-';
     }
 
     private function currentDoctorId(): string

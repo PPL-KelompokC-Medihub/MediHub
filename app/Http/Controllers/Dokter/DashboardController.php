@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
+
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -137,9 +140,7 @@ class DashboardController extends Controller
             $filteredAppointments,
         ));
 
-        $medicalNotes = \App\Models\MedicalNote::where('doctor_id', $userId)
-            ->with('prescriptions')
-            ->get();
+        $medicalNotes = collect($this->toObjects($this->medicalNotesForDoctor($userId)->all()));
 
         return view('dokter.riwayat', compact(
             'dokter',
@@ -287,6 +288,33 @@ class DashboardController extends Controller
         ));
 
         return $appointments;
+    }
+
+    /**
+     * Ambil catatan medis dari Firestore untuk dokter.
+     */
+    private function medicalNotesForDoctor(string $doctorId): Collection
+    {
+        try {
+            $notes = [];
+
+            foreach ($this->currentDoctorOwnerIds() as $id) {
+                foreach (['doctor_id', 'doctor_user_id'] as $field) {
+                    foreach ($this->firestore->where('CatatanMedis', $field, '=', $id) as $note) {
+                        $notes[$note['id']] = $note;
+                    }
+                }
+            }
+
+            return collect(array_values($notes));
+        } catch (\Throwable $exception) {
+            Log::warning('Skipping Firestore medical notes for doctor dashboard.', [
+                'doctor_id' => $doctorId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return collect();
+        }
     }
 
     private function currentDoctorId(): string
