@@ -268,6 +268,12 @@
                 @csrf
                 @method('DELETE')
 
+                @if ($errors->has('appointments'))
+                    <div class="mb-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+                        {{ $errors->first('appointments') }}
+                    </div>
+                @endif
+
                 <div class="flex flex-col gap-5">
 
                     @forelse ($appointments as $appointment)

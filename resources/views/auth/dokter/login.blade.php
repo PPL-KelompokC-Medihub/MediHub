@@ -11,6 +11,7 @@
         <p class="mediq-auth-switch">Belum memiliki akun? <a href="{{ route('register-dokter') }}">Daftar sekarang</a></p>
 
         <form id="firebase-sign-in-form" class="mediq-auth-form" method="POST" action="{{ route('firebase.session.login') }}"
+            data-auth-role="dokter"
             data-session-url="{{ route('firebase.session.login') }}"
             data-firebase-api-key="{{ config('services.firebase.api_key') }}"
             data-google-client-id="{{ config('services.firebase.google_client_id') }}">

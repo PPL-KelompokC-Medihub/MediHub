@@ -15,6 +15,44 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(function (Request $request): string {
+            $doctorOnlyPaths = [
+                'dokter/appointment*',
+                'dokter/catatan-medis*',
+                'dokter/dashboard',
+                'dokter/jadwal*',
+                'dokter/profil',
+                'dokter/profile*',
+                'dokter/riwayat',
+            ];
+
+            foreach ($doctorOnlyPaths as $path) {
+                if ($request->is($path)) {
+                    return route('login-dokter');
+                }
+            }
+
+            return route('login-pasien');
+        });
+
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $user = $request->user();
+            $userData = $user && method_exists($user, 'getAttributes') ? $user->getAttributes() : [];
+
+            $role = strtolower(trim((string) ($userData['role'] ?? $request->session()->get('medihub_user_role', ''))));
+            $role = match ($role) {
+                'doctor' => 'dokter',
+                'patient' => 'pasien',
+                default => $role,
+            };
+
+            return match ($role) {
+                'dokter' => route('dokter.dashboard'),
+                'pasien' => route('pasien.beranda'),
+                default => route('dashboard'),
+            };
+        });
+
         $middleware->alias([
             'dokter.profile.completed' => EnsureDokterProfileCompleted::class,
             'role' => EnsureUserRole::class,

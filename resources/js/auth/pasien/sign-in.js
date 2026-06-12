@@ -10,10 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitLoading = submitButton?.querySelector('.btn-loading');
     const googleButton = document.getElementById('google-sign-in-btn');
     const sessionUrl = form?.dataset.sessionUrl || '/auth/firebase/session';
+    const authRole = form?.dataset.authRole || '';
     const firebaseApiKey = form?.dataset.firebaseApiKey || '';
     const googleClientId = form?.dataset.googleClientId || '';
 
-    if (!form || !emailInput || !passwordInput || !submitButton) {
+    if (!form || authRole !== 'pasien' || !emailInput || !passwordInput || !submitButton) {
         return;
     }
 

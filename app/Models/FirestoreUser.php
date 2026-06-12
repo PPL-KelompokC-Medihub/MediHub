@@ -7,6 +7,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class FirestoreUser extends GenericUser implements MustVerifyEmail
 {
+    /**
+     * @return array<string, mixed>
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
     public function hasVerifiedEmail(): bool
     {
         return (bool) ($this->attributes['email_verified'] ?? true);
