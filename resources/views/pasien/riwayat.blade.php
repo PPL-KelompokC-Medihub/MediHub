@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Jadwal Temu - MediHub</title>
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/css/pasien/riwayat.css', 'resources/js/pasien/riwayat.js'])
 
@@ -13,8 +14,8 @@
 
 <body class="bg-white font-[Poppins] text-[#111827]">
     <x-pasien.sidebar active="riwayat" />
-    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
-        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
+<div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
+        <main class="h-screen min-w-0 overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <a
                     href="{{ route('pasien.profile') }}"
