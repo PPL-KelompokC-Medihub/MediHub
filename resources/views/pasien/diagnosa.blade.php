@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Diagnosa & Catatan Medis - MediHub</title>
     <meta name="description" content="Lihat hasil diagnosa dan catatan medis Anda di MediHub">
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/css/pasien/diagnosa.css', 'resources/js/pasien/diagnosa.js'])
 

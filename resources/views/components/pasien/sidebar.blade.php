@@ -46,13 +46,6 @@
                 </div>
             </a>
 
-            <a href="{{ route('pasien.diagnosa') }}" class="{{ $linkClass('diagnosa') }}">
-                <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
-                    <i class="fa-solid fa-file-medical {{ $iconClass('diagnosa') }} flex h-6 w-6 items-center justify-center"></i>
-                    <span class="{{ $textClass('diagnosa') }}">Diagnosa</span>
-                </div>
-            </a>
-
             <a href="{{ route('pasien.profile') }}" class="{{ $linkClass('profil') }}">
                 <div class="grid w-full grid-cols-[28px_1fr] items-center gap-3">
                     <i class="fa-regular fa-user {{ $iconClass('profil') }} flex h-6 w-6 items-center justify-center"></i>

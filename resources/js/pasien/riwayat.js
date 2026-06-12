@@ -1,5 +1,4 @@
 // Riwayat Jadwal Temu JavaScript
-
 document.addEventListener('DOMContentLoaded', function () {
     // Toggle Cancel Buttons in upcoming schedules
     const toggleCancelBtn = document.getElementById('toggleCancelBtn');
@@ -10,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelBtnContainers.forEach(container => {
                 container.classList.toggle('hidden');
             });
+
             if (toggleCancelBtn.textContent.trim() === 'Batalkan') {
                 toggleCancelBtn.textContent = 'Selesai';
                 toggleCancelBtn.classList.remove('text-[#58A7F7]');
@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const applySearch = () => {
         const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
         appointmentCards.forEach(card => {
             const text = card.textContent.toLowerCase();
             const matchesSearch = searchTerm === '' || text.includes(searchTerm);

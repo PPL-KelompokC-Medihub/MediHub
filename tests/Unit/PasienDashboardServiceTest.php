@@ -66,7 +66,7 @@ class PasienDashboardServiceTest extends TestCase
         $this->assertCount(1, $data['historyBookings']);
         $this->assertSame('history-1', $data['historyBookings'][0]['id']);
         $this->assertSame('Selesai', $data['historyBookings'][0]['status']);
-        $this->assertSame('Infeksi saluran pernapasan ringan', $data['historyBookings'][0]['diagnosa']);
+        $this->assertSame('Infeksi saluran pernapasan ringan', $data['historyBookings'][0]['diagnosis_sementara']);
         $this->assertSame('Paracetamol', $data['historyBookings'][0]['resep_obat']);
 
         $this->assertCount(1, $data['upcomingBookings']);
@@ -95,6 +95,37 @@ class PasienDashboardServiceTest extends TestCase
         $this->assertCount(1, $data['upcomingBookings']);
         $this->assertSame('past-pending', $data['upcomingBookings'][0]['id']);
         $this->assertSame('pending', $data['upcomingBookings'][0]['status_key']);
+    }
+
+    public function test_history_page_data_does_not_require_local_sqlite_file(): void
+    {
+        Carbon::setTestNow('2026-06-01 10:00:00');
+
+        $originalDatabase = config('database.connections.sqlite.database');
+        config()->set('database.default', 'sqlite');
+        config()->set('database.connections.sqlite.database', sys_get_temp_dir().'/medihub-missing-'.uniqid().'.sqlite');
+
+        try {
+            $service = $this->serviceWithAppointments([
+                [
+                    'id' => 'history-firestore-only',
+                    'patient_id' => 'patient-1',
+                    'patient_email' => 'nadia@example.test',
+                    'doctor_id' => 'doctor-1',
+                    'appointment_date' => '2026-05-20',
+                    'status' => 'Selesai',
+                    'diagnosa' => 'Data diagnosa dari Firestore',
+                ],
+            ]);
+
+            $data = $service->historyPageData();
+
+            $this->assertCount(1, $data['historyBookings']);
+            $this->assertSame('history-firestore-only', $data['historyBookings'][0]['id']);
+            $this->assertSame('Data diagnosa dari Firestore', $data['historyBookings'][0]['diagnosis_sementara']);
+        } finally {
+            config()->set('database.connections.sqlite.database', $originalDatabase);
+        }
     }
 
     /**
@@ -139,9 +170,11 @@ class PasienDashboardServiceTest extends TestCase
                 'email' => 'bima@example.test',
             ],
         ]);
+        $firestore->shouldReceive('all')->with('Dokter_dokumen')->andReturn([]);
+        $firestore->shouldReceive('all')->with('CatatanMedis')->andReturn([]);
         $firestore->shouldReceive('all')->with('BuatJadwalTemu')->andReturn($appointments);
 
-        return new DashboardService($firestore, new \App\Services\MedihubFirestoreRepository($firestore));
+        return new DashboardService($firestore);
     }
 
     public function test_diagnosis_page_data_merges_mysql_medical_notes_and_prescriptions(): void
@@ -178,8 +211,8 @@ class PasienDashboardServiceTest extends TestCase
 
         $this->assertCount(1, $data['diagnosisList']);
         $this->assertSame('history-db-match', $data['diagnosisList'][0]['id']);
-        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['diagnosa']);
-        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['catatan_medis']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['diagnosis_sementara']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['catatan_dokter']);
         $this->assertSame('Amoxillin 500mg', $data['diagnosisList'][0]['resep_obat']);
     }
 }

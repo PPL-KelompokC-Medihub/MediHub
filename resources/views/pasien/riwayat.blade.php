@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Jadwal Temu - MediHub</title>
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/css/pasien/riwayat.css', 'resources/js/pasien/riwayat.js'])
 
@@ -125,6 +126,20 @@
                             <div
                                 class="appointment-card overflow-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-[2px]"
                                 data-status="{{ $statusKey }}"
+                                data-appointment-id="{{ $appointment['id'] }}"
+                                data-jenis="{{ $appointment['jenis'] }}"
+                                data-dokter="{{ $appointment['dokter'] }}"
+                                data-dokter-foto="{{ $appointment['dokter_foto'] }}"
+                                data-tanggal="{{ $appointment['tanggal'] }}"
+                                data-jam="{{ $appointment['jam'] }}"
+                                data-keluhan="{{ $appointment['keluhan'] ?? '-' }}"
+                                data-alergi="{{ $appointment['alergi'] ?? '-' }}"
+                                data-alasan-pembatalan="{{ $appointment['alasan_pembatalan'] ?? '-' }}"
+                                data-pemeriksaan-fisik="{{ $appointment['pemeriksaan_fisik'] ?? '-' }}"
+                                data-diagnosis-sementara="{{ $appointment['diagnosis_sementara'] ?? '-' }}"
+                                data-rencana-penanganan="{{ $appointment['rencana_penanganan'] ?? '-' }}"
+                                data-catatan-dokter="{{ $appointment['catatan_dokter'] ?? '-' }}"
+                                data-resep-obat="{{ $appointment['resep_obat'] ?? '-' }}"
                             >
                                 <div class="flex flex-col">
                                     <!-- Top Section -->
@@ -233,7 +248,7 @@
         </main>
 
         <!-- Right Panel: Jadwal Mendatang -->
-        <aside class="sticky top-0 flex h-screen flex-col border-l border-gray-200 bg-white px-6 py-8">
+        <aside class="sticky top-0 flex h-screen w-[390px] shrink-0 flex-col border-l border-gray-200 bg-white px-7 py-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-lg font-bold text-gray-900">Jadwal Temu Mendatang</h2>
                 <button id="toggleCancelBtn" class="text-xs font-medium text-[#58A7F7] hover:text-[#4796E6] transition-colors">
@@ -259,6 +274,7 @@
                                     <p class="text-xs text-gray-500">{{ $appointment['rs'] }}</p>
                                 </div>
                             </div>
+                        </div>
 
                             <div class="grid grid-cols-[80px_1fr] gap-4 py-3 border-t border-gray-100">
                                 <!-- Antrian -->
@@ -310,16 +326,89 @@
                             <i class="fa-regular fa-calendar-check text-2xl"></i>
                         </div>
 
-                        <h3 class="mb-1 text-sm font-semibold text-gray-700">
-                            Tidak ada jadwal mendatang
-                        </h3>
+                    @endforelse
 
-                        <p class="text-xs leading-relaxed text-gray-400 mb-4">
-                            Buat jadwal temu baru sekarang.
-                        </p>
+                </div>
+
+                <button
+                    id="submitCancelButton"
+                    type="button"
+                    class="group relative mt-6 flex items-center justify-between overflow-hidden rounded-xl bg-blue-400 px-5 py-4 text-sm font-medium shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(96,165,250,0.45)]"
+                >
+
+                    <span class="relative z-10 text-white">
+                        Buat Jadwal Temu
+                    </span>
+
+                    <i class="fa-solid fa-circle-plus relative z-10 text-white text-[18px]"></i>
+
+                    <!-- glow -->
+                    <span
+                        class="pointer-events-none absolute left-[10%] top-[8%]
+                        h-[42%] w-[80%]
+                        rounded-full bg-white/20 blur-md">
+                    </span>
+
+                    <!-- shine -->
+                    <span
+                        class="pointer-events-none absolute left-[-120%] top-[-40%]
+                        h-[220%] w-[35%]
+                        rotate-[20deg]
+                        bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)]
+                        blur-md
+                        transition-all duration-1000
+                        group-hover:left-[160%]">
+                    </span>
+
+                </button>
+
+            </form>
+
+        </aside>
+    </div>
+
+    <!-- Modal Detail Jadwal Temu -->
+    <div id="appointmentDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="relative w-full max-w-[420px] rounded-3xl bg-white p-6 shadow-2xl transition-all duration-300 scale-95 overflow-y-auto max-h-[90vh]">
+            <!-- Close Button -->
+            <button id="closeModalBtn" class="absolute left-6 top-6 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <div class="mt-8 flex flex-col">
+                <!-- Modal Title & Status Badge -->
+                <div class="mb-5 flex items-center justify-between">
+                    <h2 id="modalTitle" class="text-[17px] font-semibold text-gray-950">Riwayat Jadwal Temu</h2>
+                    <span id="modalStatusBadge" class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                        <span id="modalStatusText">Selesai</span>
+                    </span>
+                </div>
+
+                <!-- Doctor Row -->
+                <div class="mb-5 flex items-center gap-4">
+                    <img id="modalDoctorPhoto" src="" alt="Doctor Avatar" class="h-16 w-16 rounded-full object-cover">
+                    <div>
+                        <h3 id="modalDoctorName" class="text-sm font-semibold text-gray-900">dr. Clara Wulandari, M.Ked</h3>
+                        <p id="modalDoctorSpecialization" class="text-xs text-gray-500">Dokter umum</p>
                     </div>
-                @endforelse
-            </div>
+                </div>
+
+                <!-- Date & Time Row -->
+                <div class="mb-6 grid grid-cols-2 gap-4 rounded-2xl bg-gray-50 p-4">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-1">
+                            <i class="fa-regular fa-calendar mr-1"></i> Tanggal
+                        </p>
+                        <p id="modalAppointmentDate" class="text-xs font-semibold text-gray-800">30 Agustus 2025</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-1">
+                            <i class="fa-regular fa-clock mr-1"></i> Waktu
+                        </p>
+                        <p id="modalAppointmentTime" class="text-xs font-semibold text-gray-800">13:00 WIB - 13:15 WIB</p>
+                    </div>
+                </div>
 
             <!-- Create Appointment Button -->
             <a
@@ -401,6 +490,209 @@
             if (searchInput) {
                 searchInput.addEventListener('input', applyFilters);
             }
+
+            // Modal Detail Setup
+            const modal = document.getElementById('appointmentDetailModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalStatusBadge = document.getElementById('modalStatusBadge');
+            const modalStatusText = document.getElementById('modalStatusText');
+            const modalDoctorPhoto = document.getElementById('modalDoctorPhoto');
+            const modalDoctorName = document.getElementById('modalDoctorName');
+            const modalDoctorSpecialization = document.getElementById('modalDoctorSpecialization');
+            const modalAppointmentDate = document.getElementById('modalAppointmentDate');
+            const modalAppointmentTime = document.getElementById('modalAppointmentTime');
+            const modalPatientName = document.getElementById('modalPatientName');
+            const modalPatientSymptoms = document.getElementById('modalPatientSymptoms');
+            const modalPatientAllergy = document.getElementById('modalPatientAllergy');
+            
+            const modalDiagnosisSection = document.getElementById('modalDiagnosisSection');
+            const modalPhysicalExamList = document.getElementById('modalPhysicalExamList');
+            const modalPhysicalExamText = document.getElementById('modalPhysicalExamText');
+            const modalTempDiagnosis = document.getElementById('modalTempDiagnosis');
+            const modalTreatmentPlan = document.getElementById('modalTreatmentPlan');
+            const modalDoctorNotes = document.getElementById('modalDoctorNotes');
+            const modalPrescriptionDiv = document.getElementById('modalPrescriptionDiv');
+            const modalPrescription = document.getElementById('modalPrescription');
+            
+            const modalCancellationSection = document.getElementById('modalCancellationSection');
+            const modalCancellationReason = document.getElementById('modalCancellationReason');
+
+            const openModal = (card) => {
+                const status = card.getAttribute('data-status');
+                const title = card.getAttribute('data-jenis');
+                const doctor = card.getAttribute('data-dokter');
+                const doctorFoto = card.getAttribute('data-dokter-foto');
+                const date = card.getAttribute('data-tanggal');
+                const time = card.getAttribute('data-jam');
+                const symptoms = card.getAttribute('data-keluhan');
+                const allergy = card.getAttribute('data-alergi');
+                
+                const cancellationReason = card.getAttribute('data-alasan-pembatalan');
+                const physicalExam = card.getAttribute('data-pemeriksaan-fisik');
+                const tempDiagnosis = card.getAttribute('data-diagnosis-sementara');
+                const treatmentPlan = card.getAttribute('data-rencana-penanganan');
+                const doctorNotes = card.getAttribute('data-catatan-dokter');
+                const prescription = card.getAttribute('data-resep-obat');
+
+                // Set content
+                modalTitle.textContent = status === 'mendatang' ? 'Jadwal Temu Mendatang' : 'Riwayat Jadwal Temu';
+                modalDoctorPhoto.src = doctorFoto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doctor) + '&background=6aa4ef&color=fff&size=80';
+                modalDoctorName.textContent = doctor;
+                modalDoctorSpecialization.textContent = title;
+                modalAppointmentDate.textContent = date;
+                modalAppointmentTime.textContent = time;
+                modalPatientName.textContent = card.dataset.patientName || "{{ auth()->user()->name ?? auth()->user()->fullname ?? 'Pasien' }}";
+                modalPatientSymptoms.textContent = (symptoms && symptoms !== '-') ? symptoms : 'Tidak ada gejala tercatat';
+                modalPatientAllergy.textContent = (allergy && allergy !== '-') ? allergy : 'Tidak ada alergi obat';
+
+                // Status Badge Styling
+                let statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                modalStatusText.textContent = statusLabel;
+                modalStatusBadge.className = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold';
+                if (status === 'selesai') {
+                    modalStatusBadge.classList.add('bg-green-100', 'text-green-700');
+                } else if (status === 'dibatalkan') {
+                    modalStatusBadge.classList.add('bg-red-100', 'text-red-700');
+                } else { // mendatang
+                    modalStatusBadge.classList.add('bg-blue-100', 'text-blue-700');
+                }
+
+                // Show/hide sections based on status
+                if (status === 'selesai') {
+                    modalDiagnosisSection.classList.remove('hidden');
+                    modalCancellationSection.classList.add('hidden');
+
+                    // Parse & Format Physical Exam list
+                    modalPhysicalExamList.innerHTML = '';
+                    if (physicalExam && physicalExam !== '-' && physicalExam.trim() !== '') {
+                        // Split by newline or bullet points
+                        const lines = physicalExam.split(/[\r\n]+/)
+                            .map(line => line.replace(/^[•\-\*\s]+/, '').trim())
+                            .filter(line => line !== '');
+                        
+                        if (lines.length > 0) {
+                            modalPhysicalExamText.classList.add('hidden');
+                            modalPhysicalExamList.classList.remove('hidden');
+                            lines.forEach(line => {
+                                const li = document.createElement('li');
+                                li.textContent = line;
+                                modalPhysicalExamList.appendChild(li);
+                            });
+                        } else {
+                            modalPhysicalExamList.classList.add('hidden');
+                            modalPhysicalExamText.classList.remove('hidden');
+                            modalPhysicalExamText.textContent = '-';
+                        }
+                    } else {
+                        modalPhysicalExamList.classList.add('hidden');
+                        modalPhysicalExamText.classList.remove('hidden');
+                        modalPhysicalExamText.textContent = '-';
+                    }
+
+                    modalTempDiagnosis.textContent = tempDiagnosis || '-';
+                    modalTreatmentPlan.textContent = treatmentPlan || '-';
+                    modalDoctorNotes.textContent = doctorNotes || '-';
+
+                    if (prescription && prescription !== '-' && prescription.trim() !== '') {
+                        modalPrescriptionDiv.classList.remove('hidden');
+                        modalPrescription.textContent = prescription;
+                    } else {
+                        modalPrescriptionDiv.classList.add('hidden');
+                    }
+                } else if (status === 'dibatalkan') {
+                    modalDiagnosisSection.classList.add('hidden');
+                    modalCancellationSection.classList.remove('hidden');
+                    modalCancellationReason.textContent = (cancellationReason && cancellationReason !== '-') ? cancellationReason : 'Dibatalkan oleh sistem/pasien';
+                } else { // mendatang / pending
+                    modalDiagnosisSection.classList.remove('hidden');
+                    modalCancellationSection.classList.add('hidden');
+
+                    modalPhysicalExamList.classList.add('hidden');
+                    modalPhysicalExamText.classList.remove('hidden');
+                    modalPhysicalExamText.textContent = '-';
+                    modalTempDiagnosis.textContent = '-';
+                    modalTreatmentPlan.textContent = '-';
+                    modalDoctorNotes.textContent = '-';
+                    modalPrescriptionDiv.classList.add('hidden');
+                }
+
+                // Show modal with opacity transition
+                modal.classList.remove('pointer-events-none');
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            };
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modal.classList.add('pointer-events-none');
+                modal.firstElementChild.classList.remove('scale-100');
+                modal.firstElementChild.classList.add('scale-95');
+            };
+
+            let cancelMode = false;
+            const toggleButton = document.getElementById('toggleCancelMode');
+            const cancelButton = document.getElementById('submitCancelButton');
+
+            if (cancelButton) {
+                cancelButton.addEventListener('click', () => {
+                    // MODE NORMAL → KE HALAMAN BOOKING
+                    if (!cancelMode) {
+                        window.location.href = "{{ route('pasien.booking.create') }}";
+                        return;
+                    }
+                    // MODE PEMBATALAN → SUBMIT FORM DELETE
+                    document.getElementById('cancelAppointmentForm').submit();
+                });
+            }
+
+            if (toggleButton) {
+                toggleButton.addEventListener('click', () => {
+                    cancelMode = !cancelMode;
+                    const checkboxes = document.querySelectorAll('.cancel-checkbox');
+                    checkboxes.forEach(el => {
+                        el.classList.toggle('hidden');
+                    });
+
+                    if (cancelMode) {
+                        toggleButton.innerText = 'Kembali';
+                        cancelButton.classList.remove('bg-blue-400');
+                        cancelButton.classList.add('bg-red-500');
+                        cancelButton.querySelector('span').innerText = 'Batalkan Jadwal Temu';
+                    } else {
+                        toggleButton.innerText = 'Batalkan';
+                        cancelButton.classList.remove('bg-red-500');
+                        cancelButton.classList.add('bg-blue-400');
+                        cancelButton.querySelector('span').innerText = 'Buat Jadwal Temu';
+                    }
+                });
+            }
+
+            // Event Listeners for click on cards
+            document.querySelectorAll('.appointment-card').forEach(card => {
+                card.addEventListener('click', () => openModal(card));
+            });
+
+            document.querySelectorAll('.upcoming-appointment-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (cancelMode) {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        if (checkbox && e.target !== checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                        }
+                    } else {
+                        openModal(this);
+                    }
+                });
+            });
+
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
         });
     </script>
 </body>

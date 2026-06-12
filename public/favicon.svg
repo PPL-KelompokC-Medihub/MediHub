@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 156 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>MediHub</title>
+  <circle cx="64" cy="64" r="56" stroke="#0D78C3" stroke-width="16"/>
+  <path d="M111 110L140 142" stroke="#5E9BE0" stroke-width="18" stroke-linecap="round"/>
+  <path d="M43 57L68 41L84 63C88 69 89 79 85 87L81 96C77 104 66 108 58 103L42 93C34 88 31 77 35 69L43 57Z" fill="#68A1E5"/>
+  <path d="M73 87L93 72" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <path d="M52 63L66 84" stroke="white" stroke-width="10" stroke-linecap="round"/>
+</svg>
