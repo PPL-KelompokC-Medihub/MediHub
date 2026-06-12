@@ -299,14 +299,23 @@ class FirebaseSessionController extends Controller
             throw new RuntimeException('Konfigurasi Firebase API key belum tersedia.');
         }
 
-        $response = Http::asJson()->post(
-            sprintf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=%s', $apiKey),
-            [
-                'email' => (string) ($validated['email'] ?? ''),
-                'password' => (string) ($validated['password'] ?? ''),
-                'returnSecureToken' => true,
-            ],
-        );
+        $response = Http::asJson()
+            ->connectTimeout(10)
+            ->timeout(30)
+            ->withOptions([
+                'force_ip_resolve' => 'v4',
+                'curl' => [
+                    CURLOPT_RESOLVE => \App\Services\DnsResolver::getDnsResolveMapping()
+                ]
+            ])
+            ->post(
+                sprintf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=%s', $apiKey),
+                [
+                    'email' => (string) ($validated['email'] ?? ''),
+                    'password' => (string) ($validated['password'] ?? ''),
+                    'returnSecureToken' => true,
+                ],
+            );
 
         $payload = $response->json();
         if (! $response->ok()) {

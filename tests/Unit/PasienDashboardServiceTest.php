@@ -63,17 +63,17 @@ class PasienDashboardServiceTest extends TestCase
 
         $data = $service->historyPageData();
 
-        $this->assertCount(1, $data['riwayatJadwal']);
-        $this->assertSame('history-1', $data['riwayatJadwal'][0]['id']);
-        $this->assertSame('Selesai', $data['riwayatJadwal'][0]['status']);
-        $this->assertSame('Infeksi saluran pernapasan ringan', $data['riwayatJadwal'][0]['diagnosa']);
-        $this->assertSame('Paracetamol', $data['riwayatJadwal'][0]['resep_obat']);
+        $this->assertCount(1, $data['historyBookings']);
+        $this->assertSame('history-1', $data['historyBookings'][0]['id']);
+        $this->assertSame('Selesai', $data['historyBookings'][0]['status']);
+        $this->assertSame('Infeksi saluran pernapasan ringan', $data['historyBookings'][0]['diagnosis_sementara']);
+        $this->assertSame('Paracetamol', $data['historyBookings'][0]['resep_obat']);
 
-        $this->assertCount(1, $data['jadwalMendatang']);
-        $this->assertSame('upcoming-1', $data['jadwalMendatang'][0]['id']);
+        $this->assertCount(1, $data['upcomingBookings']);
+        $this->assertSame('upcoming-1', $data['upcomingBookings'][0]['id']);
     }
 
-    public function test_history_page_data_moves_past_pending_appointments_to_history(): void
+    public function test_history_page_data_keeps_past_pending_appointments_in_upcoming(): void
     {
         Carbon::setTestNow('2026-06-01 10:00:00');
 
@@ -91,10 +91,10 @@ class PasienDashboardServiceTest extends TestCase
 
         $data = $service->historyPageData();
 
-        $this->assertCount(1, $data['riwayatJadwal']);
-        $this->assertSame('past-pending', $data['riwayatJadwal'][0]['id']);
-        $this->assertSame('pending', $data['riwayatJadwal'][0]['status_key']);
-        $this->assertCount(0, $data['jadwalMendatang']);
+        $this->assertCount(0, $data['historyBookings']);
+        $this->assertCount(1, $data['upcomingBookings']);
+        $this->assertSame('past-pending', $data['upcomingBookings'][0]['id']);
+        $this->assertSame('pending', $data['upcomingBookings'][0]['status_key']);
     }
 
     public function test_history_page_data_does_not_require_local_sqlite_file(): void
@@ -120,9 +120,9 @@ class PasienDashboardServiceTest extends TestCase
 
             $data = $service->historyPageData();
 
-            $this->assertCount(1, $data['riwayatJadwal']);
-            $this->assertSame('history-firestore-only', $data['riwayatJadwal'][0]['id']);
-            $this->assertSame('Data diagnosa dari Firestore', $data['riwayatJadwal'][0]['diagnosa']);
+            $this->assertCount(1, $data['historyBookings']);
+            $this->assertSame('history-firestore-only', $data['historyBookings'][0]['id']);
+            $this->assertSame('Data diagnosa dari Firestore', $data['historyBookings'][0]['diagnosis_sementara']);
         } finally {
             config()->set('database.connections.sqlite.database', $originalDatabase);
         }
@@ -170,12 +170,14 @@ class PasienDashboardServiceTest extends TestCase
                 'email' => 'bima@example.test',
             ],
         ]);
+        $firestore->shouldReceive('all')->with('Dokter_dokumen')->andReturn([]);
+        $firestore->shouldReceive('all')->with('CatatanMedis')->andReturn([]);
         $firestore->shouldReceive('all')->with('BuatJadwalTemu')->andReturn($appointments);
 
-        return new DashboardService($firestore, new \App\Services\MedihubFirestoreRepository($firestore));
+        return new DashboardService($firestore);
     }
 
-    public function test_history_page_data_merges_mysql_medical_notes_and_prescriptions(): void
+    public function test_diagnosis_page_data_merges_mysql_medical_notes_and_prescriptions(): void
     {
         Carbon::setTestNow('2026-06-01 10:00:00');
 
@@ -205,12 +207,12 @@ class PasienDashboardServiceTest extends TestCase
             'medications' => 'Amoxillin 500mg',
         ]);
 
-        $data = $service->historyPageData();
+        $data = $service->diagnosisPageData();
 
-        $this->assertCount(1, $data['riwayatJadwal']);
-        $this->assertSame('history-db-match', $data['riwayatJadwal'][0]['id']);
-        $this->assertSame('Didiagnosis influenza dari database.', $data['riwayatJadwal'][0]['diagnosa']);
-        $this->assertSame('Didiagnosis influenza dari database.', $data['riwayatJadwal'][0]['catatan_medis']);
-        $this->assertSame('Amoxillin 500mg', $data['riwayatJadwal'][0]['resep_obat']);
+        $this->assertCount(1, $data['diagnosisList']);
+        $this->assertSame('history-db-match', $data['diagnosisList'][0]['id']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['diagnosis_sementara']);
+        $this->assertSame('Didiagnosis influenza dari database.', $data['diagnosisList'][0]['catatan_dokter']);
+        $this->assertSame('Amoxillin 500mg', $data['diagnosisList'][0]['resep_obat']);
     }
 }

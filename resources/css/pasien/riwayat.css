@@ -32,12 +32,12 @@ aside::-webkit-scrollbar-track {
 }
 
 aside::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #E5E7EB;
   border-radius: 3px;
 }
 
 aside::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #D1D5DB;
 }
 
 /* Main content scrollbar */
@@ -50,10 +50,10 @@ main::-webkit-scrollbar-track {
 }
 
 main::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #E5E7EB;
   border-radius: 3px;
 }
 
 main::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #D1D5DB;
 }

@@ -30,6 +30,7 @@ export default defineConfig({
                 'resources/js/dokter/profile-form.js',
                 'resources/js/dokter/profile-expertise.js',
                 'resources/css/dokter/profil.css',
+                'resources/css/dokter/catatan-medis.css',
                 'resources/css/pasien/ulasan.css',
                 'resources/js/pasien/ulasan.js',
             ],

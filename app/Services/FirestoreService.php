@@ -18,8 +18,8 @@ class FirestoreService
     private const FIRESTORE_SCOPE = 'https://www.googleapis.com/auth/datastore';
     private const API_BASE = 'https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents';
     private const RUN_QUERY_ENDPOINT = 'https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents:runQuery';
-    private const CONNECT_TIMEOUT = 5;
-    private const REQUEST_TIMEOUT = 15;
+    private const CONNECT_TIMEOUT = 10;
+    private const REQUEST_TIMEOUT = 30;
 
     private string $projectId;
     private string $baseUrl;
@@ -316,6 +316,10 @@ class FirestoreService
         $handler = HttpHandlerFactory::build(new GuzzleClient([
             'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
+            'force_ip_resolve' => 'v4',
+            'curl' => [
+                CURLOPT_RESOLVE => \App\Services\DnsResolver::getDnsResolveMapping()
+            ]
         ]));
 
         try {
@@ -433,7 +437,13 @@ class FirestoreService
     {
         return Http::withToken($this->getAccessToken())
             ->connectTimeout(self::CONNECT_TIMEOUT)
-            ->timeout(self::REQUEST_TIMEOUT);
+            ->timeout(self::REQUEST_TIMEOUT)
+            ->withOptions([
+                'force_ip_resolve' => 'v4',
+                'curl' => [
+                    CURLOPT_RESOLVE => \App\Services\DnsResolver::getDnsResolveMapping()
+                ]
+            ]);
     }
 
     private function initializeIfNeeded(): void

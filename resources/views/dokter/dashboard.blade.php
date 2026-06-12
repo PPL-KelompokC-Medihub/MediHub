@@ -7,39 +7,7 @@
 @endpush
 
 @section('content')
-    {{-- Header --}}
-    <div class="mediq-header-row">
-        <div class="mediq-user-chip">
-            @if(!blank($dokter->profile_pict ?? null))
-                <img src="{{ asset('storage/' . $dokter->profile_pict) }}"
-                     alt="Avatar"
-                     class="mediq-avatar" />
-            @else
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($dokter->name ?? 'Dokter') }}&background=6aa4ef&color=fff&size=96"
-                     alt="Avatar"
-                     class="mediq-avatar" />
-            @endif
-            <div>
-                <p class="mediq-user-name">
-                    Halo, dr {{ $dokter->name ?? Auth::user()->name ?? 'Dokter' }}
-                </p>
-                <p class="doctor-greeting-subtitle">Bagaimana kabarmu?</p>
-            </div>
-        </div>
-        <div class="mediq-header-actions">
-            <div class="mediq-search-wrap">
-                <input type="text" class="mediq-search-input" placeholder="Cari..." />
-                <svg class="mediq-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-                </svg>
-            </div>
-            <button class="mediq-icon-btn">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-            </button>
-        </div>
-    </div>
+    @include('dokter.header')
 
     {{-- Stats + Donut Chart Row --}}
     <div class="dash-stats-row">
@@ -281,9 +249,8 @@
                             </span>
                         </td>
                         <td>
-<td>
                             <div style="display: flex; flex-direction: column; gap: 10px;">
-                                {{-- Dropdown Status dari Naswa --}}
+                                {{-- Dropdown Status --}}
                                 @if(($appointment->status_key ?? 'menunggu') !== 'dibatalkan')
                                     <select
                                         class="doctor-status-select"
@@ -299,23 +266,18 @@
                                     <span class="doctor-status-cancelled-label">—</span>
                                 @endif
 
-                                {{-- Tombol Aksi dari Main --}}
-                                <div style="display: flex; gap: 8px;">
-                                    <a href="{{ route('dokter.medical_notes.create', ['patient_id' => $appointment->patient_id ?? $appointment->user_uid ?? '']) }}" class="doctor-edit-button" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                {{-- Tombol Catatan Medis Terintegrasi --}}
+                                @if(($appointment->status_key ?? 'menunggu') !== 'dibatalkan')
+                                    <a href="{{ route('dokter.catatan_medis.create', $appointment->id) }}"
+                                       class="doctor-edit-button"
+                                       style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px;">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        Catat Medis
+                                        Buat Catatan Medis
                                     </a>
-                                    <a href="{{ route('dokter.prescriptions.create', ['patient_id' => $appointment->patient_id ?? $appointment->user_uid ?? '']) }}" class="doctor-edit-button" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background-color: #f1f5f9; color: #475569; border-color: #cbd5e1;">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        Tulis Resep
-                                    </a>
-                                </div>
+                                @endif
                             </div>
-                        </td>
                         </td>
                     </tr>
                 @empty
