@@ -80,6 +80,64 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', closeNotificationCenter);
     });
 
+    // Edit Review Modal
+    const editModal = document.getElementById('editReviewModal');
+    const editForm = document.getElementById('editReviewForm');
+    const editButtons = document.querySelectorAll('[data-edit-review-btn]');
+    const closeEditButtons = document.querySelectorAll('[data-edit-review-close]');
+
+    const openEditReviewModal = (event) => {
+        if (!editModal || !editForm) {
+            return;
+        }
+
+        const button = event.currentTarget;
+        const reviewId = button.dataset.id;
+        const rating = button.dataset.rating;
+        const text = button.dataset.text;
+
+        // Set action dynamically
+        editForm.action = `/pasien/layanan/ulasan/${reviewId}`;
+
+        // Set rating radio checked
+        const ratingInput = document.getElementById(`editRating${Math.round(parseFloat(rating))}`);
+        if (ratingInput) {
+            ratingInput.checked = true;
+        }
+
+        // Set text
+        const textarea = document.getElementById('editReviewText');
+        if (textarea) {
+            textarea.value = text;
+        }
+
+        editModal.classList.remove('hidden');
+        editModal.classList.add('flex');
+        textarea?.focus();
+    };
+
+    const closeEditReviewModal = () => {
+        if (!editModal) {
+            return;
+        }
+        editModal.classList.add('hidden');
+        editModal.classList.remove('flex');
+    };
+
+    editButtons.forEach((button) => {
+        button.addEventListener('click', openEditReviewModal);
+    });
+
+    closeEditButtons.forEach((button) => {
+        button.addEventListener('click', closeEditReviewModal);
+    });
+
+    editModal?.addEventListener('click', (event) => {
+        if (event.target === editModal) {
+            closeEditReviewModal();
+        }
+    });
+
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') {
             return;
@@ -87,6 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modal && !modal.classList.contains('hidden')) {
             closeReviewModal();
+        }
+
+        if (editModal && !editModal.classList.contains('hidden')) {
+            closeEditReviewModal();
         }
 
         if (notificationCenter && !notificationCenter.classList.contains('hidden')) {

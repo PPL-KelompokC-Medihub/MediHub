@@ -15,8 +15,8 @@
 
 <body class="bg-white font-[Poppins] text-[#111827]">
     <x-pasien.sidebar active="diagnosa" />
-    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
 
+    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
         {{-- ═══════════════════════════════════════════════
              MAIN CONTENT
         ═══════════════════════════════════════════════ --}}

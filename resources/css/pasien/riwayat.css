@@ -1,21 +1,15 @@
 /* Riwayat Jadwal Temu Styles */
 
-.filter-tab {
-  transition: all 0.2s ease;
-}
-
-.filter-tab.active {
-  color: #111827;
-  border-bottom-color: #3B82F6;
-}
-
-.filter-tab:not(.active) {
-  color: #4B5563;
-  border-bottom-color: transparent;
-}
-
 .appointment-card {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px -2px rgba(17, 24, 39, 0.03), 0 2px 8px -1px rgba(17, 24, 39, 0.02);
+  border: 1px solid rgba(243, 244, 246, 0.8);
+}
+
+.appointment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(17, 24, 39, 0.06), 0 4px 12px -2px rgba(17, 24, 39, 0.04);
+  border-color: rgba(59, 130, 246, 0.15);
 }
 
 .cancel-form {

@@ -14,8 +14,9 @@
 
 <body class="bg-white font-[Poppins] text-[#111827]">
     <x-pasien.sidebar active="riwayat" />
-<div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
-        <main class="h-screen min-w-0 overflow-y-auto bg-[#fbfbfb] px-8 py-8">
+
+    <div class="ml-[220px] grid h-screen grid-cols-[minmax(0,1fr)_390px] overflow-hidden bg-white">
+        <main class="h-screen overflow-y-auto bg-[#fbfbfb] px-8 py-8">
             <header class="mb-6 flex items-center justify-between gap-6">
                 <a
                     href="{{ route('pasien.profile') }}"
@@ -28,12 +29,13 @@
                     >
 
                     <div>
-                        <h1 class="text-lg font-semibold transition-colors duration-200 group-hover:text-[#58A7F7]">
-                            Halo, {{ auth()->user()->name ?? auth()->user()->fullname ?? 'Pasien' }} 👋
+                        <h1 class="text-lg font-semibold transition-colors duration-200 group-hover:text-[#58A7F7] flex items-center gap-1">
+                            Halo, {{ explode(' ', auth()->user()->name ?? auth()->user()->fullname ?? 'Pasien')[0] }}
+                            <i class="fa-regular fa-circle-user text-sm text-gray-500"></i>
                         </h1>
 
                         <p class="text-sm text-gray-500">
-                            Lihat riwayat jadwal temu kamu
+                            Bagaimana kabarmu?
                         </p>
                     </div>
                 </a>
@@ -43,13 +45,13 @@
                         <input
                             id="searchHistory"
                             type="text"
-                            placeholder="Cari jadwal temu..."
+                            placeholder="Di..."
                             class="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
                         >
                         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     </div>
 
-                    <button class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500">
+                    <button class="h-12 w-12 rounded-xl border border-gray-200 bg-white text-gray-500 flex items-center justify-center">
                         <i class="fa-regular fa-bell"></i>
                     </button>
                 </div>
@@ -80,7 +82,7 @@
             @endif
 
             <section class="mb-8">
-                <h2 class="mb-6 text-2xl font-semibold">Riwayat Jadwal Temu</h2>
+                <h2 class="mb-6 text-2xl font-bold text-gray-900">Riwayat Jadwal Temu</h2>
 
                 <!-- Filter Tabs -->
                 <div class="mb-6 flex gap-3 border-b border-gray-200 pb-4">
@@ -111,18 +113,18 @@
                             @php
                                 $statusKey = $appointment['status_key'] ?? strtolower($appointment['status']);
                                 $statusClasses = match ($statusKey) {
-                                    'selesai' => 'bg-green-100 text-green-700',
-                                    'dibatalkan' => 'bg-red-100 text-red-700',
-                                    default => 'bg-yellow-100 text-yellow-700',
+                                    'selesai' => 'bg-[#E8F8F0] text-[#0E7043]',
+                                    'dibatalkan' => 'bg-[#FEECEB] text-[#BC2218]',
+                                    default => 'bg-[#FFF9E6] text-[#B7791F]',
                                 };
-                                $statusIcon = match ($statusKey) {
-                                    'selesai' => 'fa-check-circle',
-                                    'dibatalkan' => 'fa-circle-xmark',
-                                    default => 'fa-clock',
+                                $dotColor = match ($statusKey) {
+                                    'selesai' => 'bg-[#0E7043]',
+                                    'dibatalkan' => 'bg-[#BC2218]',
+                                    default => 'bg-[#B7791F]',
                                 };
                             @endphp
                             <div
-                                class="appointment-card overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] cursor-pointer"
+                                class="appointment-card overflow-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-[2px]"
                                 data-status="{{ $statusKey }}"
                                 data-appointment-id="{{ $appointment['id'] }}"
                                 data-jenis="{{ $appointment['jenis'] }}"
@@ -139,47 +141,83 @@
                                 data-catatan-dokter="{{ $appointment['catatan_dokter'] ?? '-' }}"
                                 data-resep-obat="{{ $appointment['resep_obat'] ?? '-' }}"
                             >
-                                <div class="flex flex-col p-5">
+                                <div class="flex flex-col">
                                     <!-- Top Section -->
-                                    <div class="mb-5 flex items-start justify-between gap-3">
+                                    <div class="mb-4 flex items-start justify-between gap-3">
                                         <div class="flex items-center gap-3">
-                                            <i class="fa-solid fa-user-doctor text-2xl text-[#58A7F7] shrink-0"></i>
-
+                                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EBF5FF] text-[#3B82F6]">
+                                                <i class="fa-solid fa-user-doctor text-lg"></i>
+                                            </div>
                                             <div>
-                                                <h3 class="text-sm font-semibold text-blue-600">
+                                                <h3 class="text-sm font-bold text-gray-900">
                                                     {{ $appointment['jenis'] }}
                                                 </h3>
-                                                <p class="text-xs text-gray-400">
-                                                    {{ $appointment['rs'] }} - Bandung
+                                                <p class="text-xs text-gray-500">
+                                                    {{ $appointment['rs'] }}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $statusClasses }}">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                        <span class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold {{ $statusClasses }}">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $dotColor }}"></span>
                                             {{ $appointment['status'] }}
                                         </span>
                                     </div>
 
                                     <!-- Doctor Name -->
-                                    <div class="mb-4">
-                                        <h4 class="text-sm font-bold text-gray-900">
-                                            {{ $appointment['dokter'] }}
-                                        </h4>
-                                    </div>
+                                    <h4 class="text-base font-semibold text-gray-900 mb-4">
+                                        {{ $appointment['dokter'] }}
+                                    </h4>
 
                                     <!-- Date and Time -->
-                                    <div class="grid grid-cols-[1fr_1.35fr] gap-4 pt-4 border-t border-gray-100">
-                                        <div class="flex flex-col items-start gap-1.5">
-                                            <i class="fa-regular fa-calendar text-gray-400 text-base"></i>
-                                            <p class="text-[13px] text-gray-500 font-medium">{{ $appointment['tanggal'] }}</p>
+                                    <div class="flex items-center gap-6 pt-3 border-t border-gray-50">
+                                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                                            <i class="fa-regular fa-calendar text-sm text-gray-400"></i>
+                                            <span>{{ $appointment['tanggal'] }}</span>
                                         </div>
 
-                                        <div class="border-l border-gray-200 pl-4 flex flex-col items-start gap-1.5">
-                                            <i class="fa-regular fa-clock text-gray-400 text-base"></i>
-                                            <p class="text-[13px] text-gray-500 font-medium">{{ $appointment['jam'] }}</p>
+                                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                                            <i class="fa-regular fa-clock text-sm text-gray-400"></i>
+                                            <span>{{ $appointment['jam'] }}</span>
                                         </div>
                                     </div>
+
+                                    @if (($appointment['keluhan'] ?? null) || ($appointment['diagnosa'] ?? null) || ($appointment['catatan_medis'] ?? null) || ($appointment['resep_obat'] ?? null) || $statusKey === 'selesai')
+                                        <div class="mt-5 space-y-3 rounded-xl bg-[#F8FAFC] p-4 border border-gray-50">
+                                            @if ($appointment['keluhan'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-semibold text-gray-400">Keluhan</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['keluhan'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['diagnosa'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-semibold text-gray-400">Hasil Diagnosa</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['diagnosa'] }}</p>
+                                                </div>
+                                            @elseif ($statusKey === 'selesai')
+                                                <div>
+                                                    <p class="mb-1 text-xs font-semibold text-gray-400">Hasil Diagnosa</p>
+                                                    <p class="text-sm leading-relaxed text-gray-400 italic">Belum ada hasil diagnosa.</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['catatan_medis'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-semibold text-gray-400">Catatan Medis</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['catatan_medis'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if ($appointment['resep_obat'] ?? null)
+                                                <div>
+                                                    <p class="mb-1 text-xs font-semibold text-gray-400">Resep Obat</p>
+                                                    <p class="text-sm leading-relaxed text-gray-800">{{ $appointment['resep_obat'] }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -212,125 +250,80 @@
         <!-- Right Panel: Jadwal Mendatang -->
         <aside class="sticky top-0 flex h-screen w-[390px] shrink-0 flex-col border-l border-gray-200 bg-white px-7 py-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="text-lg font-semibold">Jadwal Temu Mendatang</h2>
-
-                <button 
-                    id="toggleCancelMode"
-                    type="button"
-                    class="text-sm text-blue-500 transition hover:text-blue-700"
-                >
+                <h2 class="text-lg font-bold text-gray-900">Jadwal Temu Mendatang</h2>
+                <button id="toggleCancelBtn" class="text-xs font-medium text-[#58A7F7] hover:text-[#4796E6] transition-colors">
                     Batalkan
                 </button>
             </div>
 
-            <form 
-                id="cancelAppointmentForm"
-                action="{{ route('pasien.booking.destroy') }}"
-                method="POST"
-                class="flex flex-col h-full"
-            >
-                @csrf
-                @method('DELETE')
+            <div class="flex flex-col gap-5 overflow-y-auto flex-1 pr-2">
+                @forelse ($upcomingBookings as $appointment)
+                    <div class="group">
+                        <p class="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">{{ $appointment['hari'] }}</p>
 
-                <div class="flex flex-col gap-5 overflow-y-auto flex-1 pr-1">
-
-                    @forelse ($upcomingBookings as $appointment)
-
-                        <div>
-                            <p class="mb-2 text-xs text-gray-400 uppercase tracking-wide">
-                                {{ $appointment['hari'] }}
-                            </p>
-
-                            <div 
-                                class="upcoming-appointment-card relative rounded-xl bg-white p-5 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-200 cursor-pointer"
-                                data-status="mendatang"
-                                data-appointment-id="{{ $appointment['id'] }}"
-                                data-jenis="{{ $appointment['jenis'] }}"
-                                data-dokter="{{ $appointment['dokter'] }}"
-                                data-dokter-foto="{{ $appointment['dokter_foto'] }}"
-                                data-tanggal="{{ $appointment['tanggal'] }}"
-                                data-jam="{{ $appointment['jam'] }}"
-                                data-keluhan="{{ $appointment['keluhan'] ?? '-' }}"
-                                data-alergi="{{ $appointment['alergi'] ?? '-' }}"
-                                data-alasan-pembatalan="{{ $appointment['alasan_pembatalan'] ?? '-' }}"
-                                data-pemeriksaan-fisik="{{ $appointment['pemeriksaan_fisik'] ?? '-' }}"
-                                data-diagnosis-sementara="{{ $appointment['diagnosis_sementara'] ?? '-' }}"
-                                data-rencana-penanganan="{{ $appointment['rencana_penanganan'] ?? '-' }}"
-                                data-catatan-dokter="{{ $appointment['catatan_dokter'] ?? '-' }}"
-                                data-resep-obat="{{ $appointment['resep_obat'] ?? '-' }}"
-                            >
-
-                                <!-- CHECKBOX -->
-                                <label class="cancel-checkbox absolute right-4 top-4 cursor-pointer hidden" onclick="event.stopPropagation();">
-                                    <input 
-                                        type="checkbox"
-                                        name="appointments[]"
-                                        value="{{ $appointment['id'] }}"
-                                        class="h-6 w-6 accent-red-500"
-                                        onclick="event.stopPropagation();"
-                                    >
-                                </label>
-
-                                <div class="mb-5 flex items-center gap-3">
-                                    <i class="fa-solid fa-user-doctor text-2xl text-[#58A7F7] shrink-0"></i>
-
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-blue-600">
-                                            {{ $appointment['jenis'] }}
-                                        </h3>
-
-                                        <p class="text-xs text-gray-500">
-                                            {{ $appointment['rs'] }}
-                                        </p>
-                                    </div>
+                        <div class="rounded-xl border border-gray-100 bg-[#F8FAFC] p-4 shadow-sm transition-all duration-200 hover:shadow-md">
+                            <div class="mb-4 flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EBF5FF] text-[#3B82F6]">
+                                    <i class="fa-solid fa-user-doctor text-lg"></i>
                                 </div>
 
-                                <div class="grid grid-cols-[1fr_1.35fr] gap-4">
-
-                                    <div>
-                                        <p class="text-xs text-gray-500">
-                                            Antrian
-                                        </p>
-
-                                        <h2 class="text-3xl font-semibold">
-                                            {{ $appointment['antrian'] }}
-                                        </h2>
-                                    </div>
-
-                                    <div class="border-l border-gray-200 pl-4">
-
-                                        <p class="mb-1 text-xs text-gray-500">
-                                            <i class="fa-regular fa-calendar mr-2"></i>
-                                            {{ $appointment['tanggal'] }}
-                                        </p>
-
-                                        <p class="text-xs text-gray-500">
-                                            <i class="fa-regular fa-clock mr-2"></i>
-                                            {{ $appointment['jam'] }}
-                                        </p>
-
-                                    </div>
-
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-bold text-[#1E3A8A]">
+                                        {{ $appointment['jenis'] }}
+                                    </h3>
+                                    <p class="text-xs text-gray-500">{{ $appointment['rs'] }}</p>
                                 </div>
                             </div>
                         </div>
 
-                    @empty
+                            <div class="grid grid-cols-[80px_1fr] gap-4 py-3 border-t border-gray-100">
+                                <!-- Antrian -->
+                                <div class="border-r border-gray-100 pr-3">
+                                    <p class="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-0.5">Antrian</p>
+                                    <p class="text-3xl font-extrabold text-gray-900 leading-tight">
+                                        {{ is_numeric($appointment['antrian']) ? sprintf('%02d', intval($appointment['antrian'])) : $appointment['antrian'] }}
+                                    </p>
+                                </div>
 
-                        <div class="mt-10 flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+                                <!-- DateTime -->
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-xs text-gray-600">
+                                        <i class="fa-regular fa-calendar text-gray-400 text-sm w-4"></i>
+                                        <span>{{ $appointment['tanggal'] }}</span>
+                                    </div>
 
-                            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-500">
-                                <i class="fa-regular fa-calendar-xmark text-2xl"></i>
+                                    <div class="flex items-center gap-2 text-xs text-gray-600">
+                                        <i class="fa-regular fa-clock text-gray-400 text-sm w-4"></i>
+                                        <span>{{ $appointment['jam'] }}</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <h3 class="mb-1 text-sm font-semibold text-gray-700">
-                                Belum ada jadwal temu
-                            </h3>
-
-                            <p class="text-xs leading-relaxed text-gray-400">
-                                Kamu belum memiliki jadwal temu mendatang.
-                            </p>
-
+                            <!-- Cancel Button (Toggled by "Batalkan" header button) -->
+                            <div class="cancel-btn-container hidden mt-3 pt-3 border-t border-gray-100">
+                                <form
+                                    method="POST"
+                                    action="{{ route('pasien.booking.cancel', ['id' => $appointment['id']]) }}"
+                                    class="cancel-form"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="cancellation_reason" value="Dibatalkan oleh pasien">
+                                    <button
+                                        type="submit"
+                                        class="w-full text-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-semibold border border-red-100 transition-all duration-200 hover:bg-red-100"
+                                        onclick="return confirm('Apakah Anda yakin ingin membatalkan jadwal temu ini?')"
+                                    >
+                                        Batalkan Jadwal Temu ini
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-[#F8FAFC] px-4 py-12 text-center">
+                        <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+                            <i class="fa-regular fa-calendar-check text-2xl"></i>
                         </div>
 
                     @endforelse
@@ -417,70 +410,41 @@
                     </div>
                 </div>
 
-                <!-- Data Pasien Section -->
-                <div class="mb-6">
-                    <h4 class="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2 mb-3">Data Pasien</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Nama Pasien</p>
-                            <p id="modalPatientName" class="text-xs font-semibold text-gray-800">Naswa Gyna Sahira</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Gejala</p>
-                            <p id="modalPatientSymptoms" class="text-xs text-gray-600 leading-relaxed">Demam, batuk kering, sakit kepala ringan...</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Riwayat Alergi</p>
-                            <p id="modalPatientAllergy" class="text-xs text-gray-600 font-medium">Aspirin</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Section (Dynamic content) -->
-                
-                <!-- Hasil Diagnosis Section -->
-                <div id="modalDiagnosisSection" class="hidden">
-                    <h4 class="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2 mb-3">Hasil Diagnosis</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-1.5">Pemeriksaan Fisik</p>
-                            <ul id="modalPhysicalExamList" class="text-xs text-gray-600 list-disc list-inside space-y-1 pl-1 leading-relaxed">
-                                <!-- Bullet points go here -->
-                            </ul>
-                            <p id="modalPhysicalExamText" class="text-xs text-gray-600 leading-relaxed hidden">-</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Diagnosis Sementara</p>
-                            <p id="modalTempDiagnosis" class="text-xs text-gray-800 font-semibold leading-relaxed">Infeksi saluran pernafasan...</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Rencana Penanganan</p>
-                            <p id="modalTreatmentPlan" class="text-xs text-gray-600 leading-relaxed">-</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Catatan Dokter</p>
-                            <p id="modalDoctorNotes" class="text-xs text-gray-600 leading-relaxed">-</p>
-                        </div>
-                        <div id="modalPrescriptionDiv">
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-0.5">Resep Obat</p>
-                            <p id="modalPrescription" class="text-xs text-gray-800 font-semibold leading-relaxed">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Alasan Pembatalan Section -->
-                <div id="modalCancellationSection" class="hidden">
-                    <h4 class="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2 mb-3">Alasan Pembatalan</h4>
-                    <p id="modalCancellationReason" class="text-xs text-gray-600 leading-relaxed">Salah memilih waktu jadwal</p>
-                </div>
-
-            </div>
-        </div>
+            <!-- Create Appointment Button -->
+            <a
+                href="{{ route('pasien.booking.create') }}"
+                class="mt-6 flex items-center justify-between rounded-xl bg-[#58A7F7] hover:bg-[#4796E6] px-5 py-4 text-sm font-medium text-white shadow-md transition-all duration-300 hover:-translate-y-[2px]"
+            >
+                <span>Buat Jadwal Temu</span>
+                <i class="fa-solid fa-circle-plus text-lg text-white"></i>
+            </a>
+        </aside>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Filter & Search Logic
+            // Toggle Cancel Buttons in upcoming schedules
+            const toggleCancelBtn = document.getElementById('toggleCancelBtn');
+            const cancelBtnContainers = document.querySelectorAll('.cancel-btn-container');
+
+            if (toggleCancelBtn) {
+                toggleCancelBtn.addEventListener('click', function() {
+                    cancelBtnContainers.forEach(container => {
+                        container.classList.toggle('hidden');
+                    });
+                    if (toggleCancelBtn.textContent.trim() === 'Batalkan') {
+                        toggleCancelBtn.textContent = 'Selesai';
+                        toggleCancelBtn.classList.remove('text-[#58A7F7]');
+                        toggleCancelBtn.classList.add('text-gray-500');
+                    } else {
+                        toggleCancelBtn.textContent = 'Batalkan';
+                        toggleCancelBtn.classList.remove('text-gray-500');
+                        toggleCancelBtn.classList.add('text-[#58A7F7]');
+                    }
+                });
+            }
+
+            // Tabs and search filter logic
             const filterTabs = document.querySelectorAll('.filter-tab');
             const appointmentCards = document.querySelectorAll('[data-history-grid] .appointment-card');
             const searchInput = document.getElementById('searchHistory');
@@ -509,17 +473,15 @@
                 tab.addEventListener('click', function() {
                     activeFilter = this.dataset.filter;
 
-                    // Update active tab
-                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Update active tab styles
+                    filterTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.style.borderBottomColor = 'transparent';
+                        t.style.color = '#4B5563';
+                    });
                     this.classList.add('active');
                     this.style.borderBottomColor = '#3B82F6';
                     this.style.color = '#111827';
-                    filterTabs.forEach(t => {
-                        if (t !== this) {
-                            t.style.borderBottomColor = 'transparent';
-                            t.style.color = '#4B5563';
-                        }
-                    });
 
                     applyFilters();
                 });

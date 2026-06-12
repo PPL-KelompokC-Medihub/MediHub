@@ -30,6 +30,10 @@ Route::middleware(['auth', 'role:pasien'])->group(function () {
         ->name('pasien.layanan');
     Route::post('/pasien/layanan/ulasan', [DashboardController::class, 'storeReview'])
         ->name('pasien.layanan.ulasan.store');
+    Route::put('/pasien/layanan/ulasan/{id}', [DashboardController::class, 'updateReview'])
+        ->name('pasien.layanan.ulasan.update');
+    Route::delete('/pasien/layanan/ulasan/{id}', [DashboardController::class, 'destroyReview'])
+        ->name('pasien.layanan.ulasan.destroy');
     Route::get('/pasien/riwayat', [DashboardController::class, 'riwayat'])
         ->name('pasien.riwayat');
     Route::get('/pasien/diagnosa', [DashboardController::class, 'diagnosa'])

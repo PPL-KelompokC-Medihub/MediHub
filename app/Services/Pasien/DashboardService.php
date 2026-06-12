@@ -394,7 +394,6 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
-        $medicalNotes = $this->medicalNotesForPatient($patientId);
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -423,13 +422,12 @@ class DashboardService
         foreach ($appointments as $appointment) {
             $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, null, $doctorUserUidMap, $catatanMedisMap);
 
-            if ($this->isHistoricalAppointment($appointment)) {
+            $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+            if ($status === 'selesai') {
                 $history[] = $formatted;
-
-                continue;
+            } else {
+                $upcoming[] = $formatted;
             }
-
-            $upcoming[] = $formatted;
         }
 
         usort($history, fn (array $left, array $right): int => strcmp(
@@ -862,6 +860,8 @@ class DashboardService
             $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
 
             return [
+                'id' => $review['id'] ?? null,
+                'patient_id' => $patientId,
                 'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
                 'rating' => number_format((float) ($review['rating'] ?? 0), 1),
                 'date' => $createdAt !== ''
