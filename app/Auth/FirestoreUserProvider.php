@@ -7,10 +7,12 @@ use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Throwable;
 
 class FirestoreUserProvider implements UserProvider
 {
     private const COLLECTION = 'Users';
+    private const SESSION_USER_KEY = 'medihub_user';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -23,13 +25,20 @@ class FirestoreUserProvider implements UserProvider
      */
     public function retrieveById($identifier): ?Authenticatable
     {
-        $data = $this->firestore->find(self::COLLECTION, (string) $identifier);
+        $identifier = (string) $identifier;
+        $data = null;
 
-        if (! $data) {
-            return null;
+        try {
+            $data = $this->firestore->find(self::COLLECTION, $identifier);
+        } catch (Throwable) {
+            $data = null;
         }
 
-        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($data));
+        if (! $data) {
+            return $this->retrieveFromSession($identifier);
+        }
+
+        return $this->createUser($data, remember: true);
     }
 
     /**
@@ -43,7 +52,7 @@ class FirestoreUserProvider implements UserProvider
             return null;
         }
 
-        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($data));
+        return $this->createUser($data, remember: true);
     }
 
     /**
@@ -69,7 +78,7 @@ class FirestoreUserProvider implements UserProvider
             return null;
         }
 
-        return new FirestoreUser($this->medihubRepository->hydrateDoctorData($results[0]));
+        return $this->createUser($results[0], remember: true);
     }
 
     /**
@@ -88,5 +97,76 @@ class FirestoreUserProvider implements UserProvider
     public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false): void
     {
         // No-op: Firebase manages passwords
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function createUser(array $data, bool $remember = false): FirestoreUser
+    {
+        $userData = $this->medihubRepository->hydrateDoctorData($data);
+
+        if ($remember) {
+            $this->rememberSessionUser($userData);
+        }
+
+        return new FirestoreUser($userData);
+    }
+
+    private function retrieveFromSession(string $identifier): ?Authenticatable
+    {
+        $sessionUser = $this->sessionUserData();
+
+        if (! $sessionUser || (string) ($sessionUser['id'] ?? '') !== $identifier) {
+            return null;
+        }
+
+        return new FirestoreUser($sessionUser);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function sessionUserData(): ?array
+    {
+        if (! app()->bound('request') || ! request()->hasSession()) {
+            return null;
+        }
+
+        $sessionUser = request()->session()->get(self::SESSION_USER_KEY);
+
+        return is_array($sessionUser) ? $sessionUser : null;
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     */
+    private function rememberSessionUser(array $userData): void
+    {
+        if (! app()->bound('request') || ! request()->hasSession()) {
+            return;
+        }
+
+        request()->session()->put(self::SESSION_USER_KEY, $this->sessionSafeUserData($userData));
+        request()->session()->put('medihub_user_role', $userData['role'] ?? null);
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     * @return array<string, mixed>
+     */
+    private function sessionSafeUserData(array $userData): array
+    {
+        unset(
+            $userData['password'],
+            $userData['remember_token'],
+            $userData['api_token'],
+        );
+
+        if (! isset($userData['name'])) {
+            $userData['name'] = $userData['fullname'] ?? null;
+        }
+
+        return $userData;
     }
 }

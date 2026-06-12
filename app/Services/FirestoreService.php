@@ -155,6 +155,8 @@ class FirestoreService
      */
     public function where(string $collection, string $field, string $operator, mixed $value, ?int $limit = null): array
     {
+        $this->initializeIfNeeded();
+
         $operatorMap = [
             '=' => 'EQUAL',
             '==' => 'EQUAL',

@@ -190,9 +190,18 @@ class ProfileController extends Controller
     private function getCurrentUserData(): array
     {
         $userId = (string) Auth::id();
+        $currentUser = Auth::user();
+        $sessionUserData = $currentUser && method_exists($currentUser, 'getAttributes')
+            ? $currentUser->getAttributes()
+            : [];
+
         $userData = $this->doctorRepository->findUser($userId);
 
-        abort_if(! $userData, 404);
+        if (! $userData) {
+            abort_if((string) ($sessionUserData['id'] ?? '') !== $userId, 404);
+
+            return $sessionUserData;
+        }
 
         return $this->doctorRepository->hydrateDoctorData($userData);
     }

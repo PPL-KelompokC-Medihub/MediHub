@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/login', fn () => redirect()->route('login-dokter'))->name('login');
+Route::get('/login', fn () => redirect()->route('login-pasien'))->name('login');
 
 Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
 Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');

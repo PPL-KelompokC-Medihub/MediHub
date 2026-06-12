@@ -311,6 +311,10 @@ class DashboardService
             }
         }
 
+        $diagnosa = $dbDiagnosa ?? $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']);
+        $catatanDokter = $dbCatatan ?? $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']);
+        $resepObat = $dbResep ?? $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']);
+
         return [
             'id' => (string) ($appointment['id'] ?? ''),
             'jenis' => $doctor['specialization'] ?? 'Jadwal Temu',
@@ -329,10 +333,12 @@ class DashboardService
             'alergi' => $appointment['allergy_history'] ?? null,
             'alasan_pembatalan' => $appointment['cancellation_reason'] ?? null,
             'pemeriksaan_fisik' => $pemeriksaanFisik,
-            'diagnosis_sementara' => $dbDiagnosa ?? $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
+            'diagnosa' => $diagnosa,
+            'diagnosis_sementara' => $diagnosa,
             'rencana_penanganan' => $rencanaPenanganan,
-            'catatan_dokter' => $dbCatatan ?? $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
-            'resep_obat' => $dbResep ?? $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']),
+            'catatan_medis' => $catatanDokter,
+            'catatan_dokter' => $catatanDokter,
+            'resep_obat' => $resepObat,
         ];
     }
 

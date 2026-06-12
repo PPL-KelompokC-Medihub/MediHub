@@ -41,8 +41,9 @@ class FirebaseSessionController extends Controller
         Log::info('FirebaseSessionController.login called', [
             'method' => $request->method(),
             'path' => $request->path(),
-            'body' => $request->json()->all(),
-            'headers_csrf' => $request->header('X-CSRF-TOKEN'),
+            'role' => $request->json('role'),
+            'email' => $request->json('email'),
+            'has_id_token' => $request->json('id_token') !== null,
         ]);
 
         $validated = $request->validate([
@@ -57,7 +58,7 @@ class FirebaseSessionController extends Controller
         ]);
 
         // Try local database authentication as fallback for development/testing
-        if (isset($validated['email']) && isset($validated['password']) && ! $validated['id_token']) {
+        if (isset($validated['email']) && isset($validated['password']) && empty($validated['id_token'])) {
             $localAuth = $this->attemptLocalAuth($request, $validated);
             if ($localAuth) {
                 return $localAuth;
@@ -107,7 +108,25 @@ class FirebaseSessionController extends Controller
             $userData = $this->doctorRepository->hydrateDoctorData($userData);
         } catch (RuntimeException $e) {
             Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
-            return $this->loginErrorResponse($request, $e->getMessage(), 422);
+
+            if (! $this->canUseSessionOnlyLoginFallback($e)) {
+                return $this->loginErrorResponse($request, $e->getMessage(), 422);
+            }
+
+            $userData = $this->firebaseSessionOnlyUserData(
+                uid: $uid,
+                email: $email,
+                name: $name,
+                emailVerified: $emailVerified,
+                role: $validated['role'] ?? null,
+            );
+
+            Log::warning('Continuing with session-only Firebase login because Firestore is unavailable.', [
+                'user_id' => $uid,
+                'email' => $email,
+                'role' => $userData['role'] ?? null,
+                'message' => $e->getMessage(),
+            ]);
         } catch (\Throwable $e) {
             Log::error('Unexpected Firestore user sync failure', ['message' => $e->getMessage()]);
             return $this->loginErrorResponse($request, 'Login gagal saat menyimpan sesi pengguna.', 500);
@@ -119,7 +138,7 @@ class FirebaseSessionController extends Controller
         // jadi "remember me" cookie flow tidak dipakai di sini.
         Auth::login($user, false);
         $request->session()->regenerate();
-        $request->session()->put('medihub_user_role', $userData['role'] ?? null);
+        $this->rememberAuthenticatedUser($request, $userData);
         $request->session()->save();
 
         // Dokter yang belum mengisi profil dikirim ke form profil
@@ -188,7 +207,7 @@ class FirebaseSessionController extends Controller
         $user = new FirestoreUser($userData);
         Auth::login($user, false);
         $request->session()->regenerate();
-        $request->session()->put('medihub_user_role', $userData['role'] ?? $validated['role']);
+        $this->rememberAuthenticatedUser($request, $userData, $validated['role']);
         $request->session()->save();
 
         // Tentukan redirect berdasarkan kelengkapan profil
@@ -282,6 +301,42 @@ class FirebaseSessionController extends Controller
         $normalized = strtolower(trim($role));
 
         return in_array($normalized, self::VALID_ROLES, true) ? $normalized : null;
+    }
+
+    private function canUseSessionOnlyLoginFallback(RuntimeException $exception): bool
+    {
+        if (! app()->environment(['local', 'testing'])) {
+            return false;
+        }
+
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'firestore')
+            || str_contains($message, 'dokumen')
+            || str_contains($message, 'document');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function firebaseSessionOnlyUserData(
+        string $uid,
+        string $email,
+        string $name,
+        bool $emailVerified,
+        ?string $role,
+    ): array {
+        $displayName = $name !== '' ? $name : Str::before($email, '@');
+
+        return [
+            'id' => $uid,
+            'fullname' => $displayName,
+            'name' => $displayName,
+            'email' => $email,
+            'role' => $this->normalizeRole($role) ?? 'pasien',
+            'email_verified' => $emailVerified,
+            'firestore_unavailable' => true,
+        ];
     }
 
     /**
@@ -402,19 +457,30 @@ class FirebaseSessionController extends Controller
             return null;
         }
 
-        $user = User::where('email', $email)->first();
+        try {
+            $user = User::where('email', $email)->first();
+        } catch (\Throwable $e) {
+            Log::warning('Local database auth unavailable; continuing with Firebase auth.', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
 
         if (! $user || ! password_verify($password, $user->password)) {
             return null;
         }
 
+        $userData = $this->localUserData($user);
+        $sessionUser = new FirestoreUser($userData);
+
         // Local auth success
-        Auth::login($user, false);
+        Auth::login($sessionUser, false);
         $request->session()->regenerate();
-        $request->session()->put('medihub_user_role', $user->role);
+        $this->rememberAuthenticatedUser($request, $userData);
         $request->session()->save();
 
-        $redirectUrl = $user->role === 'dokter' ? route('dokter.dashboard') : route('pasien.beranda');
+        $redirectUrl = $userData['role'] === 'dokter' ? route('dokter.dashboard') : route('pasien.beranda');
 
         if (! $request->expectsJson() && ! $request->wantsJson()) {
             return redirect()->intended($redirectUrl);
@@ -424,5 +490,50 @@ class FirebaseSessionController extends Controller
             'message' => 'Login berhasil.',
             'redirect' => $redirectUrl,
         ]);
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     */
+    private function rememberAuthenticatedUser(Request $request, array $userData, ?string $fallbackRole = null): void
+    {
+        $sessionUser = $this->sessionSafeUserData($userData);
+
+        $request->session()->put('medihub_user', $sessionUser);
+        $request->session()->put('medihub_user_role', $sessionUser['role'] ?? $fallbackRole);
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     * @return array<string, mixed>
+     */
+    private function sessionSafeUserData(array $userData): array
+    {
+        unset(
+            $userData['password'],
+            $userData['remember_token'],
+            $userData['api_token'],
+        );
+
+        if (! isset($userData['name'])) {
+            $userData['name'] = $userData['fullname'] ?? null;
+        }
+
+        return $userData;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function localUserData(User $user): array
+    {
+        return [
+            'id' => (string) $user->getAuthIdentifier(),
+            'fullname' => $user->name,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $this->normalizeRole((string) $user->role) ?? 'pasien',
+            'email_verified' => true,
+        ];
     }
 }

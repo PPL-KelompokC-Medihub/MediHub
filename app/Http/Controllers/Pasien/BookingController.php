@@ -42,6 +42,10 @@ class BookingController extends Controller
         $validated = $request->validate([
             'appointments' => ['required', 'array', 'min:1'],
             'appointments.*' => ['required', 'string'],
+        ], [
+            'appointments.required' => 'Pilih jadwal temu yang ingin dibatalkan terlebih dahulu.',
+            'appointments.array' => 'Pilih jadwal temu yang ingin dibatalkan terlebih dahulu.',
+            'appointments.min' => 'Pilih jadwal temu yang ingin dibatalkan terlebih dahulu.',
         ]);
 
         $bookingService->deleteAppointment($validated['appointments']);

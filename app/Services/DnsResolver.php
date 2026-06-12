@@ -21,7 +21,7 @@ class DnsResolver
 
         foreach ($hosts as $host) {
             if (! isset(self::$resolvedIps[$host])) {
-                $ip = self::resolveHostViaNslookup($host);
+                $ip = self::resolveHost($host);
                 if ($ip) {
                     self::$resolvedIps[$host] = $ip;
                 }
@@ -36,25 +36,30 @@ class DnsResolver
         return $mappings;
     }
 
-    private static function resolveHostViaNslookup(string $host): ?string
+    private static function resolveHost(string $host): ?string
     {
         try {
-            $cmd = sprintf('nslookup %s 8.8.8.8', escapeshellarg($host));
-            $output = shell_exec($cmd);
-            if (! $output) {
-                return null;
-            }
+            $records = dns_get_record($host, DNS_A) ?: [];
 
-            $parts = explode('Name:', $output);
-            if (count($parts) < 2) {
-                return null;
-            }
+            foreach ($records as $record) {
+                $ip = $record['ip'] ?? null;
 
-            if (preg_match_all('/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/', $parts[1], $matches)) {
-                return $matches[0][0] ?? null;
+                if (is_string($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    return $ip;
+                }
             }
         } catch (\Throwable) {
-            // fallback
+            // Let the HTTP client perform normal DNS resolution.
+        }
+
+        try {
+            foreach (gethostbynamel($host) ?: [] as $ip) {
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    return $ip;
+                }
+            }
+        } catch (\Throwable) {
+            // Let the HTTP client perform normal DNS resolution.
         }
 
         return null;
