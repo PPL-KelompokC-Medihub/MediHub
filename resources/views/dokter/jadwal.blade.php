@@ -15,7 +15,7 @@
     >
     <div class="doctor-schedule-header">
         <h1 class="doctor-schedule-page-title">Jadwal Saya</h1>
-        <button type="button" data-schedule-modal="create" class="mediq-primary-btn doctor-create-button">
+        <button dusk="create-schedule-button" type="button" data-schedule-modal="create" class="mediq-primary-btn doctor-create-button">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path d="M12 5v14M5 12h14"/>
             </svg>
@@ -35,6 +35,7 @@
                         <p class="doctor-schedule-time">{{ $j->jam_mulai }} - {{ $j->jam_selesai }}</p>
                         <div class="doctor-schedule-actions">
                             <button
+                                dusk="delete-schedule-button"
                                 type="button"
                                 data-schedule-delete="{{ $j->id }}"
                                 class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
@@ -81,6 +82,7 @@
                         <p class="doctor-schedule-time">{{ $j->jam_mulai ?? '-' }} - {{ $j->jam_selesai ?? '-' }}</p>
                         <div class="doctor-schedule-actions">
                             <button
+                                dusk="delete-schedule-button"
                                 type="button"
                                 data-schedule-delete="{{ $j->id }}"
                                 class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
@@ -122,23 +124,23 @@
             <div class="doctor-schedule-form-fields">
                 <div>
                     <label class="mediq-label">Tanggal</label>
-                    <input type="date" id="input-tanggal" class="mediq-input" />
+                    <input dusk="schedule-date" type="date" id="input-tanggal" class="mediq-input" />
                 </div>
                 <div>
                     <label class="mediq-label">Jam Mulai</label>
-                    <input type="time" id="input-jam-mulai" class="mediq-input" />
+                    <input dusk="schedule-start-time" type="time" id="input-jam-mulai" class="mediq-input" />
                 </div>
                 <div>
                     <label class="mediq-label">Jam Berakhir</label>
-                    <input type="time" id="input-jam-selesai" class="mediq-input" />
+                    <input dusk="schedule-end-time" type="time" id="input-jam-selesai" class="mediq-input" />
                 </div>
             </div>
 
             <div class="doctor-modal-actions">
-                <button type="button" data-schedule-close class="doctor-modal-cancel">
+                <button dusk="schedule-close" type="button" data-schedule-close class="doctor-modal-cancel">
                     Batal
                 </button>
-                <button id="modal-submit" type="button" data-schedule-submit class="mediq-primary-btn doctor-modal-submit">
+                <button id="modal-submit" dusk="save-schedule-button" type="button" data-schedule-submit class="mediq-primary-btn doctor-modal-submit">
                     Simpan Jadwal
                 </button>
             </div>
