@@ -7,15 +7,17 @@
 @endpush
 
 @section('content')
+    @include('dokter.header')
     <div
         class="doctor-schedule-root"
         data-doctor-schedule
         data-store-url="{{ route('dokter.jadwal.store') }}"
         data-base-url="/dokter/jadwal"
+        style="margin-top: 24px;"
     >
     <div class="doctor-schedule-header">
         <h1 class="doctor-schedule-page-title">Jadwal Saya</h1>
-        <button type="button" data-schedule-modal="create" class="mediq-primary-btn doctor-create-button">
+        <button dusk="create-schedule-button" type="button" data-schedule-modal="create" class="mediq-primary-btn doctor-create-button">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path d="M12 5v14M5 12h14"/>
             </svg>
@@ -35,6 +37,7 @@
                         <p class="doctor-schedule-time">{{ $j->jam_mulai }} - {{ $j->jam_selesai }}</p>
                         <div class="doctor-schedule-actions">
                             <button
+                                dusk="delete-schedule-button"
                                 type="button"
                                 data-schedule-delete="{{ $j->id }}"
                                 class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
@@ -81,6 +84,7 @@
                         <p class="doctor-schedule-time">{{ $j->jam_mulai ?? '-' }} - {{ $j->jam_selesai ?? '-' }}</p>
                         <div class="doctor-schedule-actions">
                             <button
+                                dusk="delete-schedule-button"
                                 type="button"
                                 data-schedule-delete="{{ $j->id }}"
                                 class="doctor-schedule-btn-icon doctor-schedule-btn-delete"
@@ -122,23 +126,23 @@
             <div class="doctor-schedule-form-fields">
                 <div>
                     <label class="mediq-label">Tanggal</label>
-                    <input type="date" id="input-tanggal" class="mediq-input" />
+                    <input dusk="schedule-date" type="date" id="input-tanggal" class="mediq-input" />
                 </div>
                 <div>
                     <label class="mediq-label">Jam Mulai</label>
-                    <input type="time" id="input-jam-mulai" class="mediq-input" />
+                    <input dusk="schedule-start-time" type="time" id="input-jam-mulai" class="mediq-input" />
                 </div>
                 <div>
                     <label class="mediq-label">Jam Berakhir</label>
-                    <input type="time" id="input-jam-selesai" class="mediq-input" />
+                    <input dusk="schedule-end-time" type="time" id="input-jam-selesai" class="mediq-input" />
                 </div>
             </div>
 
             <div class="doctor-modal-actions">
-                <button type="button" data-schedule-close class="doctor-modal-cancel">
+                <button dusk="schedule-close" type="button" data-schedule-close class="doctor-modal-cancel">
                     Batal
                 </button>
-                <button id="modal-submit" type="button" data-schedule-submit class="mediq-primary-btn doctor-modal-submit">
+                <button id="modal-submit" dusk="save-schedule-button" type="button" data-schedule-submit class="mediq-primary-btn doctor-modal-submit">
                     Simpan Jadwal
                 </button>
             </div>
@@ -148,6 +152,62 @@
 @endsection
 
 @section('rightbar')
-    <h3 class="doctor-rightbar-title">Jadwal Temu Mendatang</h3>
-    <p class="doctor-rightbar-empty">Tidak ada jadwal mendatang</p>
+    <div class="mediq-right-head">
+        <h3 class="doctor-rightbar-title">Jadwal Temu Mendatang</h3>
+    </div>
+
+    @php
+        $activeAppointments = collect($appointments)->filter(function($a) {
+            return !in_array($a->status_key ?? '', ['dibatalkan', 'selesai'], true);
+        });
+        $grouped = $activeAppointments->groupBy(fn($a) => \Carbon\Carbon::parse($a->appointment_date ?? now())->toDateString());
+    @endphp
+
+    @forelse($grouped->take(3) as $date => $items)
+        <div class="dash-rightbar-date-group">
+            <p class="dash-rightbar-date-label">
+                {{ \Carbon\Carbon::parse($date)->isToday() ? 'Hari ini' : (\Carbon\Carbon::parse($date)->isTomorrow() ? 'Besok' : \Carbon\Carbon::parse($date)->translatedFormat('d M Y')) }}
+            </p>
+            @foreach($items->take(3) as $appointment)
+                <a href="{{ route('dokter.catatan_medis.create', $appointment->id) }}" class="mediq-appointment-card hover-card-link" style="text-decoration: none; display: block; margin-bottom: 12px; position: relative;">
+                    <div class="mediq-appointment-head">
+                        <div class="mediq-app-icon">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <span class="doctor-status-pill doctor-status-{{ $appointment->status_key ?? 'menunggu' }}" style="font-size: 11px; padding: 3px 8px;">
+                            {{ $appointment->display_status ?? 'Menunggu' }}
+                        </span>
+                    </div>
+                    <p class="mediq-appointment-doctor" style="margin-bottom: 2px;">{{ $appointment->patient_name ?? 'Pasien' }}</p>
+                    <p style="font-size: 12px; color: #aab0bc; margin: 0 0 10px 0;">{{ $appointment->display_complaint ?? 'Keluhan: -' }}</p>
+                    <div class="mediq-appointment-body">
+                        <div class="mediq-app-queue">
+                            <p class="mediq-muted">Antrian</p>
+                            <p class="mediq-queue-number">{{ str_pad($appointment->queue_number ?? $loop->iteration, 2, '0', STR_PAD_LEFT) }}</p>
+                        </div>
+                        <div class="mediq-app-datetime">
+                            <p class="mediq-muted">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                                </svg>
+                                {{ \Carbon\Carbon::parse($appointment->appointment_date)->translatedFormat('d M Y') }}
+                            </p>
+                            @if(!blank($appointment->appointment_time_start ?? null))
+                            <p class="mediq-muted">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                                </svg>
+                                {{ $appointment->appointment_time_start }} - {{ $appointment->appointment_time_end ?? '' }}
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    @empty
+        <p class="doctor-rightbar-empty">Tidak ada jadwal mendatang</p>
+    @endforelse
 @endsection

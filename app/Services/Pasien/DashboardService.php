@@ -178,6 +178,23 @@ class DashboardService
             }
         }
 
+        $documentDocuments = $this->firestore->all('Dokter_dokumen');
+        $documents = [];
+        foreach ($documentDocuments as $doc) {
+            $docId = (string) ($doc['dokterid'] ?? '');
+            if ($docId !== '') {
+                $documents[$docId] = $doc;
+            }
+        }
+
+        $doctorImages = [
+            asset('images/dr-clara.png'),
+            asset('images/dr-ariel.png'),
+            asset('images/dr-ratna.png'),
+            asset('images/dr-andini.png'),
+        ];
+        $fallbackIndex = 0;
+
         $summaries = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doctor) {
             $doctorId = (string) ($doctor['id'] ?? '');
@@ -185,9 +202,15 @@ class DashboardService
             $user = $users[$userId] ?? [];
 
             if ($doctorId !== '') {
+                $foto = isset($documents[$doctorId]['profile_pict'])
+                    ? asset('storage/'.$documents[$doctorId]['profile_pict'])
+                    : $doctorImages[$fallbackIndex % count($doctorImages)];
+                $fallbackIndex++;
+
                 $summaries[$doctorId] = [
                     'name' => 'dr. '.($user['fullname'] ?? $doctor['email'] ?? 'Dokter'),
                     'specialization' => $specializations[$doctorId] ?? 'Jadwal Temu',
+                    'foto' => $foto,
                 ];
             }
         }
@@ -238,11 +261,15 @@ class DashboardService
     /**
      * Format single appointment for history display
      */
-    private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null, array $doctorUserUidMap = []): array
+    private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null, array $doctorUserUidMap = [], array $catatanMedisMap = []): array
     {
         $date = (string) ($appointment['appointment_date'] ?? '');
         $doctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
-        $doctor = $doctorSummaries[$doctorId] ?? ['name' => 'Dokter', 'specialization' => 'Jadwal Temu'];
+        $doctor = $doctorSummaries[$doctorId] ?? [
+            'name' => 'Dokter',
+            'specialization' => 'Jadwal Temu',
+            'foto' => asset('images/default-avatar.svg')
+        ];
         $timeStart = (string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? '');
         $timeEnd = (string) ($appointment['appointment_time_end'] ?? '');
         $scheduleTime = trim((string) ($appointment['schedule_time_range'] ?? ''));
@@ -253,18 +280,23 @@ class DashboardService
             'dibatalkan' => 'Dibatalkan',
             default => trim((string) ($appointment['status'] ?? '')) !== ''
                 ? ucfirst((string) ($appointment['status'] ?? ''))
-                : 'Menunggu',
+                : 'Mendatang',
         };
 
         $formattedTime = $timeStart !== ''
             ? trim($timeStart.($timeEnd !== '' ? ' - '.$timeEnd : ''))
             : $scheduleTime;
 
-        $dbDiagnosa = null;
-        $dbCatatan = null;
-        $dbResep = null;
+        $appointmentId = (string) ($appointment['id'] ?? '');
+        $catatan = $catatanMedisMap[$appointmentId] ?? null;
 
-        if ($medicalNotes) {
+        $dbDiagnosa = $catatan['hasil_asesmen'] ?? null;
+        $dbCatatan = $catatan['rekomendasi'] ?? null;
+        $dbResep = $catatan['resep_obat'] ?? null;
+        $pemeriksaanFisik = $catatan['hasil_observasi'] ?? null;
+        $rencanaPenanganan = $catatan['kesimpulan'] ?? null;
+
+        if ($medicalNotes && !$catatan) {
             $doctorUserUid = $doctorUserUidMap[$doctorId] ?? '';
             $matchingNote = $medicalNotes->first(function ($note) use ($doctorId, $doctorUserUid, $date) {
                 $noteDocId = (string) $note->doctor_id;
@@ -284,6 +316,7 @@ class DashboardService
             'jenis' => $doctor['specialization'] ?? 'Jadwal Temu',
             'rs' => 'RS Medic Center',
             'dokter' => $doctor['name'] ?? 'Dokter',
+            'dokter_foto' => $doctor['foto'] ?? asset('images/default-avatar.svg'),
             'tanggal' => $date === '' ? '-' : Carbon::parse($date)->translatedFormat('d F Y'),
             'jam' => $formattedTime === '' ? '-' : $formattedTime,
             'antrian' => (string) ($appointment['queue_number'] ?? '-'),
@@ -293,8 +326,12 @@ class DashboardService
             'date_sort' => $date,
             'time_sort' => $timeStart,
             'keluhan' => $this->firstFilled($appointment, ['complaint', 'keluhan']),
-            'diagnosa' => $dbDiagnosa ?? $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
-            'catatan_medis' => $dbCatatan ?? $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
+            'alergi' => $appointment['allergy_history'] ?? null,
+            'alasan_pembatalan' => $appointment['cancellation_reason'] ?? null,
+            'pemeriksaan_fisik' => $pemeriksaanFisik,
+            'diagnosis_sementara' => $dbDiagnosa ?? $this->firstFilled($appointment, ['diagnosis', 'diagnosa', 'hasil_diagnosa', 'medical_diagnosis']),
+            'rencana_penanganan' => $rencanaPenanganan,
+            'catatan_dokter' => $dbCatatan ?? $this->firstFilled($appointment, ['medical_note', 'catatan_medis', 'doctor_note', 'notes']),
             'resep_obat' => $dbResep ?? $this->firstFilled($appointment, ['prescription', 'resep', 'resep_obat', 'medicine']),
         ];
     }
@@ -320,22 +357,7 @@ class DashboardService
     {
         $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
 
-        if (in_array($status, ['selesai', 'dibatalkan'], true)) {
-            return true;
-        }
-
-        $date = trim((string) ($appointment['appointment_date'] ?? ''));
-        if ($date === '') {
-            return false;
-        }
-
-        $time = trim((string) ($appointment['appointment_time_start'] ?? $appointment['appointment_time'] ?? ''));
-
-        try {
-            return Carbon::parse(trim($date.' '.$time))->isPast();
-        } catch (\Throwable) {
-            return false;
-        }
+        return in_array($status, ['selesai', 'dibatalkan'], true);
     }
 
     /**
@@ -372,7 +394,6 @@ class DashboardService
             fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
         ));
 
-        $medicalNotes = $this->medicalNotesForPatient($patientId);
 
         $doctorUserUidMap = [];
         foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
@@ -383,19 +404,30 @@ class DashboardService
             }
         }
 
+        $catatanMedisMap = [];
+        try {
+            foreach ($this->firestore->all('CatatanMedis') as $catatan) {
+                $aptId = (string) ($catatan['appointment_id'] ?? '');
+                if ($aptId !== '') {
+                    $catatanMedisMap[$aptId] = $catatan;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to load CatatanMedis collection', ['message' => $e->getMessage()]);
+        }
+
         $history = [];
         $upcoming = [];
 
         foreach ($appointments as $appointment) {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap);
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, null, $doctorUserUidMap, $catatanMedisMap);
 
-            if ($this->isHistoricalAppointment($appointment)) {
+            $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
+            if ($status === 'selesai') {
                 $history[] = $formatted;
-
-                continue;
+            } else {
+                $upcoming[] = $formatted;
             }
-
-            $upcoming[] = $formatted;
         }
 
         usort($history, fn (array $left, array $right): int => strcmp(
@@ -409,8 +441,8 @@ class DashboardService
 
         return [
             'patient' => $patient,
-            'riwayatJadwal' => $history,
-            'jadwalMendatang' => $upcoming,
+            'historyBookings' => $history,
+            'upcomingBookings' => $upcoming,
         ];
     }
 
@@ -449,10 +481,22 @@ class DashboardService
             }
         }
 
+        $catatanMedisMap = [];
+        try {
+            foreach ($this->firestore->all('CatatanMedis') as $catatan) {
+                $aptId = (string) ($catatan['appointment_id'] ?? '');
+                if ($aptId !== '') {
+                    $catatanMedisMap[$aptId] = $catatan;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to load CatatanMedis collection', ['message' => $e->getMessage()]);
+        }
+
         $now = Carbon::now();
 
-        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $medicalNotes, $doctorUserUidMap, $now): array {
-            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap);
+        $diagnosisList = array_map(function (array $appointment) use ($doctorSummaries, $medicalNotes, $doctorUserUidMap, $catatanMedisMap, $now): array {
+            $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, $medicalNotes, $doctorUserUidMap, $catatanMedisMap);
 
             // Determine period key for front-end filtering
             $dateStr = trim((string) ($appointment['appointment_date'] ?? ''));
@@ -816,6 +860,8 @@ class DashboardService
             $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
 
             return [
+                'id' => $review['id'] ?? null,
+                'patient_id' => $patientId,
                 'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
                 'rating' => number_format((float) ($review['rating'] ?? 0), 1),
                 'date' => $createdAt !== ''

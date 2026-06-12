@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layanan - MediHub</title>
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/js/pasien/layanan.js'])
 
@@ -150,16 +151,49 @@
                 <div class="min-h-0 flex-1 overflow-y-auto pr-1">
                     @forelse ($reviews as $review)
                         <article class="mb-7 border-b border-gray-100 pb-7 last:mb-0 last:border-b-0">
-                            <div class="mb-3 flex items-start gap-3">
-                                <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover ring-2 ring-gray-50">
+                            <div class="mb-3 flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-3 min-w-0 flex-1">
+                                    <img src="{{ $review['avatar'] }}" alt="{{ $review['name'] }}" class="h-11 w-11 rounded-full object-cover ring-2 ring-gray-50">
 
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="truncate text-[16px] font-medium leading-tight text-black">{{ $review['name'] }}</h3>
-                                    <p class="mt-1 text-[15px] text-[#777777]">
-                                        <i class="fa-solid fa-star text-[#F3CC4E]"></i>
-                                        {{ $review['rating'] }}
-                                    </p>
+                                    <div class="min-w-0 flex-1">
+                                        <h3 class="truncate text-[16px] font-medium leading-tight text-black">{{ $review['name'] }}</h3>
+                                        <p class="mt-1 text-[15px] text-[#777777]">
+                                            <i class="fa-solid fa-star text-[#F3CC4E]"></i>
+                                            {{ $review['rating'] }}
+                                        </p>
+                                    </div>
                                 </div>
+
+                                @if (($review['patient_id'] ?? null) === (string) Auth::id())
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <!-- Edit button -->
+                                        <button
+                                            type="button"
+                                            class="text-blue-500 hover:text-blue-700 transition"
+                                            data-edit-review-btn
+                                            data-id="{{ $review['id'] }}"
+                                            data-rating="{{ $review['rating'] }}"
+                                            data-text="{{ $review['text'] }}"
+                                            title="Ubah Ulasan"
+                                        >
+                                            <i class="fa-regular fa-pen-to-square text-base"></i>
+                                        </button>
+
+                                        <!-- Hapus form -->
+                                        <form
+                                            method="POST"
+                                            action="{{ route('pasien.layanan.ulasan.destroy', ['id' => $review['id']]) }}"
+                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?')"
+                                            class="inline"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:text-red-700 transition" title="Hapus Ulasan">
+                                                <i class="fa-regular fa-trash-can text-base"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
                             </div>
 
                             <p class="mb-5 text-justify text-[15px] leading-[1.35] text-black">{{ $review['text'] }}</p>
@@ -322,6 +356,69 @@
                 </button>
                 <button type="submit" class="rounded-xl bg-blue-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-600">
                     Kirim Ulasan
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Edit Review Modal -->
+    <div id="editReviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4">
+        <form
+            id="editReviewForm"
+            method="POST"
+            action=""
+            class="w-full max-w-[460px] rounded-2xl bg-white p-6 shadow-xl"
+        >
+            @csrf
+            @method('PUT')
+
+            <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold">Edit Ulasan</h2>
+                    <p class="mt-1 text-sm text-gray-400">Ubah ulasan Anda untuk pengalaman layanan ini.</p>
+                </div>
+
+                <button type="button" data-edit-review-close class="text-gray-400 transition hover:text-gray-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <label class="mb-2 block text-sm font-medium">Rating</label>
+            <div class="mb-5 grid grid-cols-5 gap-2">
+                @for ($rating = 1; $rating <= 5; $rating++)
+                    <label class="cursor-pointer">
+                        <input
+                            type="radio"
+                            name="rating"
+                            value="{{ $rating }}"
+                            id="editRating{{ $rating }}"
+                            class="peer sr-only"
+                        >
+                        <span class="flex h-11 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 transition peer-checked:border-yellow-300 peer-checked:bg-yellow-50 peer-checked:text-yellow-500">
+                            <i class="fa-solid fa-star mr-1"></i>
+                            {{ $rating }}
+                        </span>
+                    </label>
+                @endfor
+            </div>
+
+            <label for="editReviewText" class="mb-2 block text-sm font-medium">Ulasan</label>
+            <textarea
+                id="editReviewText"
+                name="text"
+                required
+                minlength="8"
+                maxlength="1000"
+                class="h-32 w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                placeholder="Tulis pengalaman Anda..."
+            ></textarea>
+
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" data-edit-review-close class="rounded-xl border border-gray-200 px-5 py-3 text-sm text-gray-600 transition hover:bg-gray-50">
+                    Batal
+                </button>
+                <button type="submit" class="rounded-xl bg-blue-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-600">
+                    Simpan Perubahan
                 </button>
             </div>
         </form>

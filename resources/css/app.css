@@ -814,13 +814,14 @@ textarea.mediq-input {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 14px;
+    gap: 24px;
 }
 
 .mediq-user-chip {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 .mediq-user-name,
@@ -839,12 +840,15 @@ h3 {
 .mediq-header-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .mediq-search-wrap {
     position: relative;
-    width: 280px;
+    width: 100%;
+    max-width: 520px;
 }
 
 .mediq-search-input {
@@ -883,10 +887,23 @@ h3 {
     color: #4a4e58;
     cursor: pointer;
     transition: background 0.2s;
+    position: relative;
+    flex-shrink: 0;
 }
 
 .mediq-icon-btn:hover {
     background: #f7f8fa;
+}
+
+.mediq-bell-dot {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    width: 8px;
+    height: 8px;
+    background-color: #0084ff;
+    border-radius: 50%;
+    border: 1.5px solid #fff;
 }
 
 .mediq-avatar {
