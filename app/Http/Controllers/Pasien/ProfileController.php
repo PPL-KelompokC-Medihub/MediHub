@@ -190,13 +190,10 @@ class ProfileController extends Controller
         $this->firestore->delete('Users', $uid);
         $this->firestore->auth()->deleteUser($uid);
 
-        Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()
-            ->route('register-pasien')
+        return redirect('/')
             ->with('success', 'Akun berhasil dihapus.');
     }
 }
