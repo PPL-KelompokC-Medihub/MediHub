@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
+use App\Support\Concerns\ResolvesCurrentDoctor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Update status jadwal temu pasien oleh dokter.
@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\Auth;
  */
 class AppointmentStatusController extends Controller
 {
+    use ResolvesCurrentDoctor;
+
     private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
-    private const DOCTOR_COLLECTION = 'Dokter';
 
     private const ALLOWED_STATUSES = ['menunggu', 'diperiksa', 'selesai'];
 
@@ -45,7 +46,6 @@ class AppointmentStatusController extends Controller
         }
 
         // Pastikan appointment ini milik dokter yang sedang login
-        $doctorId = $this->currentDoctorId();
         $appointmentDoctorId = (string) ($appointment['doctor_id'] ?? $appointment['dokterid'] ?? '');
 
         if (! in_array($appointmentDoctorId, $this->currentDoctorOwnerIds(), true)) {
@@ -89,22 +89,4 @@ class AppointmentStatusController extends Controller
         ]);
     }
 
-    private function currentDoctorId(): string
-    {
-        $userId = (string) Auth::id();
-        $doctor = $this->firestore->where(self::DOCTOR_COLLECTION, 'usersId', '=', $userId, 1)[0] ?? null;
-
-        return (string) ($doctor['id'] ?? $userId);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function currentDoctorOwnerIds(): array
-    {
-        return array_values(array_unique([
-            $this->currentDoctorId(),
-            (string) Auth::id(),
-        ]));
-    }
 }

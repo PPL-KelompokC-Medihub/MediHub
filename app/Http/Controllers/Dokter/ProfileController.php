@@ -12,6 +12,7 @@ use App\Services\MedihubFirestoreRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -77,7 +78,7 @@ class ProfileController extends Controller
             (string) $currentUser['id'],
             $request->validated(),
         );
-        Auth::setUser(new FirestoreUser($updatedUser));
+        $this->syncAuthenticatedUser($updatedUser);
 
         return redirect()->route('dokter.profile.expertise')
             ->with('success', 'Data diri dokter berhasil disimpan.');
@@ -117,7 +118,7 @@ class ProfileController extends Controller
             (string) $currentUser['id'],
             $request->validated(),
         );
-        Auth::setUser(new FirestoreUser($updatedUser));
+        $this->syncAuthenticatedUser($updatedUser);
 
         return redirect()->route('dokter.profile.certification')
             ->with('success', 'Keahlian dokter berhasil disimpan. Silakan lengkapi sertifikasi Anda.');
@@ -178,7 +179,7 @@ class ProfileController extends Controller
             'documents'      => $storedDocuments,
             'certifications' => $storedCertifications,
         ]);
-        Auth::setUser(new FirestoreUser($updatedUser));
+        $this->syncAuthenticatedUser($updatedUser);
 
         return redirect()->route('dokter.dashboard')
             ->with('success', 'Pendaftaran dokter selesai! Selamat datang di MediHub.');
@@ -195,6 +196,14 @@ class ProfileController extends Controller
             ? $currentUser->getAttributes()
             : [];
 
+        if (
+            $sessionUserData !== []
+            && (string) ($sessionUserData['id'] ?? '') === $userId
+            && $this->canUseSessionUserData($sessionUserData)
+        ) {
+            return $sessionUserData;
+        }
+
         $userData = $this->doctorRepository->findUser($userId);
 
         if (! $userData) {
@@ -203,7 +212,72 @@ class ProfileController extends Controller
             return $sessionUserData;
         }
 
-        return $this->doctorRepository->hydrateDoctorData($userData);
+        $hydratedUser = $this->doctorRepository->hydrateDoctorData($userData);
+        $this->syncAuthenticatedUser($hydratedUser);
+
+        return $hydratedUser;
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     */
+    private function canUseSessionUserData(array $userData): bool
+    {
+        if (($userData['role'] ?? null) !== 'dokter') {
+            return true;
+        }
+
+        if (($userData['firestore_unavailable'] ?? false) === true) {
+            return true;
+        }
+
+        return filled($userData['doctor_id'] ?? $userData['dokterid'] ?? null);
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     */
+    private function syncAuthenticatedUser(array $userData): void
+    {
+        Auth::setUser(new FirestoreUser($userData));
+
+        if (! request()->hasSession()) {
+            return;
+        }
+
+        $sessionUser = $this->sessionSafeUserData($userData);
+        request()->session()->put('medihub_user', $sessionUser);
+        request()->session()->put('medihub_user_role', $sessionUser['role'] ?? null);
+
+        $uid = (string) ($sessionUser['id'] ?? '');
+        if ($uid === '') {
+            return;
+        }
+
+        try {
+            Cache::put('firebase_authenticated_user:'.sha1($uid), $sessionUser, now()->addMinutes(30));
+        } catch (\Throwable) {
+            // Cache is only a login speed optimization.
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     * @return array<string, mixed>
+     */
+    private function sessionSafeUserData(array $userData): array
+    {
+        unset(
+            $userData['password'],
+            $userData['remember_token'],
+            $userData['api_token'],
+        );
+
+        if (! isset($userData['name'])) {
+            $userData['name'] = $userData['fullname'] ?? null;
+        }
+
+        return $userData;
     }
 
     private function storeDoctorFileIfExists(?UploadedFile $file, string $userId, string $directory): ?string

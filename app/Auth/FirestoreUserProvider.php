@@ -26,6 +26,12 @@ class FirestoreUserProvider implements UserProvider
     public function retrieveById($identifier): ?Authenticatable
     {
         $identifier = (string) $identifier;
+        $sessionUser = $this->retrieveFromSession($identifier);
+
+        if ($sessionUser) {
+            return $sessionUser;
+        }
+
         $data = null;
 
         try {
@@ -35,7 +41,7 @@ class FirestoreUserProvider implements UserProvider
         }
 
         if (! $data) {
-            return $this->retrieveFromSession($identifier);
+            return null;
         }
 
         return $this->createUser($data, remember: true);

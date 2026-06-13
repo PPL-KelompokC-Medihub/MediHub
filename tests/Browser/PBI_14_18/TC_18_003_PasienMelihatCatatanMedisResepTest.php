@@ -43,14 +43,16 @@ class TC_18_003_PasienMelihatCatatanMedisResepTest extends Pbi14To18DuskTestCase
             $browser->visit($this->appUrl('/pasien/diagnosa'))
                 ->waitForText('Hasil diagnosa', 10);
 
-            $browser->waitUsing(30, 2000, function () use ($browser, $diagnosis): bool {
-                if (str_contains($browser->text('body'), $diagnosis)) {
+            $diagnosisJson = $this->jsonForScript($diagnosis);
+
+            $browser->waitUsing(30, 2000, function () use ($browser, $diagnosisJson): bool {
+                if ((bool) ($browser->script("return document.body.textContent.includes({$diagnosisJson});")[0] ?? false)) {
                     return true;
                 }
 
                 $browser->refresh()->waitForText('Hasil diagnosa', 10);
 
-                return str_contains($browser->text('body'), $diagnosis);
+                return (bool) ($browser->script("return document.body.textContent.includes({$diagnosisJson});")[0] ?? false);
             }, "Catatan medis {$diagnosis} tidak muncul di halaman pasien.");
 
             $expanded = $browser->script(<<<JS

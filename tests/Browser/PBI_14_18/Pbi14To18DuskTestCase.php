@@ -84,7 +84,7 @@ abstract class Pbi14To18DuskTestCase extends DuskTestCase
         $envUid = trim((string) env('DUSK_PATIENT_UID', ''));
 
         if ($envUid === '' && $email === 'pasien.dummy@medihub.test') {
-            $envUid = '1OYSnwaa06bQmBOUBvx4JYHosHm2';
+            $envUid = 'demo-pasien-dummy';
         }
 
         if ($envUid !== '') {
@@ -102,8 +102,8 @@ abstract class Pbi14To18DuskTestCase extends DuskTestCase
         $envDoctorUid = trim((string) env('DUSK_DOCTOR_UID', ''));
 
         if ($envDoctorId === '' && $envDoctorUid === '' && $email === 'dokter.dummy@medihub.test') {
-            $envDoctorId = 'dokter-dummy-profile';
-            $envDoctorUid = 'dokter-dummy-medihub-test';
+            $envDoctorId = 'demo-doctor-ratna';
+            $envDoctorUid = 'demo-dokter-dummy';
         }
 
         if ($envDoctorId !== '') {
@@ -337,7 +337,7 @@ abstract class Pbi14To18DuskTestCase extends DuskTestCase
         }
 
         if ($this->doctorEmail() === 'dokter.dummy@medihub.test') {
-            return ['id' => 'dokter-dummy-profile'];
+            return ['id' => 'demo-doctor-ratna'];
         }
 
         $firstDoctor = $this->firestore()->all('Dokter', 1)[0] ?? null;

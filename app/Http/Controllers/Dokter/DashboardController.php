@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
+use App\Support\Concerns\ResolvesCurrentDoctor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,7 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     use MapsFirestoreData;
-
-    private const DOCTOR_COLLECTION = 'Dokter';
+    use ResolvesCurrentDoctor;
 
     private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
 
@@ -30,12 +30,7 @@ class DashboardController extends Controller
 
     public function index(Request $request): View
     {
-        $userId = (string) Auth::id();
-
-        $userData = $this->doctorRepository->findUser($userId);
-        $dokter = $userData
-            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
-            : null;
+        $dokter = $this->currentDoctorObject();
 
         $search = trim((string) $request->query('search', ''));
         $date = trim((string) $request->query('date', ''));
@@ -91,11 +86,7 @@ class DashboardController extends Controller
     public function riwayat(Request $request): View
     {
         $userId = (string) Auth::id();
-
-        $userData = $this->doctorRepository->findUser($userId);
-        $dokter = $userData
-            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
-            : null;
+        $dokter = $this->currentDoctorObject();
 
         $search = trim((string) $request->query('search', ''));
         $date = trim((string) $request->query('date', ''));
@@ -298,12 +289,8 @@ class DashboardController extends Controller
         try {
             $notes = [];
 
-            foreach ($this->currentDoctorOwnerIds() as $id) {
-                foreach (['doctor_id', 'doctor_user_id'] as $field) {
-                    foreach ($this->firestore->where('CatatanMedis', $field, '=', $id) as $note) {
-                        $notes[$note['id']] = $note;
-                    }
-                }
+            foreach ($this->whereCurrentDoctorOwnerByAnyField('CatatanMedis', ['doctor_id', 'doctor_user_id']) as $note) {
+                $notes[$note['id']] = $note;
             }
 
             return collect(array_values($notes));
@@ -317,14 +304,6 @@ class DashboardController extends Controller
         }
     }
 
-    private function currentDoctorId(): string
-    {
-        $userId = (string) Auth::id();
-        $doctor = $this->firestore->where(self::DOCTOR_COLLECTION, 'usersId', '=', $userId, 1)[0] ?? null;
-
-        return (string) ($doctor['id'] ?? $userId);
-    }
-
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -332,25 +311,10 @@ class DashboardController extends Controller
     {
         $documents = [];
 
-        foreach ($this->currentDoctorOwnerIds() as $doctorId) {
-            foreach (['dokterid', 'doctor_id'] as $field) {
-                foreach ($this->firestore->where($collection, $field, '=', $doctorId) as $document) {
-                    $documents[$document['id']] = $document;
-                }
-            }
+        foreach ($this->whereCurrentDoctorOwnerByAnyField($collection, ['dokterid', 'doctor_id']) as $document) {
+            $documents[$document['id']] = $document;
         }
 
         return array_values($documents);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function currentDoctorOwnerIds(): array
-    {
-        return array_values(array_unique([
-            $this->currentDoctorId(),
-            (string) Auth::id(),
-        ]));
     }
 }

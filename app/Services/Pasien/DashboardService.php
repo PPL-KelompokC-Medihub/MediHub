@@ -7,6 +7,7 @@ use App\Services\FirestoreService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class DashboardService
@@ -21,6 +22,21 @@ class DashboardService
 
     private const PATIENT_COLLECTION = 'Pasien';
     private const REVIEW_COLLECTION = 'Ulasan';
+    private const DOCTOR_DOCUMENT_COLLECTION = 'Dokter_dokumen';
+    private const FACILITY_COLLECTION = 'facilities';
+    private const MEDICAL_NOTE_COLLECTION = 'CatatanMedis';
+    private const NOTIFICATION_COLLECTION = 'Notifications';
+
+    /** @var array<string, mixed>|null */
+    private ?array $doctorDirectory = null;
+    /** @var array<string, array{name: string, specialization: string, foto?: string}>|null */
+    private ?array $doctorSummaries = null;
+    /** @var array<string, string>|null */
+    private ?array $doctorUserUidMap = null;
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $currentPatientAppointments = null;
+    /** @var array<string, mixed>|null */
+    private ?array $currentPatientDocument = null;
 
     public function __construct(
         private FirestoreService $firestore,
@@ -43,14 +59,7 @@ class DashboardService
 
     private function patient(): array
     {
-        $userId = (string) Auth::id();
-
-        $patients = $this->firestore->all(self::PATIENT_COLLECTION);
-
-        $patient = collect($patients)->first(function (array $patient) use ($userId): bool {
-            return (string) ($patient['user_id'] ?? '') === $userId
-                || (string) ($patient['id'] ?? '') === $userId;
-        });
+        $patient = $this->currentPatientDocument();
 
         if (! $patient) {
             return [
@@ -73,25 +82,10 @@ class DashboardService
      */
     private function appointments(): array
     {
-        $patientId = (string) Auth::id();
-        $patientEmail = (string) (Auth::user()?->email ?? '');
         $doctorSummaries = $this->doctorSummariesById();
-
         $appointments = array_values(array_filter(
-            $this->firestore->all(self::APPOINTMENT_COLLECTION),
-            function (array $appointment) use ($patientId, $patientEmail): bool {
-                $belongsToPatient = in_array($patientId, [
-                    (string) ($appointment['patient_id'] ?? ''),
-                    (string) ($appointment['user_uid'] ?? ''),
-                ], true) || (
-                    $patientEmail !== '' &&
-                    $patientEmail === (string) ($appointment['patient_email'] ?? '')
-                );
-
-                if (! $belongsToPatient) {
-                    return false;
-                }
-
+            $this->appointmentsForCurrentPatient(),
+            function (array $appointment): bool {
                 $status = strtolower((string) ($appointment['status'] ?? ''));
 
                 return ! in_array($status, ['batal', 'dibatalkan', 'selesai'], true);
@@ -132,13 +126,9 @@ class DashboardService
     private function notifications(): array
     {
         $patientId = (string) Auth::id();
-
-        $notifications = array_values(array_filter(
-            $this->firestore->all('Notifications'),
-            function (array $notification) use ($patientId): bool {
-                return (string) ($notification['patient_id'] ?? '') === $patientId;
-            }
-        ));
+        $notifications = $patientId === ''
+            ? []
+            : $this->firestore->where(self::NOTIFICATION_COLLECTION, 'patient_id', '=', $patientId);
 
         usort($notifications, function ($a, $b) {
             return strcmp(
@@ -162,30 +152,14 @@ class DashboardService
      */
     private function doctorSummariesById(): array
     {
-        $users = [];
-        foreach ($this->firestore->all(self::USERS_COLLECTION) as $user) {
-            $users[(string) ($user['id'] ?? '')] = $user;
+        if ($this->doctorSummaries !== null) {
+            return $this->doctorSummaries;
         }
 
-        $specializations = [];
-        foreach ($this->firestore->all(self::DOCTOR_SPECIALIZATION_COLLECTION) as $specialization) {
-            $doctorId = (string) ($specialization['dokterid'] ?? '');
-
-            if ($doctorId !== '') {
-                $specializations[$doctorId] = $specialization['service']
-                    ?? $specialization['main_specialization']
-                    ?? 'Jadwal Temu';
-            }
-        }
-
-        $documentDocuments = $this->firestore->all('Dokter_dokumen');
-        $documents = [];
-        foreach ($documentDocuments as $doc) {
-            $docId = (string) ($doc['dokterid'] ?? '');
-            if ($docId !== '') {
-                $documents[$docId] = $doc;
-            }
-        }
+        $directory = $this->doctorDirectoryData();
+        $users = $directory['users'];
+        $specializations = $directory['specializations'];
+        $documents = $directory['documents'];
 
         $doctorImages = [
             asset('images/dr-clara.png'),
@@ -196,7 +170,7 @@ class DashboardService
         $fallbackIndex = 0;
 
         $summaries = [];
-        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doctor) {
+        foreach ($directory['doctors'] as $doctor) {
             $doctorId = (string) ($doctor['id'] ?? '');
             $userId = (string) ($doctor['usersId'] ?? '');
             $user = $users[$userId] ?? [];
@@ -209,13 +183,15 @@ class DashboardService
 
                 $summaries[$doctorId] = [
                     'name' => 'dr. '.($user['fullname'] ?? $doctor['email'] ?? 'Dokter'),
-                    'specialization' => $specializations[$doctorId] ?? 'Jadwal Temu',
+                    'specialization' => $specializations[$doctorId]['service']
+                        ?? $specializations[$doctorId]['main_specialization']
+                        ?? 'Jadwal Temu',
                     'foto' => $foto,
                 ];
             }
         }
 
-        return $summaries;
+        return $this->doctorSummaries = $summaries;
     }
 
     private function appointmentDayLabel(string $date): string
@@ -259,6 +235,231 @@ class DashboardService
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    private function currentPatientDocument(): ?array
+    {
+        if ($this->currentPatientDocument !== null) {
+            return $this->currentPatientDocument ?: null;
+        }
+
+        $userId = (string) Auth::id();
+        if ($userId === '') {
+            $this->currentPatientDocument = [];
+
+            return null;
+        }
+
+        $patient = $this->firestore->find(self::PATIENT_COLLECTION, $userId);
+
+        if (! $patient) {
+            $matches = $this->firestore->where(self::PATIENT_COLLECTION, 'user_id', '=', $userId, 1);
+            $patient = $matches[0] ?? null;
+        }
+
+        $this->currentPatientDocument = $patient ?: [];
+
+        return $patient;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function appointmentsForCurrentPatient(): array
+    {
+        if ($this->currentPatientAppointments !== null) {
+            return $this->currentPatientAppointments;
+        }
+
+        $patientId = (string) Auth::id();
+        $patientEmail = (string) (Auth::user()?->email ?? '');
+
+        if ($patientId === '') {
+            return $this->currentPatientAppointments = [];
+        }
+
+        $appointments = $this->firestore->where(self::APPOINTMENT_COLLECTION, 'patient_id', '=', $patientId);
+
+        if ($appointments === []) {
+            $appointments = $this->firestore->where(self::APPOINTMENT_COLLECTION, 'user_uid', '=', $patientId);
+        }
+
+        if ($appointments === [] && $patientEmail !== '') {
+            $appointments = $this->firestore->where(self::APPOINTMENT_COLLECTION, 'patient_email', '=', $patientEmail);
+        }
+
+        $unique = [];
+        foreach ($appointments as $appointment) {
+            if (! $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail)) {
+                continue;
+            }
+
+            $id = (string) ($appointment['id'] ?? md5(json_encode($appointment, JSON_THROW_ON_ERROR)));
+            $unique[$id] = $appointment;
+        }
+
+        return $this->currentPatientAppointments = array_values($unique);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $appointments
+     * @return array<string, array<string, mixed>>
+     */
+    private function catatanMedisForAppointments(array $appointments): array
+    {
+        $appointmentIds = array_values(array_unique(array_filter(array_map(
+            fn (array $appointment): string => (string) ($appointment['id'] ?? ''),
+            $appointments,
+        ))));
+
+        if ($appointmentIds === []) {
+            return [];
+        }
+
+        $notesByAppointment = [];
+
+        try {
+            foreach (array_chunk($appointmentIds, 10) as $ids) {
+                $notes = count($ids) === 1
+                    ? $this->firestore->where(self::MEDICAL_NOTE_COLLECTION, 'appointment_id', '=', $ids[0], 1)
+                    : $this->firestore->where(self::MEDICAL_NOTE_COLLECTION, 'appointment_id', 'in', $ids);
+
+                foreach ($notes as $note) {
+                    $appointmentId = (string) ($note['appointment_id'] ?? '');
+                    if ($appointmentId !== '') {
+                        $notesByAppointment[$appointmentId] = $note;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to load CatatanMedis documents for patient appointments', ['message' => $e->getMessage()]);
+        }
+
+        return $notesByAppointment;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function doctorUserUidMap(): array
+    {
+        if ($this->doctorUserUidMap !== null) {
+            return $this->doctorUserUidMap;
+        }
+
+        $map = [];
+        foreach ($this->doctorDirectoryData()['doctors'] as $doctor) {
+            $doctorId = (string) ($doctor['id'] ?? '');
+            $userId = (string) ($doctor['usersId'] ?? '');
+
+            if ($doctorId !== '' && $userId !== '') {
+                $map[$doctorId] = $userId;
+            }
+        }
+
+        return $this->doctorUserUidMap = $map;
+    }
+
+    /**
+     * @return array{users: array<string, array<string, mixed>>, doctors: array<int, array<string, mixed>>, specializations: array<string, array<string, mixed>>, documents: array<string, array<string, mixed>>}
+     */
+    private function doctorDirectoryData(): array
+    {
+        if ($this->doctorDirectory !== null) {
+            return $this->doctorDirectory;
+        }
+
+        $users = [];
+        foreach ($this->cachedWhere(self::USERS_COLLECTION, 'role', '=', 'dokter', null, 300) as $user) {
+            $userId = (string) ($user['id'] ?? '');
+            if ($userId !== '') {
+                $users[$userId] = $user;
+            }
+        }
+
+        $specializations = [];
+        foreach ($this->cachedAll(self::DOCTOR_SPECIALIZATION_COLLECTION, 300) as $specialization) {
+            $doctorId = (string) ($specialization['dokterid'] ?? '');
+            if ($doctorId !== '') {
+                $specializations[$doctorId] = $specialization;
+            }
+        }
+
+        $documents = [];
+        foreach ($this->cachedAll(self::DOCTOR_DOCUMENT_COLLECTION, 300) as $document) {
+            $doctorId = (string) ($document['dokterid'] ?? '');
+            if ($doctorId !== '') {
+                $documents[$doctorId] = $document;
+            }
+        }
+
+        return $this->doctorDirectory = [
+            'users' => $users,
+            'doctors' => $this->cachedAll(self::DOCTOR_COLLECTION, 300),
+            'specializations' => $specializations,
+            'documents' => $documents,
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function cachedAll(string $collection, int $seconds): array
+    {
+        $key = 'firestore:all:'.md5($collection);
+
+        try {
+            if (Cache::has($key)) {
+                return Cache::get($key, []);
+            }
+        } catch (\Throwable) {
+            return $this->firestore->all($collection);
+        }
+
+        $data = $this->firestore->all($collection);
+
+        try {
+            Cache::put($key, $data, now()->addSeconds($seconds));
+        } catch (\Throwable) {
+            // Cache is an optimization only; Firestore data above remains authoritative.
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function cachedWhere(string $collection, string $field, string $operator, mixed $value, ?int $limit, int $seconds): array
+    {
+        $key = 'firestore:where:'.md5(json_encode([
+            'collection' => $collection,
+            'field' => $field,
+            'operator' => $operator,
+            'value' => $value,
+            'limit' => $limit,
+        ], JSON_THROW_ON_ERROR));
+
+        try {
+            if (Cache::has($key)) {
+                return Cache::get($key, []);
+            }
+        } catch (\Throwable) {
+            return $this->firestore->where($collection, $field, $operator, $value, $limit);
+        }
+
+        $data = $this->firestore->where($collection, $field, $operator, $value, $limit);
+
+        try {
+            Cache::put($key, $data, now()->addSeconds($seconds));
+        } catch (\Throwable) {
+            // Cache is an optimization only; Firestore data above remains authoritative.
+        }
+
+        return $data;
+    }
+
+    /**
      * Format single appointment for history display
      */
     private function formatHistoryAppointment(array $appointment, array $doctorSummaries, $medicalNotes = null, array $doctorUserUidMap = [], array $catatanMedisMap = []): array
@@ -295,6 +496,7 @@ class DashboardService
         $dbResep = $catatan['resep_obat'] ?? null;
         $pemeriksaanFisik = $catatan['hasil_observasi'] ?? null;
         $rencanaPenanganan = $catatan['kesimpulan'] ?? null;
+        $medicalNoteCreatedAt = $catatan['created_at'] ?? null;
 
         if ($medicalNotes && !$catatan) {
             $doctorUserUid = $doctorUserUidMap[$doctorId] ?? '';
@@ -308,6 +510,7 @@ class DashboardService
                 $dbDiagnosa = $matchingNote->notes;
                 $dbCatatan = $matchingNote->notes;
                 $dbResep = $matchingNote->prescriptions->pluck('medications')->implode(', ');
+                $medicalNoteCreatedAt = $matchingNote->created_at?->toIso8601String();
             }
         }
 
@@ -339,6 +542,7 @@ class DashboardService
             'catatan_medis' => $catatanDokter,
             'catatan_dokter' => $catatanDokter,
             'resep_obat' => $resepObat,
+            'medical_note_created_at' => $medicalNoteCreatedAt,
         ];
     }
 
@@ -391,36 +595,10 @@ class DashboardService
     public function historyPageData(): array
     {
         $patient = $this->patient();
-        $patientId = (string) Auth::id();
-        $patientEmail = (string) (Auth::user()?->email ?? '');
         $doctorSummaries = $this->doctorSummariesById();
-
-        $appointments = array_values(array_filter(
-            $this->firestore->all(self::APPOINTMENT_COLLECTION),
-            fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
-        ));
-
-
-        $doctorUserUidMap = [];
-        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
-            $docId = (string) ($doc['id'] ?? '');
-            $userUid = (string) ($doc['usersId'] ?? '');
-            if ($docId !== '' && $userUid !== '') {
-                $doctorUserUidMap[$docId] = $userUid;
-            }
-        }
-
-        $catatanMedisMap = [];
-        try {
-            foreach ($this->firestore->all('CatatanMedis') as $catatan) {
-                $aptId = (string) ($catatan['appointment_id'] ?? '');
-                if ($aptId !== '') {
-                    $catatanMedisMap[$aptId] = $catatan;
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Failed to load CatatanMedis collection', ['message' => $e->getMessage()]);
-        }
+        $appointments = $this->appointmentsForCurrentPatient();
+        $doctorUserUidMap = $this->doctorUserUidMap();
+        $catatanMedisMap = $this->catatanMedisForAppointments($appointments);
 
         $history = [];
         $upcoming = [];
@@ -428,8 +606,7 @@ class DashboardService
         foreach ($appointments as $appointment) {
             $formatted = $this->formatHistoryAppointment($appointment, $doctorSummaries, null, $doctorUserUidMap, $catatanMedisMap);
 
-            $status = $this->normalizeStatusForGrouping((string) ($appointment['status'] ?? ''));
-            if ($status === 'selesai') {
+            if ($this->isHistoricalAppointment($appointment)) {
                 $history[] = $formatted;
             } else {
                 $upcoming[] = $formatted;
@@ -461,13 +638,8 @@ class DashboardService
     {
         $patient = $this->patient();
         $patientId = (string) Auth::id();
-        $patientEmail = (string) (Auth::user()?->email ?? '');
         $doctorSummaries = $this->doctorSummariesById();
-
-        $appointments = array_values(array_filter(
-            $this->firestore->all(self::APPOINTMENT_COLLECTION),
-            fn (array $appointment): bool => $this->belongsToCurrentPatient($appointment, $patientId, $patientEmail),
-        ));
+        $appointments = $this->appointmentsForCurrentPatient();
 
         // Only completed appointments (status = selesai)
         $completed = array_filter($appointments, function (array $appointment): bool {
@@ -478,26 +650,8 @@ class DashboardService
 
         $medicalNotes = $this->medicalNotesForPatient($patientId);
 
-        $doctorUserUidMap = [];
-        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doc) {
-            $docId = (string) ($doc['id'] ?? '');
-            $userUid = (string) ($doc['usersId'] ?? '');
-            if ($docId !== '' && $userUid !== '') {
-                $doctorUserUidMap[$docId] = $userUid;
-            }
-        }
-
-        $catatanMedisMap = [];
-        try {
-            foreach ($this->firestore->all('CatatanMedis') as $catatan) {
-                $aptId = (string) ($catatan['appointment_id'] ?? '');
-                if ($aptId !== '') {
-                    $catatanMedisMap[$aptId] = $catatan;
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Failed to load CatatanMedis collection', ['message' => $e->getMessage()]);
-        }
+        $doctorUserUidMap = $this->doctorUserUidMap();
+        $catatanMedisMap = $this->catatanMedisForAppointments($appointments);
 
         $now = Carbon::now();
 
@@ -530,11 +684,26 @@ class DashboardService
             return $formatted;
         }, array_values($completed));
 
-        // Sort by date descending (newest first)
-        usort($diagnosisList, fn (array $left, array $right): int => strcmp(
-            trim((string) ($right['date_sort'] ?? '').' '.(string) ($right['time_sort'] ?? '')),
-            trim((string) ($left['date_sort'] ?? '').' '.(string) ($left['time_sort'] ?? '')),
-        ));
+        usort($diagnosisList, function (array $left, array $right): int {
+            $leftHasMedicalContent = $this->hasMedicalContent($left);
+            $rightHasMedicalContent = $this->hasMedicalContent($right);
+
+            if ($leftHasMedicalContent !== $rightHasMedicalContent) {
+                return $rightHasMedicalContent <=> $leftHasMedicalContent;
+            }
+
+            $leftNoteCreatedAt = (string) ($left['medical_note_created_at'] ?? '');
+            $rightNoteCreatedAt = (string) ($right['medical_note_created_at'] ?? '');
+
+            if ($leftNoteCreatedAt !== $rightNoteCreatedAt) {
+                return strcmp($rightNoteCreatedAt, $leftNoteCreatedAt);
+            }
+
+            return strcmp(
+                trim((string) ($right['date_sort'] ?? '').' '.(string) ($right['time_sort'] ?? '')),
+                trim((string) ($left['date_sort'] ?? '').' '.(string) ($left['time_sort'] ?? '')),
+            );
+        });
 
         // Stats
         $totalDiagnosa = count(array_filter($diagnosisList, fn (array $item): bool => ! empty($item['diagnosa'])));
@@ -553,6 +722,16 @@ class DashboardService
                 'total_resep' => $totalResep,
             ],
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     */
+    private function hasMedicalContent(array $item): bool
+    {
+        return ! empty($item['diagnosa'])
+            || ! empty($item['catatan_medis'])
+            || ! empty($item['resep_obat']);
     }
 
     /**
@@ -684,31 +863,11 @@ class DashboardService
      */
     private function doctors(): array
     {
-        $userDocuments = $this->firestore->all('Users');
-        $doctorDocuments = $this->firestore->all('Dokter');
-        $specializationDocuments = $this->firestore->all('Dokter_spesialisasi');
-        $documentDocuments = $this->firestore->all('Dokter_dokumen');
-
-        $users = [];
-        foreach ($userDocuments as $user) {
-            if (($user['role'] ?? null) === 'dokter') {
-                $users[$user['id']] = $user;
-            }
-        }
-
-        $specializations = [];
-        foreach ($specializationDocuments as $specialization) {
-            if (isset($specialization['dokterid'])) {
-                $specializations[$specialization['dokterid']] = $specialization;
-            }
-        }
-
-        $documents = [];
-        foreach ($documentDocuments as $doc) {
-            if (isset($doc['dokterid'])) {
-                $documents[$doc['dokterid']] = $doc;
-            }
-        }
+        $directory = $this->doctorDirectoryData();
+        $users = $directory['users'];
+        $doctorDocuments = $directory['doctors'];
+        $specializations = $directory['specializations'];
+        $documents = $directory['documents'];
 
         $doctors = [];
         $doctorImages = [
@@ -800,7 +959,7 @@ class DashboardService
      */
     private function facilities(): array
     {
-        $facilities = $this->firestore->all('facilities');
+        $facilities = $this->cachedAll(self::FACILITY_COLLECTION, 300);
 
         return $facilities ?: [
             [
@@ -829,7 +988,7 @@ class DashboardService
      */
     private function reviews(): array
     {
-        $reviews = $this->firestore->all(self::REVIEW_COLLECTION);
+        $reviews = $this->cachedAll(self::REVIEW_COLLECTION, 60);
 
         if ($reviews === []) {
             return [];
@@ -839,45 +998,26 @@ class DashboardService
             return trim((string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? '')) !== '';
         }));
 
-        $users = collect($this->firestore->all(self::USERS_COLLECTION))
-            ->keyBy(fn (array $user): string => (string) ($user['id'] ?? ''));
-        $patients = collect();
-
-        foreach ($this->firestore->all(self::PATIENT_COLLECTION) as $patient) {
-            foreach (['id', 'user_id'] as $key) {
-                $patientKey = (string) ($patient[$key] ?? '');
-
-                if ($patientKey !== '') {
-                    $patients->put($patientKey, $patient);
-                }
-            }
-        }
-
         usort($reviews, fn (array $a, array $b): int => strcmp(
             (string) ($b['created_at'] ?? $b['updated_at'] ?? $b['update_at'] ?? ''),
             (string) ($a['created_at'] ?? $a['updated_at'] ?? $a['update_at'] ?? ''),
         ));
 
-        return array_map(function (array $review) use ($users, $patients): array {
+        return array_map(function (array $review): array {
             $patientId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
-            $user = $users->get($patientId, []);
-            $patient = $patients->get($patientId, []);
-            $profilePict = $patient['profile_pict'] ?? null;
             $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
 
             return [
                 'id' => $review['id'] ?? null,
                 'patient_id' => $patientId,
-                'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
+                'name' => (string) ($review['patient_name'] ?? 'Pasien'),
                 'rating' => number_format((float) ($review['rating'] ?? 0), 1),
                 'date' => $createdAt !== ''
                     ? Carbon::parse($createdAt)->translatedFormat('d F | H:i')
                     : '-',
                 'text' => (string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? ''),
                 'likes' => (int) ($review['likes'] ?? 0),
-                'avatar' => $profilePict
-                    ? asset('storage/' . $profilePict)
-                    : asset('images/default-avatar.svg'),
+                'avatar' => asset('images/default-avatar.svg'),
             ];
         }, $reviews);
     }

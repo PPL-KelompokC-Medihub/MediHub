@@ -6,20 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use App\Support\Concerns\MapsFirestoreData;
+use App\Support\Concerns\ResolvesCurrentDoctor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class MedicalNoteController extends Controller
 {
     use MapsFirestoreData;
+    use ResolvesCurrentDoctor;
 
     private const APPOINTMENT_COLLECTION = 'BuatJadwalTemu';
     private const CATATAN_MEDIS_COLLECTION = 'CatatanMedis';
-    private const DOCTOR_COLLECTION = 'Dokter';
-    private const USERS_COLLECTION = 'Users';
 
     public function __construct(
         private FirestoreService $firestore,
@@ -33,13 +32,8 @@ class MedicalNoteController extends Controller
      */
     public function create(string $appointmentId): View|RedirectResponse
     {
-        $userId = (string) Auth::id();
-
         // Ambil data dokter
-        $userData = $this->doctorRepository->findUser($userId);
-        $dokter = $userData
-            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
-            : null;
+        $dokter = $this->currentDoctorObject();
 
         // Ambil data appointment
         $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
@@ -96,11 +90,11 @@ class MedicalNoteController extends Controller
             'resep_obat' => 'nullable|string',
         ]);
 
-        $userId = (string) Auth::id();
         $doctorId = $this->currentDoctorId();
 
         // Ambil data dokter untuk nama
-        $userData = $this->doctorRepository->findUser($userId);
+        $userData = $this->currentDoctorData() ?? [];
+        $userId = (string) ($userData['id'] ?? '');
         $doctorName = $userData['name'] ?? $userData['fullname'] ?? 'Dokter';
 
         $data = [
@@ -164,12 +158,7 @@ class MedicalNoteController extends Controller
      */
     public function show(string $appointmentId): View|RedirectResponse
     {
-        $userId = (string) Auth::id();
-
-        $userData = $this->doctorRepository->findUser($userId);
-        $dokter = $userData
-            ? (object) $this->doctorRepository->hydrateDoctorData($userData)
-            : null;
+        $dokter = $this->currentDoctorObject();
 
         // Ambil data appointment
         $appointment = $this->firestore->find(self::APPOINTMENT_COLLECTION, $appointmentId);
@@ -217,12 +206,8 @@ class MedicalNoteController extends Controller
     {
         $documents = [];
 
-        foreach ($this->currentDoctorOwnerIds() as $doctorId) {
-            foreach (['dokterid', 'doctor_id'] as $field) {
-                foreach ($this->firestore->where(self::APPOINTMENT_COLLECTION, $field, '=', $doctorId) as $doc) {
-                    $documents[$doc['id']] = $doc;
-                }
-            }
+        foreach ($this->whereCurrentDoctorOwnerByAnyField(self::APPOINTMENT_COLLECTION, ['dokterid', 'doctor_id']) as $doc) {
+            $documents[$doc['id']] = $doc;
         }
 
         // Sort by date
@@ -235,23 +220,4 @@ class MedicalNoteController extends Controller
         return $docs;
     }
 
-    private function currentDoctorId(): string
-    {
-        $userId = (string) Auth::id();
-        $doctor = $this->firestore->where(self::DOCTOR_COLLECTION, 'usersId', '=', $userId, 1)[0] ?? null;
-
-        return (string) ($doctor['id'] ?? $userId);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function currentDoctorOwnerIds(): array
-    {
-        return array_values(array_unique([
-            $this->currentDoctorId(),
-            (string) Auth::id(),
-        ]));
-    }
 }
-

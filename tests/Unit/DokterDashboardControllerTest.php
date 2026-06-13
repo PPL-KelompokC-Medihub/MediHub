@@ -59,9 +59,11 @@ class DokterDashboardControllerTest extends TestCase
             }
 
             if ($collection === 'BuatJadwalTemu') {
+                $values = is_array($value) ? array_map('strval', $value) : [(string) $value];
+
                 return array_values(array_filter(
                     $appointments,
-                    fn (array $appointment): bool => (string) ($appointment[$field] ?? '') === (string) $value,
+                    fn (array $appointment): bool => in_array((string) ($appointment[$field] ?? ''), $values, true),
                 ));
             }
 

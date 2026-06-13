@@ -6,6 +6,7 @@ use App\Services\FirestoreService;
 use App\Services\MedihubFirestoreRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 
@@ -218,7 +219,7 @@ class BookingService
      */
     private function reviews(): array
     {
-        $reviews = $this->firestore->all(self::REVIEW_COLLECTION);
+        $reviews = $this->cachedAll(self::REVIEW_COLLECTION, 60);
 
         if ($reviews === []) {
             return [];
@@ -228,43 +229,24 @@ class BookingService
             return trim((string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? '')) !== '';
         }));
 
-        $users = collect($this->firestore->all(self::USERS_COLLECTION))
-            ->keyBy(fn (array $user): string => (string) ($user['id'] ?? ''));
-        $patients = collect();
-
-        foreach ($this->firestore->all(self::PATIENT_COLLECTION) as $patient) {
-            foreach (['id', 'user_id'] as $key) {
-                $patientKey = (string) ($patient[$key] ?? '');
-
-                if ($patientKey !== '') {
-                    $patients->put($patientKey, $patient);
-                }
-            }
-        }
-
         usort($reviews, fn (array $a, array $b): int => strcmp(
             (string) ($b['created_at'] ?? $b['updated_at'] ?? $b['update_at'] ?? ''),
             (string) ($a['created_at'] ?? $a['updated_at'] ?? $a['update_at'] ?? ''),
         ));
 
-        return array_map(function (array $review) use ($users, $patients): array {
+        return array_map(function (array $review): array {
             $patientId = (string) ($review['patient_id'] ?? $review['user_id'] ?? '');
-            $user = $users->get($patientId, []);
-            $patient = $patients->get($patientId, []);
-            $profilePict = $patient['profile_pict'] ?? null;
             $createdAt = (string) ($review['created_at'] ?? $review['updated_at'] ?? $review['update_at'] ?? '');
 
             return [
-                'name' => (string) ($review['patient_name'] ?? $user['fullname'] ?? $user['name'] ?? 'Pasien'),
+                'name' => (string) ($review['patient_name'] ?? 'Pasien'),
                 'rating' => number_format((float) ($review['rating'] ?? 0), 1),
                 'date' => $createdAt !== ''
                     ? Carbon::parse($createdAt)->translatedFormat('d F | H:i')
                     : '-',
                 'text' => (string) ($review['text'] ?? $review['review'] ?? $review['comment'] ?? ''),
                 'likes' => (int) ($review['likes'] ?? 0),
-                'avatar' => $profilePict
-                    ? asset('storage/' . $profilePict)
-                    : asset('images/default-avatar.svg'),
+                'avatar' => asset('images/default-avatar.svg'),
             ];
         }, $reviews);
     }
@@ -275,12 +257,12 @@ class BookingService
     private function buildDoctorOptions(): array
     {
         $users = [];
-        foreach ($this->firestore->all(self::USERS_COLLECTION) as $user) {
+        foreach ($this->cachedWhere(self::USERS_COLLECTION, 'role', '=', 'dokter', null, 300) as $user) {
             $users[$user['id']] = $user;
         }
 
         $specializations = [];
-        foreach ($this->firestore->all('Dokter_spesialisasi') as $specialization) {
+        foreach ($this->cachedAll('Dokter_spesialisasi', 300) as $specialization) {
             if (isset($specialization['dokterid'])) {
                 $specializations[$specialization['dokterid']] = $specialization;
             }
@@ -295,7 +277,7 @@ class BookingService
                 'name' => $user['fullname'] ?? $doctor['email'] ?? 'Dokter',
                 'specialization' => $specialization['service'] ?? $specialization['main_specialization'] ?? 'Spesialis Umum',
             ];
-        }, $this->firestore->all(self::DOCTOR_COLLECTION)));
+        }, $this->cachedAll(self::DOCTOR_COLLECTION, 300)));
     }
 
     /**
@@ -306,8 +288,7 @@ class BookingService
         $doctorIdsByUserId = $this->doctorIdsByUserId();
         $doctorUserIdsByDoctorId = array_flip($doctorIdsByUserId);
         $doctorNamesById = $this->doctorNamesById();
-        $bookedTimesBySchedule = $this->bookedTimesBySchedule();
-        $schedules = $this->firestore->all(self::DOCTOR_SCHEDULE_COLLECTION);
+        $schedules = $this->cachedAll(self::DOCTOR_SCHEDULE_COLLECTION, 30);
 
         usort($schedules, fn (array $a, array $b): int => strcmp(
             (string) ($a['tanggal'] ?? ''),
@@ -322,7 +303,7 @@ class BookingService
             'date' => $schedule['tanggal'] ?? '',
             'start' => $schedule['jam_mulai'] ?? '',
             'end' => $schedule['jam_selesai'] ?? '',
-            'booked_times' => $bookedTimesBySchedule[$schedule['id'] ?? ''] ?? [],
+            'booked_times' => [],
         ], $schedules);
     }
 
@@ -410,7 +391,7 @@ class BookingService
     {
         $doctorIds = [];
 
-        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doctor) {
+        foreach ($this->cachedAll(self::DOCTOR_COLLECTION, 300) as $doctor) {
             $userId = (string) ($doctor['usersId'] ?? '');
             $doctorId = (string) ($doctor['id'] ?? '');
 
@@ -428,12 +409,12 @@ class BookingService
     private function doctorNamesById(): array
     {
         $userNames = [];
-        foreach ($this->firestore->all(self::USERS_COLLECTION) as $user) {
+        foreach ($this->cachedWhere(self::USERS_COLLECTION, 'role', '=', 'dokter', null, 300) as $user) {
             $userNames[(string) ($user['id'] ?? '')] = (string) ($user['fullname'] ?? $user['email'] ?? '');
         }
 
         $names = [];
-        foreach ($this->firestore->all(self::DOCTOR_COLLECTION) as $doctor) {
+        foreach ($this->cachedAll(self::DOCTOR_COLLECTION, 300) as $doctor) {
             $doctorId = (string) ($doctor['id'] ?? '');
             $userId = (string) ($doctor['usersId'] ?? '');
 
@@ -446,26 +427,63 @@ class BookingService
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<int, array<string, mixed>>
      */
-    private function bookedTimesBySchedule(): array
+    private function cachedAll(string $collection, int $seconds): array
     {
-        $bookedTimes = [];
+        $key = 'firestore:booking:all:'.md5($collection);
 
-        foreach ($this->firestore->all(self::APPOINTMENT_COLLECTION) as $appointment) {
-            $scheduleId = (string) ($appointment['doctor_schedule_id'] ?? '');
-            $appointmentTime = (string) ($appointment['appointment_time'] ?? '');
-
-            if ($scheduleId !== '' && $appointmentTime !== '') {
-                $bookedTimes[$scheduleId][] = $appointmentTime;
+        try {
+            if (Cache::has($key)) {
+                return Cache::get($key, []);
             }
+        } catch (\Throwable) {
+            return $this->firestore->all($collection);
         }
 
-        return array_map(
-            fn (array $times): array => array_values(array_unique($times)),
-            $bookedTimes,
-        );
+        $data = $this->firestore->all($collection);
+
+        try {
+            Cache::put($key, $data, now()->addSeconds($seconds));
+        } catch (\Throwable) {
+            // Cache is an optimization only; Firestore data above remains authoritative.
+        }
+
+        return $data;
     }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function cachedWhere(string $collection, string $field, string $operator, mixed $value, ?int $limit, int $seconds): array
+    {
+        $key = 'firestore:booking:where:'.md5(json_encode([
+            'collection' => $collection,
+            'field' => $field,
+            'operator' => $operator,
+            'value' => $value,
+            'limit' => $limit,
+        ], JSON_THROW_ON_ERROR));
+
+        try {
+            if (Cache::has($key)) {
+                return Cache::get($key, []);
+            }
+        } catch (\Throwable) {
+            return $this->firestore->where($collection, $field, $operator, $value, $limit);
+        }
+
+        $data = $this->firestore->where($collection, $field, $operator, $value, $limit);
+
+        try {
+            Cache::put($key, $data, now()->addSeconds($seconds));
+        } catch (\Throwable) {
+            // Cache is an optimization only; Firestore data above remains authoritative.
+        }
+
+        return $data;
+    }
+
     /**
      * Hapus / batalkan appointment pasien.
      */

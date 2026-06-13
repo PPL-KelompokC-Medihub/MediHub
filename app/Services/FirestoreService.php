@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Support\Cache\LaravelCacheItemPool;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Google\Auth\HttpHandler\HttpHandlerFactory;
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Auth as FirebaseAuth;
@@ -28,6 +30,9 @@ class FirestoreService
     /** @var array<string, mixed> */
     private array $credentialsData = [];
     private bool $initialized = false;
+    /** @var array<string, mixed> */
+    private array $readCache = [];
+    private ?int $readCacheRequestId = null;
 
     public function __construct()
     {}
@@ -35,6 +40,13 @@ class FirestoreService
     /** @return array<int, array<string, mixed>> */
     public function all(string $collection, ?int $limit = null): array
     {
+        $this->resetReadCacheForNewRequest();
+
+        $cacheKey = $this->cacheKey('all', $collection, ['limit' => $limit]);
+        if (array_key_exists($cacheKey, $this->readCache)) {
+            return $this->readCache[$cacheKey];
+        }
+
         $params = [];
         if ($limit) {
             $params['pageSize'] = $limit;
@@ -54,15 +66,26 @@ class FirestoreService
             $results[] = $this->parseDocument($document);
         }
 
+        $this->readCache[$cacheKey] = $results;
+
         return $results;
     }
 
     /** @return array<string, mixed>|null */
     public function find(string $collection, string $id): ?array
     {
+        $this->resetReadCacheForNewRequest();
+
+        $cacheKey = $this->cacheKey('find', $collection, ['id' => $id]);
+        if (array_key_exists($cacheKey, $this->readCache)) {
+            return $this->readCache[$cacheKey];
+        }
+
         $response = $this->get($this->documentPath($collection, $id));
 
         if ($response->status() === 404) {
+            $this->readCache[$cacheKey] = null;
+
             return null;
         }
 
@@ -71,7 +94,10 @@ class FirestoreService
             return null;
         }
 
-        return $this->parseDocument($response->json());
+        $result = $this->parseDocument($response->json());
+        $this->readCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     /** @param array<string, mixed> $data */
@@ -87,6 +113,8 @@ class FirestoreService
             throw new RuntimeException('Gagal menambahkan dokumen ke Firestore.');
         }
 
+        $this->forgetCollectionCache($collection);
+
         return $this->parseDocument($response->json());
     }
 
@@ -99,6 +127,8 @@ class FirestoreService
             Log::error('Firestore set() error', ['status' => $response->status(), 'body' => $response->body()]);
             throw new RuntimeException('Gagal menyimpan dokumen ke Firestore.');
         }
+
+        $this->forgetCollectionCache($collection);
     }
 
     /** @param array<string, mixed> $data */
@@ -118,6 +148,8 @@ class FirestoreService
             Log::error('Firestore update() error', ['status' => $response->status(), 'body' => $response->body()]);
             throw new RuntimeException('Gagal mengupdate dokumen di Firestore.');
         }
+
+        $this->forgetCollectionCache($collection);
     }
 
     public function delete(string $collection, string $id): void
@@ -127,6 +159,8 @@ class FirestoreService
         if (! $response->ok() && $response->status() !== 404) {
             Log::error('Firestore delete() error', ['status' => $response->status(), 'body' => $response->body()]);
         }
+
+        $this->forgetCollectionCache($collection);
     }
 
     public function deleteFields(string $collection, string $id, array $fields): void
@@ -148,6 +182,8 @@ class FirestoreService
                 'body' => $response->body(),
             ]);
         }
+
+        $this->forgetCollectionCache($collection);
     }
 
     /**
@@ -155,7 +191,18 @@ class FirestoreService
      */
     public function where(string $collection, string $field, string $operator, mixed $value, ?int $limit = null): array
     {
+        $this->resetReadCacheForNewRequest();
         $this->initializeIfNeeded();
+
+        $cacheKey = $this->cacheKey('where', $collection, [
+            'field' => $field,
+            'operator' => $operator,
+            'value' => $value,
+            'limit' => $limit,
+        ]);
+        if (array_key_exists($cacheKey, $this->readCache)) {
+            return $this->readCache[$cacheKey];
+        }
 
         $operatorMap = [
             '=' => 'EQUAL',
@@ -199,6 +246,8 @@ class FirestoreService
                 $results[] = $this->parseDocument($item['document']);
             }
         }
+
+        $this->readCache[$cacheKey] = $results;
 
         return $results;
     }
@@ -313,6 +362,24 @@ class FirestoreService
             return $this->accessToken;
         }
 
+        $cacheKey = $this->accessTokenCacheKey();
+        try {
+            $cachedToken = Cache::get($cacheKey);
+            if (
+                is_array($cachedToken)
+                && is_string($cachedToken['access_token'] ?? null)
+                && is_numeric($cachedToken['expires_at'] ?? null)
+                && time() < ((int) $cachedToken['expires_at'] - 60)
+            ) {
+                $this->accessToken = $cachedToken['access_token'];
+                $this->tokenExpiry = (float) $cachedToken['expires_at'];
+
+                return $this->accessToken;
+            }
+        } catch (Throwable) {
+            // Cache is an optimization; fall through to fetching a fresh token.
+        }
+
         $credentials = new ServiceAccountCredentials([self::FIRESTORE_SCOPE], $this->credentialsData);
 
         $handler = HttpHandlerFactory::build(new GuzzleClient([
@@ -345,7 +412,24 @@ class FirestoreService
         $this->accessToken = $accessToken;
         $this->tokenExpiry = time() + ($token['expires_in'] ?? 3500);
 
+        try {
+            Cache::put($cacheKey, [
+                'access_token' => $this->accessToken,
+                'expires_at' => (int) $this->tokenExpiry,
+            ], max(60, ((int) ($token['expires_in'] ?? 3500)) - 120));
+        } catch (Throwable) {
+            // Request can continue even if the cache backend is unavailable.
+        }
+
         return $this->accessToken;
+    }
+
+    private function accessTokenCacheKey(): string
+    {
+        return 'firestore_access_token:'.sha1(implode('|', [
+            $this->projectId,
+            (string) ($this->credentialsData['client_email'] ?? ''),
+        ]));
     }
 
     /** @return array<string, mixed> */
@@ -400,7 +484,13 @@ class FirestoreService
 
     private function buildFactory(): FirebaseFactory
     {
-        return (new FirebaseFactory())->withServiceAccount($this->credentialsData);
+        $cache = new LaravelCacheItemPool('firebase_admin');
+
+        return (new FirebaseFactory())
+            ->withServiceAccount($this->credentialsData)
+            ->withVerifierCache($cache)
+            ->withAuthTokenCache($cache)
+            ->withKeySetCache($cache);
     }
 
     private function collectionPath(string $collection): string
@@ -456,12 +546,53 @@ class FirestoreService
 
         $this->credentialsData = $this->resolveCredentials();
         $this->projectId = (string) ($this->credentialsData['project_id'] ?? config('services.firebase.project_id'));
+        $configuredProjectId = (string) config('services.firebase.project_id');
 
         if ($this->projectId === '') {
             throw new RuntimeException('project_id Firebase tidak ditemukan pada credentials.');
         }
 
+        if ($configuredProjectId !== '' && $configuredProjectId !== $this->projectId) {
+            throw new RuntimeException(sprintf(
+                'Project Firebase di .env (%s) berbeda dengan project_id pada FIREBASE_CREDENTIALS (%s). Gunakan service account JSON dari project yang sama.',
+                $configuredProjectId,
+                $this->projectId,
+            ));
+        }
+
         $this->baseUrl = sprintf(self::API_BASE, $this->projectId);
         $this->initialized = true;
+    }
+
+    /**
+     * @param array<string, mixed> $parts
+     */
+    private function cacheKey(string $type, string $collection, array $parts): string
+    {
+        return $type.':'.$collection.':'.md5(json_encode($parts, JSON_THROW_ON_ERROR));
+    }
+
+    private function forgetCollectionCache(string $collection): void
+    {
+        foreach (array_keys($this->readCache) as $key) {
+            if (str_contains($key, ':'.$collection.':')) {
+                unset($this->readCache[$key]);
+            }
+        }
+    }
+
+    private function resetReadCacheForNewRequest(): void
+    {
+        if (! app()->bound('request')) {
+            return;
+        }
+
+        $requestId = spl_object_id(request());
+
+        if ($this->readCacheRequestId !== null && $this->readCacheRequestId !== $requestId) {
+            $this->readCache = [];
+        }
+
+        $this->readCacheRequestId = $requestId;
     }
 }

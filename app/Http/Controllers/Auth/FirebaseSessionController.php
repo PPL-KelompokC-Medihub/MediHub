@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
@@ -38,6 +39,8 @@ class FirebaseSessionController extends Controller
 
     public function login(Request $request): JsonResponse|RedirectResponse
     {
+        $timings = ['start' => microtime(true)];
+
         Log::info('FirebaseSessionController.login called', [
             'method' => $request->method(),
             'path' => $request->path(),
@@ -67,7 +70,9 @@ class FirebaseSessionController extends Controller
 
         try {
             $idToken = $this->resolveIdTokenForLogin($validated);
+            $timings['resolved_id_token'] = microtime(true);
             $verifiedIdToken = $this->firestore->auth()->verifyIdToken($idToken);
+            $timings['verified_id_token'] = microtime(true);
         } catch (RuntimeException $e) {
             Log::warning('Firebase credentials/config error', ['message' => $e->getMessage()]);
             return $this->loginErrorResponse($request, $e->getMessage(), 422);
@@ -97,15 +102,25 @@ class FirebaseSessionController extends Controller
         }
 
         try {
-            $userData = $this->upsertUser(
-                uid: $uid,
-                email: $email,
-                name: $name,
-                emailVerified: $emailVerified,
-                role: $validated['role'] ?? null,
-            );
-            $this->doctorRepository->ensureDoctorRecord($userData);
-            $userData = $this->doctorRepository->hydrateDoctorData($userData);
+            $userData = $this->cachedAuthenticatedUserData($uid, $email, $validated['role'] ?? null);
+
+            if ($userData) {
+                $timings['loaded_user_cache'] = microtime(true);
+            } else {
+                $userData = $this->upsertUser(
+                    uid: $uid,
+                    email: $email,
+                    name: $name,
+                    emailVerified: $emailVerified,
+                    role: $validated['role'] ?? null,
+                );
+                $timings['upserted_user'] = microtime(true);
+                $this->doctorRepository->ensureDoctorRecord($userData);
+                $timings['ensured_doctor'] = microtime(true);
+                $userData = $this->doctorRepository->hydrateDoctorData($userData);
+                $timings['hydrated_doctor'] = microtime(true);
+                $this->cacheAuthenticatedUserData($userData);
+            }
         } catch (RuntimeException $e) {
             Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
 
@@ -140,9 +155,12 @@ class FirebaseSessionController extends Controller
         $request->session()->regenerate();
         $this->rememberAuthenticatedUser($request, $userData);
         $request->session()->save();
+        $timings['saved_session'] = microtime(true);
 
         // Dokter yang belum mengisi profil dikirim ke form profil
         $redirectUrl = $this->resolvePostLoginRedirect($userData);
+        $timings['resolved_redirect'] = microtime(true);
+        $this->logLoginTimings($timings);
 
         if (! $request->expectsJson() && ! $request->wantsJson()) {
             return redirect()->intended($redirectUrl);
@@ -152,6 +170,32 @@ class FirebaseSessionController extends Controller
             'message' => 'Login berhasil.',
             'redirect' => $redirectUrl,
         ]);
+    }
+
+    /**
+     * @param array<string, float> $timings
+     */
+    private function logLoginTimings(array $timings): void
+    {
+        if (! config('app.debug')) {
+            return;
+        }
+
+        $previous = $timings['start'] ?? microtime(true);
+        $segments = [];
+
+        foreach ($timings as $label => $time) {
+            if ($label === 'start') {
+                continue;
+            }
+
+            $segments[$label] = (int) round(($time - $previous) * 1000);
+            $previous = $time;
+        }
+
+        $segments['total'] = (int) round(((end($timings) ?: microtime(true)) - $timings['start']) * 1000);
+
+        Log::debug('Firebase session login timings', $segments);
     }
 
     public function register(Request $request): JsonResponse
@@ -195,6 +239,7 @@ class FirebaseSessionController extends Controller
             );
             $this->doctorRepository->ensureDoctorRecord($userData);
             $userData = $this->doctorRepository->hydrateDoctorData($userData);
+            $this->cacheAuthenticatedUserData($userData);
         } catch (RuntimeException $e) {
             Log::warning('Firestore user sync failed', ['message' => $e->getMessage()]);
             return response()->json(['message' => $e->getMessage()], 422);
@@ -280,14 +325,22 @@ class FirebaseSessionController extends Controller
             'fullname' => $name ?: ($existing['fullname'] ?? $existing['name'] ?? Str::before($email, '@')),
             'email' => $email,
             'password' => $existing['password'] ?? null,
-            'update_at' => now()->toIso8601String(),
         ];
 
         if ($existingRole === null && $normalizedRole !== null) {
             $payload['role'] = $normalizedRole;
         }
 
-        $this->firestore->update(self::USERS_COLLECTION, (string) $existing['id'], $payload);
+        $changedPayload = array_filter(
+            $payload,
+            fn (mixed $value, string $key): bool => ($existing[$key] ?? null) !== $value,
+            ARRAY_FILTER_USE_BOTH,
+        );
+
+        if ($changedPayload !== []) {
+            $changedPayload['update_at'] = now()->toIso8601String();
+            $this->firestore->update(self::USERS_COLLECTION, (string) $existing['id'], $changedPayload);
+        }
 
         return array_merge($existing, $payload);
     }
@@ -314,6 +367,53 @@ class FirebaseSessionController extends Controller
         return str_contains($message, 'firestore')
             || str_contains($message, 'dokumen')
             || str_contains($message, 'document');
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function cachedAuthenticatedUserData(string $uid, string $email, ?string $requestedRole): ?array
+    {
+        try {
+            $cached = Cache::get($this->authenticatedUserCacheKey($uid));
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! is_array($cached) || (string) ($cached['id'] ?? '') !== $uid || (string) ($cached['email'] ?? '') !== $email) {
+            return null;
+        }
+
+        $cachedRole = $this->normalizeRole($cached['role'] ?? null);
+        $normalizedRole = $this->normalizeRole($requestedRole);
+
+        if ($normalizedRole !== null && $cachedRole !== null && $cachedRole !== $normalizedRole) {
+            throw new RuntimeException('Jenis akun tidak sesuai. Silakan login melalui halaman yang benar.');
+        }
+
+        return $cached;
+    }
+
+    /**
+     * @param array<string, mixed> $userData
+     */
+    private function cacheAuthenticatedUserData(array $userData): void
+    {
+        $uid = (string) ($userData['id'] ?? '');
+        if ($uid === '') {
+            return;
+        }
+
+        try {
+            Cache::put($this->authenticatedUserCacheKey($uid), $this->sessionSafeUserData($userData), now()->addMinutes(30));
+        } catch (\Throwable) {
+            // Cache only avoids repeated Firestore reads; login remains valid without it.
+        }
+    }
+
+    private function authenticatedUserCacheKey(string $uid): string
+    {
+        return 'firebase_authenticated_user:'.sha1($uid);
     }
 
     /**
